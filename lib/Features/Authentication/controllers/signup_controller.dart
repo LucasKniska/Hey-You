@@ -1,0 +1,68 @@
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:hey_you/Common/navigation_menu.dart';
+import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
+import 'package:hey_you/Features/Authentication/screens/signup.dart';
+
+import '../../../Data/UserModel.dart';
+import '../../../Data/repositories/user/user_repository.dart';
+import '../../../utils/constants/colors.dart';
+
+class SignupController extends GetxController {
+  static SignupController get instance => Get.find();
+
+  /// Variables
+  final email = TextEditingController();
+  final password = TextEditingController();
+  final firstName = TextEditingController();
+  final lastName = TextEditingController();
+
+  final hidePassword = true.obs;
+  final agreeToTerms = false.obs;
+  final rememberMe = false.obs;
+
+  GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
+
+
+  /// Sign Up Function
+  Future<void> signup() async {
+    try {
+
+      // Loading screen
+      // Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
+
+      // Do internet check
+
+      // Validate form
+      if(!signupFormKey.currentState!.validate()) return;
+
+      if (!agreeToTerms.value) {
+        Get.snackbar('Agree to terms of service', 'Agree to the service to sign up');
+        return;
+      }
+
+      // Storing user data
+      final userCredential = await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
+
+      final newUser = UserModel(
+        email: email.text.trim(),
+        firstName: firstName.text.trim(),
+        lastName: lastName.text.trim(),
+        id: userCredential.user!.uid
+      );
+
+      final userRepository = Get.put(UserRepository());
+      userRepository.saveUserRecord(newUser);
+
+      Get.snackbar('You have successfully created your account!', 'Connect with as many people as you can!');
+
+      Get.to(() => const NavigationMenu());
+
+    } catch (e) {
+      Get.snackbar('There has been an error creating an account', e.toString());
+
+    }
+  }
+}

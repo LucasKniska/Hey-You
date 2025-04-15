@@ -1,31 +1,30 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'MapPage.dart';
-import 'Profile/ProfilePage.dart';
-import 'Contacts/ContactsPage.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:hey_you/utils/constants/colors.dart';
 
-void main() {
+
+import 'Data/repositories/authentication/authentication_repository.dart';
+import 'app.dart';
+import 'firebase_options.dart';
+
+Future<void> main() async {
+
+  /// Widgets Binding
+  final WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  /// Init Local Storage
+  await GetStorage.init();
+
+  /// Await Splash Until Other Items Load
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).then(
+      (FirebaseApp value) => Get.put(AuthenticationRepository()),
+  );
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
 
-  // Making a change to show the update
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hey You',
-      theme: ThemeData(
-        // This is the theme of your application.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-      ),
-      home: const ProfilePage(),
-      routes: {
-        '/contacts': (context) => ContactsPage(),
-        '/map': (context) => MapPage(),
-        '/profile': (context) => ProfilePage()
-      }
-    );
-  }
-}

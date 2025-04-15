@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hey_you/topbar.dart';
-import 'bottombar.dart';
+import 'package:hey_you/Common/topbar.dart';
+import '../../Common/bottombar.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
