@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:hey_you/Features/Authentication/controllers/signin_controller.dart';
 import 'package:hey_you/Features/Authentication/screens/signup.dart';
 import 'package:hey_you/utils/constants/text_string.dart';
+import 'package:hey_you/utils/validators/validation.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import '../../../Common/styles/spacing_styles.dart';
@@ -15,6 +16,10 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final controller = Get.put(SignInController());
+
+
     return Scaffold(
       body: SingleChildScrollView(
         child: ConstrainedBox(
@@ -64,27 +69,43 @@ class LoginScreen extends StatelessWidget {
 
                       /// Form
                       Form(
+                        key: controller.signinFormKey,
                         child: Column(
                           children: [
+
+
+                            /// Email Field
                             TextFormField(
+                              validator: (value) => TValidator.validateEmail(value),
+                              controller: controller.email,
                               decoration: InputDecoration(
                                 prefixIcon: Icon(Iconsax.direct_right),
                                 labelText: TTexts.email,
                               ),
                             ),
                             const SizedBox(height: TSizes.spaceBtwInputFields),
-                            TextFormField(
-                              decoration: const InputDecoration(
-                                prefixIcon: Icon(Iconsax.password_check),
-                                labelText: TTexts.password,
-                                suffixIcon: Icon(Iconsax.eye_slash),
+                            /// Password Field
+                            Obx(
+                                () => TextFormField(
+                                validator: (value) => TValidator.validatePassword(value),
+                                controller: controller.password,
+                                obscureText: controller.hidePassword.value,
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(Iconsax.password_check),
+                                  labelText: TTexts.password,
+                                  suffixIcon: IconButton(
+                                    icon: controller.hidePassword.value ? Icon(Iconsax.eye) : Icon(Iconsax.eye_slash),
+                                    onPressed: () { controller.hidePassword.value = !controller.hidePassword.value; }
+                                  ),
+                                ),
                               ),
                             ),
+
                             const SizedBox(height: TSizes.spaceBtwInputFields / 2),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Checkbox(value: true, onChanged: (value) {}),
+                                Obx(() => Checkbox(value: controller.rememberMe.value, onChanged: (value) { controller.rememberMe.value = value!; })),
                                 Text(
                                   TTexts.rememberMe,
                                   style: Theme.of(context).textTheme.bodyMedium,
@@ -99,11 +120,13 @@ class LoginScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
+
+                            /// Sign In Button
                             const SizedBox(height: TSizes.spaceBtwItems),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () { controller.signin(); },
                                 child: const Text(TTexts.login),
                               ),
                             ),

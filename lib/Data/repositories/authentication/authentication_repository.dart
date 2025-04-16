@@ -5,7 +5,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
-import '../../../Features/Authentication/screens/login.dart';
+import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
 
 class AuthenticationRepository extends GetxController{
@@ -37,6 +37,14 @@ class AuthenticationRepository extends GetxController{
       throw Exception('Error with authentication. Something went wrong.');
     }
 
+  }
+
+  Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
+    try {
+      return await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } catch (e) {
+      throw 'Something went wrong. Please try again';
+    }
   }
 
 }

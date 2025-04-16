@@ -9,6 +9,7 @@ import 'package:hey_you/Features/Authentication/screens/signup.dart';
 import '../../../Data/UserModel.dart';
 import '../../../Data/repositories/user/user_repository.dart';
 import '../../../utils/constants/colors.dart';
+import '../../../utils/theme/snackbars.dart';
 
 class SignupController extends GetxController {
   static SignupController get instance => Get.find();
@@ -31,7 +32,7 @@ class SignupController extends GetxController {
     try {
 
       // Loading screen
-      // Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
+      Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
       // Do internet check
 
@@ -56,13 +57,13 @@ class SignupController extends GetxController {
       final userRepository = Get.put(UserRepository());
       userRepository.saveUserRecord(newUser);
 
-      Get.snackbar('You have successfully created your account!', 'Connect with as many people as you can!');
+      TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many connections as possible!');
 
       Get.to(() => const NavigationMenu());
 
     } catch (e) {
-      Get.snackbar('There has been an error creating an account', e.toString());
-
+      Get.to(() => SignUpScreen());
+      TSnackBars.errorSnackBar(title: 'There has been an error creating your account', message: e.toString());
     }
   }
 }

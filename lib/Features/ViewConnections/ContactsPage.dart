@@ -85,7 +85,7 @@ class ContactsPage extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(width: 10),
-          Icon(icon, color: Colors.black),
+           icon, color: Colors.black),
           SizedBox(width: 10),
           Text(
             title,

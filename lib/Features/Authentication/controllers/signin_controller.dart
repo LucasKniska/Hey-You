@@ -1,0 +1,79 @@
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:hey_you/Common/navigation_menu.dart';
+import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
+import 'package:hey_you/Features/Authentication/screens/signin.dart';
+import 'package:hey_you/utils/theme/snackbars.dart';
+
+import '../../../utils/constants/colors.dart';
+
+
+class SignInController extends GetxController {
+  static SignInController get instance => Get.find();
+
+  /// Variables
+  final email = TextEditingController();
+  final password = TextEditingController();
+
+  final hidePassword = true.obs;
+  final rememberMe = false.obs;
+
+  GlobalKey<FormState> signinFormKey = GlobalKey<FormState>();
+
+  final localStorage = GetStorage();
+
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    try{
+      email.text = localStorage.read('REMEMBER_EMAIL');
+      password.text = localStorage.read('REMEMBER_PASSWORD');
+
+      if(email.text != ''){
+        rememberMe.value = true;
+      }
+    } catch (e) {
+      rememberMe.value = false;
+    }
+
+  }
+
+  /// Sign Up Function
+  Future<void> signin() async {
+    try {
+
+      // Loading screen
+      Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
+
+      // TODO Do internet check
+
+      // Validate form
+      if(!signinFormKey.currentState!.validate()) return;
+
+      if (rememberMe.value) {
+        localStorage.write('REMEMBER_EMAIL', email.text.trim());
+        localStorage.write('REMEMBER_PASSWORD', password.text.trim());
+      } else {
+        localStorage.write('REMEMBER_EMAIL', '');
+        localStorage.write('REMEMBER_PASSWORD', '');
+      }
+
+      final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+
+
+      TSnackBars.successSnackBar(title: 'You have successfully signed in!', message: 'Create even more connections!');
+
+      Get.to(() => const NavigationMenu());
+
+      print(userCredentials);
+
+    } catch (e) {
+      Get.to(() => LoginScreen());
+      TSnackBars.errorSnackBar(title: 'There has been an error creating an account', message: e.toString());
+    }
+  }
+}

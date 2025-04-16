@@ -9,7 +9,7 @@ import 'package:hey_you/Features/Authentication/screens/signup.dart';
 import 'package:hey_you/utils/constants/text_string.dart';
 
 import '../../../utils/constants/sizes.dart';
-import 'login.dart';
+import 'signin.dart';
 
 class OnBoardingScreen extends StatelessWidget {
   const OnBoardingScreen({super.key});

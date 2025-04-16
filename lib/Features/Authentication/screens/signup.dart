@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hey_you/Features/Authentication/screens/login.dart';
+import 'package:hey_you/Features/Authentication/screens/signin.dart';
 import 'package:hey_you/Features/Authentication/screens/onboarding.dart';
 import 'package:hey_you/utils/constants/text_string.dart';
 import 'package:hey_you/utils/validators/validation.dart';
