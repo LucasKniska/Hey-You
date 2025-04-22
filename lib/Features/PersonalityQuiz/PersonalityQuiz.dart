@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:hey_you/Common/navigation_menu.dart';
+import 'package:hey_you/Common/topbar.dart';
+import 'package:hey_you/Data/repositories/user/user_repository.dart';
+import 'package:hey_you/Features/PersonalityQuiz/personality_quiz_controller.dart';
 
 import '../../Common/styles/spacing_styles.dart';
 import '../../Data/QuizQuestions.dart';
@@ -18,23 +21,25 @@ class PersonalityQuizPage extends StatefulWidget {
 }
 
 class _PersonalityQuizPageState extends State<PersonalityQuizPage> {
-  final PageController _pageController = PageController();
+  final PersonalityQuizController controller = PersonalityQuizController();
+
+
 
   int currentPage = 0;
 
-  void _goToPage(int index) {
-    if (index >= 0 && index < questionList.length) {
-      _pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller.initAnswers();
+
   }
+
 
   void _setAnswer(int pageIndex, int value) {
     setState(() {
-      questionList[pageIndex] = Question(title: questionList[pageIndex].title, answer: value);
+      controller.setAnswer(pageIndex, value);
     });
   }
 
@@ -44,7 +49,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage> {
 
 
     return Scaffold(
-
+      appBar: TopBar(),
       body: Column(
         children: [
           Padding(
@@ -55,9 +60,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage> {
 
               children: [
 
-                Text(TTexts.HeyYou, style: Theme.of(context).textTheme.headlineLarge),
 
-                SizedBox(height: TSizes.spaceBtwSections),
 
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -105,7 +108,6 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage> {
             height: 600,
             child: PageView.builder(
 
-              controller: _pageController,
               itemCount: questionList.length,
               onPageChanged: (index) {
                 setState(() => currentPage = index);
@@ -123,7 +125,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton(
-                            onPressed: () { Get.to(() => NavigationMenu()); },
+                            onPressed: () { controller.submitQuiz(); },
                             child: Text(TTexts.submitQuiz),
                           ),
                         ),

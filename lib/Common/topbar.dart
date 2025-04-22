@@ -2,29 +2,38 @@
 
 import 'package:flutter/material.dart';
 
-class TopBar extends StatelessWidget implements PreferredSizeWidget{
+import '../utils/constants/colors.dart';
 
-  @override
-  final Size preferredSize;  // You must define preferredSize, this defines the height of the AppBar.
-
-  TopBar({Key? key})
-      : preferredSize = Size.fromHeight(kToolbarHeight), // Set the height of the AppBar
-        super(key: key);
+class TopBar extends StatelessWidget implements PreferredSizeWidget {
+  const TopBar({super.key});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.blue[900], // Navy Blue color
+      automaticallyImplyLeading: false, // hides back arrow
       title: Text(
         'Hey You',
-        style: TextStyle(
+        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
           fontWeight: FontWeight.bold, // Make the text bold
-          fontSize: 24,
           color: Colors.white,// Optional: Adjust the font size
         ),
+
       ),
-      centerTitle: true, // Ensures that the title is centered
+      centerTitle: true,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [TColors.primary, TColors.accent], // you can change these!
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+      elevation: 0,
+      backgroundColor: Colors.transparent, // important for gradient to show
     );
   }
 
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

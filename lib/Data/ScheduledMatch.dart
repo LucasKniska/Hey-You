@@ -1,6 +1,6 @@
 
 
-List<ScheduledMatch> scheduledMatches = [ScheduledMatch()];
+List<ScheduledMatch> scheduledMatches = [ScheduledMatch(), ScheduledMatch()];
 
 
 class ScheduledMatch {

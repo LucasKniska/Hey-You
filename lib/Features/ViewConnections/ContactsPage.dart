@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
+import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Features/ViewConnections/previousConnections.dart';
 import 'package:hey_you/Features/ViewConnections/scheduledMeetUps.dart';
 import 'package:hey_you/utils/constants/sizes.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
-import '../../Common/bottombar.dart';
-import '../../Common/navigation_menu.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/text_string.dart';
 
@@ -18,10 +17,7 @@ class ContactsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: Center(child: Text('Hey You', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold))),
-      ),
+      appBar: TopBar(),
       body: SingleChildScrollView(
         padding: TSpacingStyle.normalPadding,
         child: Column(
@@ -85,7 +81,7 @@ class ContactsPage extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(width: 10),
-           icon, color: Colors.black),
+          Icon(icon, color: Colors.black),
           SizedBox(width: 10),
           Text(
             title,

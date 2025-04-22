@@ -38,7 +38,7 @@ class LoginScreen extends StatelessWidget {
                       child: IconButton(
                         icon: const Icon(Iconsax.arrow_left_3),
                         onPressed: () {
-                          Get.to(() => OnBoardingScreen());
+                          Get.offAll(() => OnBoardingScreen());
                         },
                       ),
                     ),
@@ -76,6 +76,7 @@ class LoginScreen extends StatelessWidget {
 
                             /// Email Field
                             TextFormField(
+                              key: GlobalKey<FormState>(),
                               validator: (value) => TValidator.validateEmail(value),
                               controller: controller.email,
                               decoration: InputDecoration(
@@ -87,6 +88,7 @@ class LoginScreen extends StatelessWidget {
                             /// Password Field
                             Obx(
                                 () => TextFormField(
+                                  key: GlobalKey<FormState>(),
                                 validator: (value) => TValidator.validatePassword(value),
                                 controller: controller.password,
                                 obscureText: controller.hidePassword.value,
@@ -140,7 +142,7 @@ class LoginScreen extends StatelessWidget {
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                                 GestureDetector(
-                                  onTap: () { Get.to(() => SignUpScreen());},
+                                  onTap: () { Get.offAll(() => SignUpScreen());},
                                   child: Text(
                                     TTexts.signUp,
                                     style: TextStyle(color: TColors.primary),

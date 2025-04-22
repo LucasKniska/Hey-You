@@ -37,7 +37,7 @@ class SignUpScreen extends StatelessWidget {
                       child: IconButton(
                         icon: const Icon(Iconsax.arrow_left_3),
                         onPressed: () {
-                          Get.to(() => OnBoardingScreen());
+                          Get.offAll(() => OnBoardingScreen());
                         },
                       ),
                     ),
@@ -192,7 +192,7 @@ class SignUpScreen extends StatelessWidget {
                                     style: Theme.of(context).textTheme.bodyMedium,
                                   ),
                                   GestureDetector(
-                                    onTap: () { Get.to(() => LoginScreen()); },
+                                    onTap: () { Get.offAll(() => LoginScreen()); },
                                     child: Text(
                                       TTexts.login,
                                       style: TextStyle(color: TColors.primary),

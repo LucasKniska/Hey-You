@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:hey_you/utils/constants/sizes.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
+import '../Features/EditProfile/ProfilePage.dart';
 import '../Features/ViewConnections/ContactsPage.dart';
 import '../utils/constants/colors.dart';
 
@@ -63,5 +64,5 @@ class NavigationMenu extends StatelessWidget {
 class NavigationController extends GetxController{
   final Rx<int> selectedIndex = 0.obs;
 
-  final screens = [ContactsPage(), Container(color: Colors.purple), Container(color: Colors.orange)];
+  final screens = [ContactsPage(), Container(color: Colors.purple), ProfilePage()];
 }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
+import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/Authentication/screens/signin.dart';
 import 'package:hey_you/utils/theme/snackbars.dart';
 
@@ -45,14 +46,13 @@ class SignInController extends GetxController {
   /// Sign Up Function
   Future<void> signin() async {
     try {
+      // Validate form
+      if(!signinFormKey.currentState!.validate()) return;
 
       // Loading screen
       Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
       // TODO Do internet check
-
-      // Validate form
-      if(!signinFormKey.currentState!.validate()) return;
 
       if (rememberMe.value) {
         localStorage.write('REMEMBER_EMAIL', email.text.trim());
@@ -63,17 +63,17 @@ class SignInController extends GetxController {
       }
 
       final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+      Get.put(UserRepository());
 
+      currentUser = await UserRepository.instance.getUserById(userCredentials.user!.uid);
 
       TSnackBars.successSnackBar(title: 'You have successfully signed in!', message: 'Create even more connections!');
 
-      Get.to(() => const NavigationMenu());
-
-      print(userCredentials);
+      Get.offAll(() => const NavigationMenu());
 
     } catch (e) {
-      Get.to(() => LoginScreen());
-      TSnackBars.errorSnackBar(title: 'There has been an error creating an account', message: e.toString());
+      Get.offAll(() => LoginScreen());
+      TSnackBars.errorSnackBar(title: 'There has been an error signing into your account', message: e.toString());
     }
   }
 }

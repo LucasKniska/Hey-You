@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hey_you/Common/topbar.dart';
-import '../../Common/bottombar.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -50,8 +49,6 @@ class _MapPage extends State<MapPage> {
           ]
         )
       ),
-
-      bottomNavigationBar: BottomBar(),
 
     );
   }

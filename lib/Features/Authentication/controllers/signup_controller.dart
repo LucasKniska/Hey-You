@@ -31,10 +31,6 @@ class SignupController extends GetxController {
   Future<void> signup() async {
     try {
 
-      // Loading screen
-      Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
-
-      // Do internet check
 
       // Validate form
       if(!signupFormKey.currentState!.validate()) return;
@@ -44,6 +40,13 @@ class SignupController extends GetxController {
         return;
       }
 
+      // Loading screen
+      Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
+
+      // Do internet check
+
+
+
       // Storing user data
       final userCredential = await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
 
@@ -51,18 +54,22 @@ class SignupController extends GetxController {
         email: email.text.trim(),
         firstName: firstName.text.trim(),
         lastName: lastName.text.trim(),
-        id: userCredential.user!.uid
+        id: userCredential.user!.uid, biography: '',
+        quizAnswers: [], temporaryModifications: [], permanentModifications: [],
+        location: {}, currentMatch: '', scheduledConnections: [], previousConnections: [], totalConnections: 0
       );
 
       final userRepository = Get.put(UserRepository());
       userRepository.saveUserRecord(newUser);
 
+      currentUser = newUser;
+
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many connections as possible!');
 
-      Get.to(() => const NavigationMenu());
+      Get.offAll(() => const NavigationMenu());
 
     } catch (e) {
-      Get.to(() => SignUpScreen());
+      Get.offAll(() => SignUpScreen());
       TSnackBars.errorSnackBar(title: 'There has been an error creating your account', message: e.toString());
     }
   }

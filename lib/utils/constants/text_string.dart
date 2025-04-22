@@ -83,7 +83,10 @@ class TTexts {
     String formatted = DateFormat('MMMM, d y \'at\' h:mm a').format(match.meetingTime);
 
     return "${match.userName[0]} - $formatted @ ${match.meetingPlace['title']}";
-
   }
+
+
+  /// Profile Page Texts
+  static const String publicBioHint = 'List character traits others should know here!';
 
 }
