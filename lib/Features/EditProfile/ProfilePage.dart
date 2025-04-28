@@ -109,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: currentUser.temporaryModifications.map((e) => _buildChip(e['modification'].toString(), isPermanent: false, controller: controller)).toList()
+                children: currentUser.temporaryModifications.map((e) => _buildChip(e.modification, isPermanent: false, controller: controller)).toList()
               ),
 
 

@@ -1,5 +1,7 @@
 
 
+import 'package:hey_you/Data/TemporaryModifications.dart';
+
 import 'PreviousMatch.dart';
 
 class UserModel {
@@ -32,7 +34,7 @@ class UserModel {
         biography = json['Biography'] as String,
         quizAnswers = (json['QuizAnswers'] as List).map((e) => e as int).toList(),
         temporaryModifications = (json['TemporaryModifications'] as List)
-            .map((e) => Map<String, Object>.from(e as Map))
+            .map((e) => new TemporaryModification.fromJson(e))
             .toList(),
         permanentModifications = (json['PermanentModifications'] as List).map((e) => e as String).toList(),
         location = Map<String, dynamic>.from(json['Location'] as Map),
@@ -50,7 +52,7 @@ class UserModel {
   String biography;
   List<int> quizAnswers;
 
-  List<Map<String, Object>> temporaryModifications; // Need to know modification and time it was created
+  List<TemporaryModification> temporaryModifications; // Need to know modification and time it was created
 
   List<String> permanentModifications;
   Map<String, dynamic> location;
@@ -70,7 +72,7 @@ class UserModel {
       'Email': email,
       'Biography': biography,
       'QuizAnswers': quizAnswers,
-      'TemporaryModifications': temporaryModifications,
+      'TemporaryModifications': temporaryModifications.map((e) => e.toJson()),
       'PermanentModifications': permanentModifications,
       'Location': location,
       'CurrentMatch': currentMatch,
