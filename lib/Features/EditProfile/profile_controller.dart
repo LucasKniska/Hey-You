@@ -19,7 +19,7 @@ class ProfileController extends GetxController{
   void onInit() {
     // Set biography value
     try{
-      biography.text = currentUser.biography!;
+      biography.text = currentUser.biography;
     } catch (e) {
       biography.text = '';
     }
@@ -35,9 +35,9 @@ class ProfileController extends GetxController{
 
   void deleteModification({required String description, required bool permanent}){
     if(permanent){
-      currentUser.permanentModifications!.remove(description);
+      currentUser.permanentModifications.remove(description);
     } else {
-      currentUser.temporaryModifications!.removeWhere((e) => e['modifications'] == description);
+      currentUser.temporaryModifications.removeWhere((e) => e.modification == description);
     }
   }
 
