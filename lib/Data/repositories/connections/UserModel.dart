@@ -1,6 +1,5 @@
 
 
-import 'PreviousMatch.dart';
 
 class UserModel {
 
@@ -81,6 +80,7 @@ class UserModel {
   }
 
 
+  @override
   String toString(){
     return '$firstName $lastName';
   }

@@ -7,7 +7,7 @@ import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/PersonalityQuiz/personality_quiz_controller.dart';
 
 import '../../Common/styles/spacing_styles.dart';
-import '../../Data/QuizQuestions.dart';
+import '../../Data/repositories/connections/QuizQuestions.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';

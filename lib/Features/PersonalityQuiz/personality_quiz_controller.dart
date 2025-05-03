@@ -6,7 +6,7 @@ import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/PersonalityQuiz/PersonalityQuiz.dart';
 
 import '../../Common/navigation_menu.dart';
-import '../../Data/QuizQuestions.dart';
+import '../../Data/repositories/connections/QuizQuestions.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/theme/snackbars.dart';
 

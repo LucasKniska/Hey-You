@@ -1,7 +1,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import '../../UserModel.dart';
+
+import '../connections/UserModel.dart';
 
 /// Global Current user Variable
 UserModel currentUser = UserModel.initial();

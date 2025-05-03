@@ -20,7 +20,7 @@ dependencies:
 
 
   # Product Specific
-
+  geolocator: ^14.0.0
 
   # Utility Packages
   http: ^1.1.0

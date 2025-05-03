@@ -1,12 +1,11 @@
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
 import 'package:hey_you/Features/Authentication/screens/signup.dart';
 
-import '../../../Data/UserModel.dart';
+import '../../../Data/repositories/connections/UserModel.dart';
 import '../../../Data/repositories/user/user_repository.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/theme/snackbars.dart';
