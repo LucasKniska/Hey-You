@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 class CurrentMatch {
@@ -40,9 +39,24 @@ class CurrentMatch {
     );
   }
 
+
+  Map<String, dynamic> toJson() {
+    return {
+      'createdOn': Timestamp.fromDate(createdOn),
+      'expirationTime': Timestamp.fromDate(expirationTime),
+      'id': id,
+      'currentProposedPlace': currentProposedPlace,
+      'possiblePlaces': possiblePlaces,
+      'possibleTimes': possibleTimes.map((d) => Timestamp.fromDate(d)).toList(),
+      'related': related,
+      'userData': userData.map((u) => u.toJson()).toList(),
+    };
+  }
+
+
   @override
   String toString() {
-    return '$createdOn, $related, $id';
+    return '$createdOn, $related, $id, ${userData[0]}, ${userData[1]}';
   }
 
   @override
@@ -52,19 +66,14 @@ class CurrentMatch {
 
     return (id == other.id && listEquals(possiblePlaces, other.possiblePlaces)
         && listEquals(possibleTimes, other.possibleTimes) && userData[0] == other.userData[0] && userData[1] == other.userData[1] && currentProposedPlace == other.currentProposedPlace);
-
-
-
   }
-
-
 }
 
 class UserData {
-  final String id;
-  final String response;
-  final String userBio;
-  final String userName;
+  String id;
+  String response;
+  String userBio;
+  String userName;
 
   UserData({
     required this.id,
@@ -80,6 +89,21 @@ class UserData {
       userBio: json['userBio'] ?? '',
       userName: json['userName'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'response': response,
+      'userBio': userBio,
+      'userName': userName,
+    };
+  }
+
+
+  @override
+  String toString() {
+    return '$id, $response';
   }
 
   @override

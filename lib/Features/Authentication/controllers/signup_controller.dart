@@ -5,7 +5,7 @@ import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
 import 'package:hey_you/Features/Authentication/screens/signup.dart';
 
-import '../../../Data/repositories/connections/UserModel.dart';
+import '../../../Data/models/UserModel.dart';
 import '../../../Data/repositories/user/user_repository.dart';
 import '../../../utils/constants/colors.dart';
 import '../../../utils/theme/snackbars.dart';

@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/topbar.dart';
-import 'package:hey_you/Data/repositories/connections/CurrentMatch.dart';
+import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'BottomSheet.dart';
 import 'MatchPopup.dart';
@@ -95,11 +95,19 @@ class _MapPageState extends State<MapPage> {
             colorText: Colors.white,
             duration: const Duration(seconds: 8),
             onTap: (snack) {
-              Get.dialog(
-                MatchPopup(
-                  current: current,
-                ),
-              );
+
+              try{
+                if(current.id != ''){
+                  Get.dialog(
+                    MatchPopup(
+                      current: current,
+                    ),
+                  );
+                }
+
+              } catch(e){}
+
+
             }
         );
       }

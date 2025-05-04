@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../Data/repositories/connections/PreviousMatch.dart';
+import '../../Data/models/PreviousMatch.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
 

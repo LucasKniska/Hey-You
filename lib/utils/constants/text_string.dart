@@ -1,7 +1,7 @@
 
-import 'package:hey_you/Data/repositories/connections/PreviousMatch.dart';
+import 'package:hey_you/Data/models/PreviousMatch.dart';
 import 'package:intl/intl.dart';
-import '../../Data/repositories/connections/ScheduledMatch.dart';
+import '../../Data/models/ScheduledMatch.dart';
 
 /// Example for how a text string file would look
 class TTexts {

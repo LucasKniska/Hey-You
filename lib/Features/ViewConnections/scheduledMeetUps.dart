@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hey_you/utils/constants/colors.dart';
-import '../../Data/repositories/connections/ScheduledMatch.dart';
+import '../../Data/models/ScheduledMatch.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
 
