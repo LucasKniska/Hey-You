@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
 class CurrentMatch {
   final DateTime createdOn;
@@ -43,6 +45,18 @@ class CurrentMatch {
     return '$createdOn, $related, $id';
   }
 
+  @override
+  bool operator ==(Object o) {
+
+    final CurrentMatch other = o as CurrentMatch;
+
+    return (id == other.id && listEquals(possiblePlaces, other.possiblePlaces)
+        && listEquals(possibleTimes, other.possibleTimes) && userData[0] == other.userData[0] && userData[1] == other.userData[1] && currentProposedPlace == other.currentProposedPlace);
+
+
+
+  }
+
 
 }
 
@@ -67,4 +81,12 @@ class UserData {
       userName: json['userName'],
     );
   }
+
+  @override
+  bool operator ==(Object o) {
+    final UserData other = o as UserData;
+    return (other.userName == userName && other.response == response && other.userBio == userBio && other.id == id);
+  }
+
+
 }

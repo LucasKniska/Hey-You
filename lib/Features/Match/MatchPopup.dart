@@ -6,6 +6,7 @@ import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Data/repositories/connections/CurrentMatch.dart';
+import 'package:hey_you/Features/Match/subwidgets/MeetNowLater.dart';
 import 'package:hey_you/utils/constants/colors.dart';
 
 import '../../Data/repositories/connections/QuizQuestions.dart';
@@ -51,11 +52,17 @@ class _MatchPopupState extends State<MatchPopup> {
 
   String _formatDuration(Duration d) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    if(d < Duration.zero) {
+      // TODO API CALL REMOVE THE CURRENT MATCH OBJECT
+    }
+
     return "${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}";
   }
 
   @override
   Widget build(BuildContext context) {
+    // User variable is set to whichever the current user is not
     int user = 0;
     if (widget.current.userData[user].id == currentUser.id) {
       user = 1;
@@ -169,39 +176,8 @@ class _MatchPopupState extends State<MatchPopup> {
 
             const SizedBox(height: TSizes.spaceBtwItems / 2),
 
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: TColors.secondary,
-                    ),
-                    onPressed: () => Navigator.pop(context, 'meet_now'),
-                    child: Text(
-                      'Meet Now',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleMedium?.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: TColors.secondary,
-                    ),
-                    onPressed: () => Navigator.pop(context, 'meet_later'),
-                    child: Text(
-                      'Meet Later',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleMedium?.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            MeetNowLater()
+
           ],
         ),
       ),
