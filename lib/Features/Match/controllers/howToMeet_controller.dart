@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Data/repositories/connections/match_repository.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
+import 'package:hey_you/utils/constants/api_constants.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../Data/models/CurrentMatch.dart';
 
@@ -64,13 +68,39 @@ class HowToMeetController extends GetxController{
     return null;
   }
 
-  static void deleteCurrentMatch(CurrentMatch c){
-    print("Would delete current match");
+  static Future<void> deleteCurrentMatch(CurrentMatch c) async {
+
+    final url = Uri.parse(APIConstants.deleteMatch);
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'id': c.id
+      })
+    );
+
+    print(response);
+
   }
 
   // Call api to create a new match?
-  static void createNewMatch(CurrentMatch c){
-    print("Would create a new match with API");
+  static Future<void> updateMatchStatus(CurrentMatch c) async {
+    final url = Uri.parse(APIConstants.updateMatchStatus);
+
+    final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'id': c.id
+        })
+    );
+
+    print(response);
   }
 
 }

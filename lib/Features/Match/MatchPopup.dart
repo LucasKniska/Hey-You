@@ -7,12 +7,14 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Features/Match/ConnectedSplashScreen/ConnectedSplashScreen.dart';
+import 'package:hey_you/Features/Match/RejectedSplashScreen/RejectedSplashScreen.dart';
 import 'package:hey_you/Features/Match/controllers/howToMeet_controller.dart';
 import 'package:hey_you/Features/Match/subwidgets/MeetNowLater.dart';
 
 import '../../Data/models/QuizQuestions.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/sizes.dart';
+import 'RejectedSplashScreen/AnimatedXMark.dart';
 
 class MatchPopup extends StatefulWidget {
   final CurrentMatch current;
@@ -38,14 +40,12 @@ class _MatchPopupState extends State<MatchPopup> {
     super.initState();
     _remaining = widget.current.expirationTime.difference(DateTime.now());
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final newRemaining = widget.current.expirationTime.difference(
-        DateTime.now(),
-      );
-      if (newRemaining <= Duration.zero) {
-        // timer.cancel();
-        // if (mounted) Navigator.pop(context); => TODO Do something when timer hits zero
-        setState(() => _remaining = newRemaining);
-      } else {
+
+      if(context.mounted) {
+        final Duration newRemaining = widget.current.expirationTime.difference(
+          DateTime.now(),
+        );
+
         setState(() => _remaining = newRemaining);
       }
     });
@@ -69,10 +69,6 @@ class _MatchPopupState extends State<MatchPopup> {
 
   String _formatDuration(Duration d) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-
-    if(d < Duration.zero) {
-     // HowToMeetController.deleteCurrentMatch(widget.current);
-    }
 
     return "${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}";
   }
@@ -128,20 +124,35 @@ class _MatchPopupState extends State<MatchPopup> {
 
 
     // Checks if the match has been confirmed
+    if( (other.response == 'meet_now' || other.response == 'meet_later') && (current.userData[user].response == 'meet_now' || current.userData[user].response == 'meet_later')){
 
-      if( (other.response == 'meet_now' || other.response == 'meet_later') && (current.userData[user].response == 'meet_now' || current.userData[user].response == 'meet_later')){
+      // Change the data to create a new match
+      HowToMeetController.updateMatchStatus(current);
 
-        // Change the data to create a new match
-        HowToMeetController.createNewMatch(current);
+      // Loading screen type
+      return ConnectedSplashScreen(
+          onFinish: () => {
+            Navigator.pop(context)
+          }
+      );
 
-        // Loading screen type
-        return ConnectedSplashScreen(
-            onFinish: () => {
-              Navigator.pop(context)
-            }
-        );
+    }
 
-      }
+    // Checks if the timer has run out
+    if(_remaining < Duration.zero){
+      print("DELETING CURRENT MATCH");
+
+      HowToMeetController.deleteCurrentMatch(current);
+
+
+    // Loading screen type
+      return RejectedSplashScreen(
+        onFinish: () => {
+          // Change the data to create a new match
+          Navigator.pop(context)
+        },
+      );
+    }
 
 
     return Dialog(

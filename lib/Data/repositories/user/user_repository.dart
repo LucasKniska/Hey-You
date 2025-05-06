@@ -32,5 +32,15 @@ class UserRepository extends GetxController{
     }
   }
 
+  Future<void> updateUserField(UserModel user, String field, dynamic value) async {
+    try{
+      await _db.collection('Users').doc(user.id).update({
+        field: value
+      });
+    } catch (e) {
+      print('Could not update: $field');
+    }
+  }
+
 
 }

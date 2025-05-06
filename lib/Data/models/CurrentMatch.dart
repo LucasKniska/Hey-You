@@ -24,8 +24,8 @@ class CurrentMatch {
 
   factory CurrentMatch.fromJson(Map<String, dynamic> json) {
     return CurrentMatch(
-      createdOn: (json['createdOn'] as Timestamp).toDate(),
-      expirationTime: (json['expirationTime'] as Timestamp).toDate(),
+      createdOn: DateTime.parse(json['createdOn']),
+      expirationTime: DateTime.parse(json['expirationTime']),
       id: json['id'],
       currentProposedPlace: json['currentProposedPlace'],
       possiblePlaces: List<String>.from(json['possiblePlaces'] ?? []),
@@ -42,8 +42,8 @@ class CurrentMatch {
 
   Map<String, dynamic> toJson() {
     return {
-      'createdOn': Timestamp.fromDate(createdOn),
-      'expirationTime': Timestamp.fromDate(expirationTime),
+      'createdOn': createdOn.toString(),
+      'expirationTime': expirationTime.toString(),
       'id': id,
       'currentProposedPlace': currentProposedPlace,
       'possiblePlaces': possiblePlaces,
@@ -74,12 +74,14 @@ class UserData {
   String response;
   String userBio;
   String userName;
+  Map<String, double> location;
 
   UserData({
     required this.id,
     required this.response,
     required this.userBio,
     required this.userName,
+    required this.location
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) {
@@ -88,6 +90,7 @@ class UserData {
       response: json['response'],
       userBio: json['userBio'] ?? '',
       userName: json['userName'],
+      location: Map<String, double>.from(json['location']?.map((k, v) => MapEntry(k, (v as num).toDouble())) ?? {}),
     );
   }
 
@@ -97,6 +100,7 @@ class UserData {
       'response': response,
       'userBio': userBio,
       'userName': userName,
+      'location': location
     };
   }
 

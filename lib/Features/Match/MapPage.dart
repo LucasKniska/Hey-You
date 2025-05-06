@@ -81,9 +81,6 @@ class _MapPageState extends State<MapPage> {
           if (newRemaining <= Duration.zero) {
             t.cancel();
             matchTimer = null;
-            if (Get.isDialogOpen ?? false) {
-              Get.back(); // Close the dialog if still open
-            }
           }
         });
 
@@ -120,7 +117,7 @@ class _MapPageState extends State<MapPage> {
       body: Container(
         color: Colors.black12,
         alignment: Alignment.center,
-        child: const Text('Map Area'),
+        child: const Text('Waiting for new connections...'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openModificationSheet,

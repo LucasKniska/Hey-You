@@ -4,6 +4,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+import 'Common/location_services.dart';
 import 'Data/repositories/authentication/authentication_repository.dart';
 import 'app.dart';
 import 'firebase_options.dart';
@@ -22,6 +23,9 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).then(
       (FirebaseApp value) => Get.put(AuthenticationRepository()),
   );
+
+  Get.put(LocationController());
+
   runApp(const MyApp());
 }
 

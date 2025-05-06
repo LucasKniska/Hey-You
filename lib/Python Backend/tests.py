@@ -4,21 +4,15 @@ from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, firestore
 import math
-from models import *
+from models.models import *
 from helpers import *
+from main import *
 
 
-app = FastAPI()
-
-# Initialize Firebase
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
-db = firestore.client()
 
 def testCreateMatch():
     user1 = 'gmwlBqTibHhob4nD5LwYuHJKq8p2'
     user2 = 'XVPG8lYKGKOBddsh7FZznrD4EaT2'
-
 
     user1 = get_user_by_id(user1, db)
     user2 = get_user_by_id(user2, db)
@@ -28,4 +22,13 @@ def testCreateMatch():
     return match_id
 
 
-testCreateMatch()
+"""
+Tests making a match between two users
+"""
+print(testCreateMatch())
+
+
+"""
+Tests if updated the match based off of user responses works
+"""
+# print(accept_match('h4ZYOobcNXeDHg9Csy0W'))

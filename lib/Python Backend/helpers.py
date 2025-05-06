@@ -1,13 +1,18 @@
 import math
-from models import *
+from enums import *
+from models.models import *
 import constants as const
 from datetime import datetime
 from datetime import timedelta
 
+from models.models import *
+from models.user_model import User
+from models.new_match_model import Match, UserMatchData
+
 # === Helper Functions ===
 
 def get_quiz_answers(user_id, db):
-    doc = db.collection(const.Users).document(user_id).get()
+    doc = db.collection(const.USERS).document(user_id).get()
     return doc.to_dict().get('TemporaryModifications', [])
 
 def cosine_similarity(vec1, vec2):
@@ -17,7 +22,7 @@ def cosine_similarity(vec1, vec2):
     return dot / (norm1 * norm2 + 1e-8)
 
 def get_location(user_id, db):
-    doc = db.collection(const.Users).document(user_id).get()
+    doc = db.collection(const.USERS).document(user_id).get()
     return doc.to_dict().get('location', {'lat': 0, 'lon': 0})
 
 def midpoint(lat1, lon1, lat2, lon2):
@@ -37,7 +42,7 @@ def get_same_quiz_answers(userQuizAnswers, user2QuizAnswers):
     return sameAnswers
 
 def get_user_by_id(user_id, db):
-    doc = db.collection(const.Users).document(user_id).get()
+    doc = db.collection(const.USERS).document(user_id).get()
     if doc.exists:
         return User.from_json(doc.to_dict())
     else:
@@ -54,14 +59,16 @@ def get_match_object(user1, user2):
         id=user1.id,
         userName=user1.firstName + " " + user1.lastName[0] + ".",
         userBio=user1.biography,
-        response=UserResponse.NOT_SELECTED
+        response=UserResponse.NOT_SELECTED,
+        location=user1.location
     )
 
     userMatch2 = UserMatchData(
         id=user2.id,
         userName=user2.firstName + " " + user2.lastName[0] + ".",
         userBio=user2.biography,
-        response=UserResponse.NOT_SELECTED
+        response=UserResponse.NOT_SELECTED,
+        location=user2.location
     )
     
     match = Match(
@@ -71,25 +78,26 @@ def get_match_object(user1, user2):
         possibleTimes=[],
         possiblePlaces=[],
         currentProposedPlace=None,
-        userData=[userMatch1, userMatch2]
+        userData=[userMatch1, userMatch2],
+        status=MatchStatus.NEW
     )
 
     return match
 
 def initialize_new_match(user1, user2, match, db):
     # Add the match to the database
-    match_ref = db.collection(const.Matches).add(match.dict())
+    match_ref = db.collection(const.NEW_MATCHES).add(match.to_json())
 
     # Update the users with the new match ID
-    db.collection(const.Users).document(user1.id).update({
+    db.collection(const.USERS).document(user1.id).update({
         'CurrentMatch': match_ref[1].id
     })
 
-    db.collection(const.Users).document(user2.id).update({
+    db.collection(const.USERS).document(user2.id).update({
         'CurrentMatch': match_ref[1].id
     })
 
-    db.collection(const.Matches).document(match_ref[1].id).update({
+    db.collection(const.NEW_MATCHES).document(match_ref[1].id).update({
         'id': match_ref[1].id
     })
 

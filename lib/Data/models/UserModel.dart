@@ -37,7 +37,7 @@ class UserModel {
             .map((e) => new TemporaryModification.fromJson(e))
             .toList(),
         permanentModifications = (json['PermanentModifications'] as List).map((e) => e as String).toList(),
-        location = Map<String, dynamic>.from(json['Location'] as Map),
+        location = Map<String, double>.from(json['Location'] as Map),
         currentMatch = json['CurrentMatch'] as String,
         scheduledConnections = (json['ScheduledConnections'] as List).map((e) => e as String).toList(),
         previousConnections = (json['PreviousConnections'] as List).map((e) => e as String).toList(),
@@ -55,7 +55,7 @@ class UserModel {
   List<TemporaryModification> temporaryModifications; // Need to know modification and time it was created
 
   List<String> permanentModifications;
-  Map<String, dynamic> location;
+  Map<String, double> location;
 
   String currentMatch;
 
