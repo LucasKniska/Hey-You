@@ -69,5 +69,5 @@ class Match(BaseModel):
             possiblePlaces=[Geolocation.from_json(p) for p in data["possiblePlaces"]],
             meetingPlace=Geolocation.from_json(data["meetingPlace"]) if data.get("meetingPlace") else None,
             userData=[UserMatchData.from_json(u) for u in data["userData"]],
-            status=data.get("status")
+            status=data.get("status") if data.get("status") else MatchStatus.NEW
         )
