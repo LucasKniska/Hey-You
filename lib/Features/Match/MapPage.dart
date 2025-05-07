@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
+import 'package:hey_you/Features/Match/MeetNowPage.dart';
+import 'package:hey_you/utils/constants/colors.dart';
 import 'BottomSheet.dart';
 import 'MatchPopup.dart';
 
@@ -17,13 +20,16 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-
+  Timer? matchTimer;
+  CurrentMatch? current;
+  int? user;
 
   Future<CurrentMatch?> loadCurrentMatch(String matchId) async {
-    final doc = await FirebaseFirestore.instance
-        .collection('Matches')
-        .doc(matchId)
-        .get();
+    final doc =
+        await FirebaseFirestore.instance
+            .collection('Matches')
+            .doc(matchId)
+            .get();
 
     if (doc.exists) {
       CurrentMatch current = CurrentMatch.fromJson(doc.data()!);
@@ -34,8 +40,6 @@ class _MapPageState extends State<MapPage> {
     return null;
   }
 
-  Timer? matchTimer;
-
   Future<void> _openModificationSheet() async {
     await showModalBottomSheet(
       context: context,
@@ -44,9 +48,13 @@ class _MapPageState extends State<MapPage> {
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom, // fixes keyboard overlap
+            bottom:
+                MediaQuery.of(
+                  context,
+                ).viewInsets.bottom, // fixes keyboard overlap
           ),
-          child: const ModificationBottomSheet(), // No need to change your widget
+          child:
+              const ModificationBottomSheet(), // No need to change your widget
         );
       },
     );
@@ -56,68 +64,158 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Shows the popup if necessary
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser.id)
+        .snapshots()
+        .listen((snapshot) async {
+          final currentMatch = snapshot.data()?['CurrentMatch'];
+          if (currentMatch != null && currentMatch != '') {
+            // The item in current match that is showing up
+            CurrentMatch? currentMatchNow = await loadCurrentMatch(
+              currentMatch,
+            );
 
-    FirebaseFirestore.instance.collection('Users').doc(currentUser.id).snapshots().listen((snapshot) async {
+            if (currentMatchNow == current) return;
+            if (currentMatchNow == null) return;
 
-      final currentMatch = snapshot.data()?['CurrentMatch'];
-      if (currentMatch != null && currentMatch != '') {
+            setState(() {
+              current = currentMatchNow;
 
-        CurrentMatch? current = await loadCurrentMatch(currentMatch);
+              if(currentMatchNow.userData[0].id == currentUser.id) {
+                user = 0;
+              } else {
+                user = 1;
+              }
 
-        if(current == null) return;
+            });
 
-        int user = 0;
+            // Makes sure it is a new match possibility before showing it as a popup
+            if (currentMatchNow.status != 'new') return;
 
-        if(current.userData[user].id == currentUser.id) {
-          user = 1;
-        }
+            int userNum = 0;
 
-        final expiration = current.expirationTime;
-        final Rx<Duration> countdown = expiration.difference(DateTime.now()).obs;
-        matchTimer?.cancel(); // Cancel any existing timer
-        matchTimer = Timer.periodic(Duration(seconds: 1), (t) {
-          final newRemaining = expiration.difference(DateTime.now());
-          countdown.value = newRemaining;
-          if (newRemaining <= Duration.zero) {
-            t.cancel();
-            matchTimer = null;
+            if (currentMatchNow.userData[userNum].id == currentUser.id) {
+              userNum = 1;
+            }
+
+            final expiration = currentMatchNow.expirationTime;
+            final Rx<Duration> countdown =
+                expiration.difference(DateTime.now()).obs;
+            matchTimer?.cancel(); // Cancel any existing timer
+            matchTimer = Timer.periodic(Duration(seconds: 1), (t) {
+              final newRemaining = expiration.difference(DateTime.now());
+              countdown.value = newRemaining;
+              if (newRemaining <= Duration.zero) {
+                t.cancel();
+                matchTimer = null;
+              }
+            });
+
+            Get.snackbar(
+              'New Match!',
+              'You matched with ${currentMatchNow.userData[userNum].userName} Tap to view.',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.blue,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 8),
+              onTap: (snack) {
+                try {
+                  if (currentMatchNow.id != '') {
+                    Get.dialog(MatchPopup(current: currentMatchNow));
+                  }
+                } catch (e) {}
+              },
+            );
           }
         });
 
-        Get.snackbar(
-            'New Match!',
-            'You matched with ${current.userData[user].userName} Tap to view.',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.blue,
-            colorText: Colors.white,
-            duration: const Duration(seconds: 8),
-            onTap: (snack) {
-
-              try{
-                if(current.id != ''){
-                  Get.dialog(
-                    MatchPopup(
-                      current: current,
-                    ),
-                  );
-                }
-
-              } catch(e){}
-
-
-            }
-        );
-      }
-    });
-
-
-
-  return Scaffold(
+    return Scaffold(
       appBar: const TopBar(),
       body: Container(
         color: Colors.black12,
         alignment: Alignment.center,
-        child: const Text('Waiting for new connections...'),
+        padding: TSpacingStyle.normalPadding,
+        child: Column(
+          children: [
+            /// Box where new matches are going
+            if (current != null && user != null && current!.status == 'new') ...[
+              Text(
+                'New Connection!',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Material(
+                color: TColors.accent,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () {
+                    // Handle tap
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  highlightColor: Colors.white.withOpacity(0.2),
+                  splashColor: Colors.black.withOpacity(0.1),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black, width: 1),
+                    ),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        current!.userData[user!].userName,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Divider(thickness: 1, color: Colors.black12),
+            ],
+
+            /// Box where 'now' matches are going
+            if (current != null && user != null && current!.status == 'now') ...[
+              Text(
+                'Meet Up Now!',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Material(
+                color: TColors.accent,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () {
+                    Get.to(() => MeetingNowScreen(current: current!));
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  highlightColor: Colors.white.withOpacity(0.2),
+                  splashColor: Colors.black.withOpacity(0.1),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black, width: 1),
+                    ),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: Text(
+                        current!.userData[user!].userName,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Divider(thickness: 1, color: Colors.black12),
+            ],
+
+            // List where scheduled matches are currently
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openModificationSheet,

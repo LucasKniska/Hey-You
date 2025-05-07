@@ -10,6 +10,7 @@ class CurrentMatch {
   final List<String> related;
   final List<UserData> userData;
   final String? currentProposedPlace;
+  final String status;
 
   CurrentMatch({
     required this.createdOn,
@@ -19,6 +20,7 @@ class CurrentMatch {
     required this.possibleTimes,
     required this.related,
     required this.userData,
+    required this.status,
     this.currentProposedPlace
   });
 
@@ -35,8 +37,15 @@ class CurrentMatch {
       related: List<String>.from(json['related'] ?? []),
       userData: (json['userData'] as List? ?? [])
           .map((u) => UserData.fromJson(u))
-          .toList()
+          .toList(),
+      status: json['status']
     );
+  }
+
+  factory CurrentMatch.fromSame(CurrentMatch c){
+    return CurrentMatch(createdOn: c.createdOn, expirationTime: c.expirationTime, id: c.id,
+        possiblePlaces: c.possiblePlaces, possibleTimes: c.possibleTimes, related: c.related,
+        userData: c.userData, status: c.status);
   }
 
 
@@ -50,21 +59,20 @@ class CurrentMatch {
       'possibleTimes': possibleTimes.map((d) => Timestamp.fromDate(d)).toList(),
       'related': related,
       'userData': userData.map((u) => u.toJson()).toList(),
+      'status': status
     };
   }
 
-
   @override
   String toString() {
-    return '$createdOn, $related, $id, ${userData[0]}, ${userData[1]}';
+    return '$createdOn, $related, $id, ${userData[0]}, ${userData[1]}, $status';
   }
 
   @override
   bool operator ==(Object o) {
-
     final CurrentMatch other = o as CurrentMatch;
 
-    return (id == other.id && listEquals(possiblePlaces, other.possiblePlaces)
+    return (id == other.id && listEquals(possiblePlaces, other.possiblePlaces) && status == other.status
         && listEquals(possibleTimes, other.possibleTimes) && userData[0] == other.userData[0] && userData[1] == other.userData[1] && currentProposedPlace == other.currentProposedPlace);
   }
 }
@@ -113,7 +121,7 @@ class UserData {
   @override
   bool operator ==(Object o) {
     final UserData other = o as UserData;
-    return (other.userName == userName && other.response == response && other.userBio == userBio && other.id == id);
+    return (location['lat'] == other.location['lat'] && location['long'] == other.location['long'] && other.userName == userName && other.response == response && other.userBio == userBio && other.id == id);
   }
 
 

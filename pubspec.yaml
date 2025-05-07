@@ -14,13 +14,15 @@ dependencies:
     sdk: flutter
 
 
+
   # Icons
   iconsax_flutter: ^1.0.0
   cupertino_icons: ^1.0.8
 
-
   # Product Specific
   geolocator: ^14.0.0
+  flutter_map: ^6.0.1
+  latlong2: ^0.9.1
 
   # Utility Packages
   http: ^1.1.0
