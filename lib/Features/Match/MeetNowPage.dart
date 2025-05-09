@@ -1,80 +1,201 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:geocoding/geocoding.dart';
 
-import '../../Data/models/CurrentMatch.dart';
+import '../../Common/topbar.dart';
 
-class MeetingNowScreen extends StatelessWidget {
-  final CurrentMatch current;
+class MeetNowPage extends StatefulWidget {
+  final Map<String, dynamic> userLocation;
+  final Map<String, dynamic> otherUserLocation;
 
-  const MeetingNowScreen({super.key, required this.current});
+  const MeetNowPage({
+    Key? key,
+    required this.userLocation,
+    required this.otherUserLocation,
+  }) : super(key: key);
+
+  @override
+  State<MeetNowPage> createState() => _MeetNowPageState();
+}
+
+class _MeetNowPageState extends State<MeetNowPage> {
+  GoogleMapController? _controller;
+  Set<Polyline> _polylines = {};
+  Set<Marker> _markers = {};
+  int _distanceMeters = 0;
+  bool _loading = true;
+
+  String userAddress = '';
+  String otherUserAddress = '';
+
+  late final LatLng userLatLng = LatLng(
+    widget.userLocation['lat'],
+    widget.userLocation['long'],
+  );
+
+  late final LatLng otherUserLatLng = LatLng(
+    widget.otherUserLocation['lat'],
+    widget.otherUserLocation['long'],
+  );
 
   @override
   Widget build(BuildContext context) {
-
-    print(current);
-
-    final userLocations = current.userData
-        .map<LatLng>((user) => LatLng(user.location['lat']!, user.location['long']!))
-        .toList();
-
-    final List<Marker> markers = current.userData.map<Marker>((user) {
-      final lat = user.location['lat']!;
-      final long = user.location['long']!;
-      return Marker(
-        width: 40,
-        height: 40,
-        point: LatLng(lat, long),
-        child: const Icon(Icons.location_pin, color: Colors.red),
-      );
-    }).toList();
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Meeting Now!'),
-      ),
-      body: Column(
+      appBar: TopBar(backArrow: true,),
+      body: Stack(
         children: [
-          Expanded(
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter: userLocations[0],
-                initialZoom: 13.0,
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: ['a', 'b', 'c'],
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: userLatLng,
+              zoom: 14,
+            ),
+            onMapCreated: (controller) async {
+              _controller = controller;
+              await _loadEverything();
+            },
+            markers: _markers,
+            polylines: _polylines,
+            myLocationEnabled: true,
+          ),
+          if (_loading)
+            const Center(child: CircularProgressIndicator()),
+          if (!_loading)
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Card(
+                elevation: 5,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text("From: $userAddress"),
+                      Text("To: $otherUserAddress"),
+                      Text("Distance: ${(_distanceMeters / 1000).toStringAsFixed(2)} km"),
+                    ],
+                  ),
                 ),
-                MarkerLayer(markers: markers),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () async {
-                if (userLocations.length >= 2) {
-                  final origin = userLocations[0];
-                  final destination = userLocations[1];
-                  final url = Uri.parse(
-                    'https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&travelmode=driving',
-                  );
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Could not launch directions')),
-                    );
-                  }
-                }
-              },
-              child: const Text('Get Directions'),
-            ),
-          ),
+              ),
+            )
         ],
       ),
     );
   }
+
+  Future<void> _loadEverything() async {
+    setState(() => _loading = true);
+
+    // try {
+      // Get directions
+      final directions = await _getDirections();
+      final polylinePoints = directions['polyline'];
+      final distance = directions['distance'];
+
+      // Get addresses
+      final placemarks1 = await placemarkFromCoordinates(userLatLng.latitude, userLatLng.longitude);
+      final placemarks2 = await placemarkFromCoordinates(otherUserLatLng.latitude, otherUserLatLng.longitude);
+      final address1 = _formatPlacemark(placemarks1.first);
+      final address2 = _formatPlacemark(placemarks2.first);
+
+      // Set markers and polyline
+      setState(() {
+        _distanceMeters = distance;
+        userAddress = address1;
+        otherUserAddress = address2;
+
+        _polylines = {
+          Polyline(
+            polylineId: PolylineId('route'),
+            color: Colors.blue,
+            width: 6,
+            points: polylinePoints,
+          )
+        };
+
+        _markers = {
+          Marker(
+            markerId: MarkerId('user'),
+            position: userLatLng,
+            infoWindow: InfoWindow(title: "You", snippet: address1),
+          ),
+          Marker(
+            markerId: MarkerId('other'),
+            position: otherUserLatLng,
+            infoWindow: InfoWindow(title: "Other", snippet: address2),
+          )
+        };
+
+        _loading = false;
+      });
+
+      // Fit camera
+      final bounds = LatLngBounds(
+        southwest: LatLng(
+          userLatLng.latitude < otherUserLatLng.latitude ? userLatLng.latitude : otherUserLatLng.latitude,
+          userLatLng.longitude < otherUserLatLng.longitude ? userLatLng.longitude : otherUserLatLng.longitude,
+        ),
+        northeast: LatLng(
+          userLatLng.latitude > otherUserLatLng.latitude ? userLatLng.latitude : otherUserLatLng.latitude,
+          userLatLng.longitude > otherUserLatLng.longitude ? userLatLng.longitude : otherUserLatLng.longitude,
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 300)); // Wait to avoid “no frame”
+      _controller?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+    // } catch (e) {
+    //   print('Error in _loadEverything: $e');
+    //   print('Do something if it can not load');
+    //   if (mounted) setState(() => _loading = false);
+    // }
+  }
+
+  String _formatPlacemark(Placemark p) {
+    return '${p.street}, ${p.locality}';
+  }
+
+  Future<Map<String, dynamic>> _getDirections() async {
+    final response = await http.post(
+      Uri.parse('https://api.openrouteservice.org/v2/directions/foot-walking/geojson'),
+      headers: {
+        'Authorization': '5b3ce3597851110001cf62485e57c931c3c44434884dd6f55fcf479a',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "coordinates": [
+          [userLatLng.longitude, userLatLng.latitude],
+          [otherUserLatLng.longitude, otherUserLatLng.latitude],
+        ]
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Directions failed: ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+
+    final features = data['features'];
+    if (features == null || features.isEmpty) {
+      throw Exception('No features returned in GeoJSON response');
+    }
+
+    final geometry = features[0]['geometry'];
+    final coords = geometry['coordinates'] as List;
+
+    final polyline = coords
+        .map<LatLng>((c) => LatLng(c[1], c[0]))
+        .toList();
+
+    final distance = features[0]['properties']['segments'][0]['distance'];
+
+    return {
+      'polyline': polyline,
+      'distance': distance.toInt(),
+    };
+  }
+
 }

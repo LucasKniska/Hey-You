@@ -5,12 +5,23 @@ import 'package:flutter/material.dart';
 import '../utils/constants/colors.dart';
 
 class TopBar extends StatelessWidget implements PreferredSizeWidget {
-  const TopBar({super.key});
+
+  final bool backArrow;
+
+  const TopBar({super.key, this.backArrow=false});
+
+
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      automaticallyImplyLeading: false, // hides back arrow
+      automaticallyImplyLeading: false,
+      leading: backArrow
+          ? IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
+      )
+          : null,// hides back arrow
       title: Text(
         'Hey You',
         style: Theme.of(context).textTheme.headlineLarge?.copyWith(

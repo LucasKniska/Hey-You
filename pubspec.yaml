@@ -23,6 +23,8 @@ dependencies:
   geolocator: ^14.0.0
   flutter_map: ^6.0.1
   latlong2: ^0.9.1
+  geocoding: ^2.1.0
+  google_maps_flutter: ^2.5.0
 
   # Utility Packages
   http: ^1.1.0

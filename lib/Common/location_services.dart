@@ -75,15 +75,5 @@ class LocationController extends GetxController {
       'long': pos.longitude
     };
 
-    // Example: Firestore
-    // await FirebaseFirestore.instance.collection("Users").doc(userId).update({
-    //   "location": {"lat": pos.latitude, "lon": pos.longitude}
-    // });
-
-    // Or your own API
-    // await http.post(Uri.parse('https://your.api/location'), body: {
-    //   "lat": pos.latitude.toString(),
-    //   "lon": pos.longitude.toString(),
-    // });
   }
 }

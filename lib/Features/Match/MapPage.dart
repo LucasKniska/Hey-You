@@ -9,6 +9,7 @@ import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/Match/MeetNowPage.dart';
 import 'package:hey_you/utils/constants/colors.dart';
+import 'package:latlong2/latlong.dart';
 import 'BottomSheet.dart';
 import 'MatchPopup.dart';
 
@@ -132,7 +133,7 @@ class _MapPageState extends State<MapPage> {
         });
 
     return Scaffold(
-      appBar: const TopBar(),
+      appBar: const TopBar(backArrow: false,),
       body: Container(
         color: Colors.black12,
         alignment: Alignment.center,
@@ -188,7 +189,7 @@ class _MapPageState extends State<MapPage> {
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
                   onTap: () {
-                    Get.to(() => MeetingNowScreen(current: current!));
+                    Get.to(() => MeetNowPage(userLocation: current!.userData[0].location, otherUserLocation: current!.userData[1].location));
                   },
                   borderRadius: BorderRadius.circular(12),
                   highlightColor: Colors.white.withOpacity(0.2),
