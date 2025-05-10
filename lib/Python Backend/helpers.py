@@ -102,3 +102,9 @@ def initialize_new_match(user1, user2, match, db):
     })
 
     return match_ref[1].id
+
+# user1 and 2 are User Objects
+def create_new_match(user1, user2, db):
+    match = get_match_object(user1, user2)
+    match_id = initialize_new_match(user1, user2, match, db)
+    return match_id

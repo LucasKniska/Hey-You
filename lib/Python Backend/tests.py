@@ -25,8 +25,13 @@ def testCreateMatch():
 """
 Tests making a match between two users
 """
-print(testCreateMatch())
+matchId = testCreateMatch()
 
+""" 
+Tests if closing the match works
+"""
+match = IdRequest(id=matchId)
+print(close_match(match))
 
 """
 Tests if updated the match based off of user responses works

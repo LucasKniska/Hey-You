@@ -20,10 +20,10 @@ db = firestore.client()
 
 @app.post("/match-users")
 def match_users(request: SingleUserRequest):
+    # create_new_match(user1, user2, db)
     pass
 
 
-# Reject match made
 @app.post("/reject-match")
 def reject_match(match_id: IdRequest):
 
@@ -81,12 +81,34 @@ def accept_match(match_id: IdRequest):
     return {"status": "Match accepted", "match_id": match_id}
 
 
-"""
-1. Create a new match (After two users are analyzed to be connected)
-"""
+@app.post("/close-match")
+def close_match(match_id: IdRequest):
+    # Keeps a reference of the match document
+    match_ref = db.collection(const.NEW_MATCHES).document(match_id.id)
+    match_data = Match.from_json(match_ref.get().to_dict())
 
-# user1 and 2 are User Objects
-def create_new_match(user1, user2, db):
-    match = get_match_object(user1, user2)
-    match_id = initialize_new_match(user1, user2, match, db)
-    return match_id
+    if not match_data:
+        return {"error": "Match not found"}
+    
+    # Gets the users from the match
+    user1 = match_data.userData[0].id
+    user2 = match_data.userData[1].id
+
+    match_data.meetingPlace = match_data.userData[0].location
+    match_data.status = MatchStatus.COMPLETED
+
+    # Update the user documents to remove the match reference
+    user1_ref = db.collection(const.USERS).document(user1).update({
+        'CurrentMatch': None,
+        'PreviousConnections': firestore.ArrayUnion([match_id.id])
+    })
+    user2_ref = db.collection(const.USERS).document(user2).update({
+        'CurrentMatch': None,
+        'PreviousConnections': firestore.ArrayUnion([match_id.id])
+    })
+
+    # Move document to closed matches
+    db.collection(const.COMPLETED_MATCHES).document(match_id.id).set(match_data.to_json())
+    match_ref.delete()
+
+    return {"status": "Match closed", "match_id": match_id}

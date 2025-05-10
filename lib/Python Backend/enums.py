@@ -7,6 +7,7 @@ class MatchStatus(str, Enum):
     SCHEDULED = "scheduled"
     SCHEDULED_ACCEPTED = "scheduled_accepted"
     NOW = "now"
+    COMPLETED = "completed"
 
     def to_json(self) -> str:
         return self.value

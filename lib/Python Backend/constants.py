@@ -7,5 +7,4 @@ RELATED_INFO_MAX = 3 # The maximum number of related interests to show in the ma
 USERS = "Users"
 NEW_MATCHES = "Matches"
 REJECTED_MATCHES = "RejectedMatches"
-SCHEDULED_MATCHES = "ScheduledMatches"
-MATCH_NOW = "MatchNow"
+COMPLETED_MATCHES = "CompletedMatches"
