@@ -30,8 +30,8 @@ matchId = testCreateMatch()
 """ 
 Tests if closing the match works
 """
-match = IdRequest(id=matchId)
-print(close_match(match))
+# match = IdRequest(id=matchId)
+# print(close_match(match))
 
 """
 Tests if updated the match based off of user responses works

@@ -9,7 +9,7 @@ import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/Match/MeetNowPage.dart';
 import 'package:hey_you/utils/constants/colors.dart';
-import 'package:latlong2/latlong.dart';
+
 import 'BottomSheet.dart';
 import 'MatchPopup.dart';
 
@@ -25,19 +25,80 @@ class _MapPageState extends State<MapPage> {
   CurrentMatch? current;
   int? user;
 
+  late final StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _userMatchSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _userMatchSubscription = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(currentUser.id)
+        .snapshots()
+        .listen((snapshot) async {
+      if (!snapshot.exists || !mounted) return;
+
+      final currentMatchId = snapshot.data()?['CurrentMatch'];
+
+      if (currentMatchId == null || currentMatchId == '') return;
+
+      final CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
+
+      if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
+
+      setState(() {
+        print("UPDATING CURRENT IN: MAP PAGE");
+        current = currentMatchNow;
+        user = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
+      });
+
+      if (currentMatchNow.status != 'new') return;
+
+      final expiration = currentMatchNow.expirationTime;
+      final Rx<Duration> countdown = expiration.difference(DateTime.now()).obs;
+
+      matchTimer?.cancel();
+      matchTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+        final newRemaining = expiration.difference(DateTime.now());
+        countdown.value = newRemaining;
+        if (newRemaining <= Duration.zero) {
+          t.cancel();
+          matchTimer = null;
+        }
+      });
+
+      final int userNum = currentMatchNow.userData[0].id == currentUser.id ? 1 : 0;
+
+      Get.snackbar(
+        'New Match!',
+        'You matched with ${currentMatchNow.userData[userNum].userName} Tap to view.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.blue,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 8),
+        onTap: (snack) {
+          try {
+            if (currentMatchNow.id.isNotEmpty) {
+              Get.dialog(MatchPopup(current: currentMatchNow));
+            }
+          } catch (e) {}
+        },
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _userMatchSubscription.cancel();
+    matchTimer?.cancel();
+    super.dispose();
+  }
+
   Future<CurrentMatch?> loadCurrentMatch(String matchId) async {
-    final doc =
-        await FirebaseFirestore.instance
-            .collection('Matches')
-            .doc(matchId)
-            .get();
-
+    final doc = await FirebaseFirestore.instance.collection('Matches').doc(matchId).get();
     if (doc.exists) {
-      CurrentMatch current = CurrentMatch.fromJson(doc.data()!);
-
-      return current;
+      return CurrentMatch.fromJson(doc.data()!);
     }
-
     return null;
   }
 
@@ -49,13 +110,9 @@ class _MapPageState extends State<MapPage> {
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom:
-                MediaQuery.of(
-                  context,
-                ).viewInsets.bottom, // fixes keyboard overlap
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          child:
-              const ModificationBottomSheet(), // No need to change your widget
+          child: const ModificationBottomSheet(),
         );
       },
     );
@@ -65,82 +122,14 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Shows the popup if necessary
-    FirebaseFirestore.instance
-        .collection('Users')
-        .doc(currentUser.id)
-        .snapshots()
-        .listen((snapshot) async {
-          final currentMatch = snapshot.data()?['CurrentMatch'];
-          if (currentMatch != null && currentMatch != '') {
-            // The item in current match that is showing up
-            CurrentMatch? currentMatchNow = await loadCurrentMatch(
-              currentMatch,
-            );
-
-            if (currentMatchNow == current) return;
-            if (currentMatchNow == null) return;
-
-            setState(() {
-              current = currentMatchNow;
-
-              if(currentMatchNow.userData[0].id == currentUser.id) {
-                user = 0;
-              } else {
-                user = 1;
-              }
-
-            });
-
-            // Makes sure it is a new match possibility before showing it as a popup
-            if (currentMatchNow.status != 'new') return;
-
-            int userNum = 0;
-
-            if (currentMatchNow.userData[userNum].id == currentUser.id) {
-              userNum = 1;
-            }
-
-            final expiration = currentMatchNow.expirationTime;
-            final Rx<Duration> countdown =
-                expiration.difference(DateTime.now()).obs;
-            matchTimer?.cancel(); // Cancel any existing timer
-            matchTimer = Timer.periodic(Duration(seconds: 1), (t) {
-              final newRemaining = expiration.difference(DateTime.now());
-              countdown.value = newRemaining;
-              if (newRemaining <= Duration.zero) {
-                t.cancel();
-                matchTimer = null;
-              }
-            });
-
-            Get.snackbar(
-              'New Match!',
-              'You matched with ${currentMatchNow.userData[userNum].userName} Tap to view.',
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.blue,
-              colorText: Colors.white,
-              duration: const Duration(seconds: 8),
-              onTap: (snack) {
-                try {
-                  if (currentMatchNow.id != '') {
-                    Get.dialog(MatchPopup(current: currentMatchNow));
-                  }
-                } catch (e) {}
-              },
-            );
-          }
-        });
-
     return Scaffold(
-      appBar: const TopBar(backArrow: false,),
+      appBar: const TopBar(backArrow: false),
       body: Container(
         color: Colors.black12,
         alignment: Alignment.center,
         padding: TSpacingStyle.normalPadding,
         child: Column(
           children: [
-            /// Box where new matches are going
             if (current != null && user != null && current!.status == 'new') ...[
               Text(
                 'New Connection!',
@@ -152,7 +141,9 @@ class _MapPageState extends State<MapPage> {
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
                   onTap: () {
-                    // Handle tap
+                    if (current!.id.isNotEmpty) {
+                      Get.dialog(MatchPopup(current: current!));
+                    }
                   },
                   borderRadius: BorderRadius.circular(12),
                   highlightColor: Colors.white.withOpacity(0.2),
@@ -166,7 +157,7 @@ class _MapPageState extends State<MapPage> {
                     child: Align(
                       alignment: Alignment.topLeft,
                       child: Text(
-                        current!.userData[user!].userName,
+                        (user! == 1) ? current!.userData[0].userName : current!.userData[1].userName,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                     ),
@@ -176,8 +167,6 @@ class _MapPageState extends State<MapPage> {
               const SizedBox(height: 8),
               const Divider(thickness: 1, color: Colors.black12),
             ],
-
-            /// Box where 'now' matches are going
             if (current != null && user != null && current!.status == 'now') ...[
               Text(
                 'Meet Up Now!',
@@ -189,7 +178,11 @@ class _MapPageState extends State<MapPage> {
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
                   onTap: () {
-                    Get.to(() => MeetNowPage(userLocation: current!.userData[0].location, otherUserLocation: current!.userData[1].location));
+                    Get.to(() => MeetNowPage(
+                      current: current!,
+                      userLocation: current!.userData[0].location,
+                      otherUserLocation: current!.userData[1].location,
+                    ));
                   },
                   borderRadius: BorderRadius.circular(12),
                   highlightColor: Colors.white.withOpacity(0.2),
@@ -203,7 +196,7 @@ class _MapPageState extends State<MapPage> {
                     child: Align(
                       alignment: Alignment.topLeft,
                       child: Text(
-                        current!.userData[user!].userName,
+                        (user! == 1) ? current!.userData[0].userName : current!.userData[1].userName,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                     ),
@@ -213,8 +206,6 @@ class _MapPageState extends State<MapPage> {
               const SizedBox(height: 8),
               const Divider(thickness: 1, color: Colors.black12),
             ],
-
-            // List where scheduled matches are currently
           ],
         ),
       ),

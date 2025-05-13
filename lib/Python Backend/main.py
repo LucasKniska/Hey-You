@@ -112,3 +112,35 @@ def close_match(match_id: IdRequest):
     match_ref.delete()
 
     return {"status": "Match closed", "match_id": match_id}
+
+
+@app.post("/update-location")
+def update_location(user_id: IdRequest):
+    # Keeps a reference of the user document
+    doc = db.collection(const.USERS).document(user_id.id).get()
+    if doc.exists:
+        user = User.from_json(doc.to_dict())
+    else:
+        return {"error": "User not found"}
+
+            
+    # Keeps a reference of the match document
+    match_ref = db.collection(const.NEW_MATCHES).document(user.currentMatch)
+
+    match_data = Match.from_json(match_ref.get().to_dict())
+    if not match_data:
+        return {"error": "Match not found"}
+    
+    if(match_data.userData[0].id == user_id.id):
+        match_data.userData[0].location = user.location
+    else:
+        match_data.userData[1].location = user.location
+
+    match_ref.update({
+        'userData': [
+            match_data.userData[0].to_json(),
+            match_data.userData[1].to_json()
+        ]
+    })
+
+    return {"status": "Location updated", "user_id": user_id}

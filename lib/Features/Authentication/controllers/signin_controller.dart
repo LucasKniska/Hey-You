@@ -50,7 +50,7 @@ class SignInController extends GetxController {
       if(!signinFormKey.currentState!.validate()) return;
 
       // Loading screen
-      Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
+      Get.to(() => const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
       // TODO Do internet check
 

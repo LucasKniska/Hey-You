@@ -88,6 +88,10 @@ def initialize_new_match(user1, user2, match, db):
     # Add the match to the database
     match_ref = db.collection(const.NEW_MATCHES).add(match.to_json())
 
+    db.collection(const.NEW_MATCHES).document(match_ref[1].id).update({
+        'id': match_ref[1].id
+    })
+
     # Update the users with the new match ID
     db.collection(const.USERS).document(user1.id).update({
         'CurrentMatch': match_ref[1].id
@@ -95,10 +99,6 @@ def initialize_new_match(user1, user2, match, db):
 
     db.collection(const.USERS).document(user2.id).update({
         'CurrentMatch': match_ref[1].id
-    })
-
-    db.collection(const.NEW_MATCHES).document(match_ref[1].id).update({
-        'id': match_ref[1].id
     })
 
     return match_ref[1].id
