@@ -17,6 +17,10 @@ class MatchMoveRequest(BaseModel):
 class IdRequest(BaseModel):
     id: str
 
+class UserMatchRequest(BaseModel):
+    id: str
+    user_id: str
+
 class Geolocation(BaseModel):
     lat: float
     long: float

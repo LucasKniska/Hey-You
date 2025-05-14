@@ -2,13 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hey_you/utils/constants/connection_parameters.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
 
+import '../../Common/navigation_menu.dart';
 import '../../Common/topbar.dart';
 import '../../Data/models/CurrentMatch.dart';
 import '../../Data/repositories/user/user_repository.dart';
+import '../../utils/constants/sizes.dart';
+import '../ViewConnections/ContactsPage.dart';
+import 'MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
+import 'controllers/meetNow_controller.dart';
 
 class MeetNowPage extends StatefulWidget {
   final Map<String, dynamic> userLocation;
@@ -27,11 +35,16 @@ class MeetNowPage extends StatefulWidget {
 }
 
 class _MeetNowPageState extends State<MeetNowPage> {
+
+  final MeetNowController _pageController = MeetNowController();
+
   GoogleMapController? _controller;
   Set<Polyline> _polylines = {};
   Set<Marker> _markers = {};
   int _distanceMeters = 0;
   bool _loading = true;
+
+  bool _closePage = false;
 
   String userAddress = '';
   String otherUserAddress = '';
@@ -57,7 +70,12 @@ class _MeetNowPageState extends State<MeetNowPage> {
         .doc(widget.current.id)
         .snapshots()
         .listen((snapshot) async {
-      if (!snapshot.exists || !mounted) return;
+      if (!snapshot.exists || !mounted) {
+        setState(() {
+          _closePage = true;
+        });
+        return;
+      };
 
       final current = CurrentMatch.fromJson(snapshot.data()!);
 
@@ -84,8 +102,6 @@ class _MeetNowPageState extends State<MeetNowPage> {
         );
       }
 
-      if (!mounted) return;
-
       if (userLatLng != newUserLatLng || otherUserLatLng != newOtherUserLatLng) {
         setState(() {
           userLatLng = newUserLatLng;
@@ -105,6 +121,20 @@ class _MeetNowPageState extends State<MeetNowPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    if(_closePage){
+
+      if(_pageController.connected){
+        return ConnectedCircleSplashScreen(
+          onFinish: () {
+            Get.back();
+          },
+        );
+      } else {
+        Get.back();
+      }
+    }
+
     return Scaffold(
       appBar: TopBar(backArrow: true),
       body: Stack(
@@ -136,14 +166,34 @@ class _MeetNowPageState extends State<MeetNowPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // ignore: prefer_single_quotes
                       Text("From: $userAddress"),
-                      Text("To: $otherUserAddress"),
-                      Text("Distance: ${(_distanceMeters / 1000).toStringAsFixed(2)} km"),
+                      Text('To: $otherUserAddress'),
+                      Text('Distance: ${(_distanceMeters / 1000).toStringAsFixed(2)} km'),
+
+                      (_distanceMeters < TConnectionParameters.distanceToConnection) ?
+
+                        Column(
+                          children: [
+                            const SizedBox(height: TSizes.spaceBtwItems), // spacing before button
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _pageController.confirmMeeting();
+                                },
+                                child: const Text('Connection Achieved?'),
+                              ),
+                            ),
+                          ],
+                        ) : SizedBox.shrink(),
                     ],
                   ),
                 ),
               ),
             ),
+
         ],
       ),
     );
@@ -183,7 +233,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
         Marker(
           markerId: const MarkerId('other'),
           position: otherUserLatLng,
-          infoWindow: InfoWindow(title: "Other", snippet: address2),
+          infoWindow: InfoWindow(title: 'Other', snippet: address2),
         )
       };
 
@@ -217,7 +267,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        "coordinates": [
+        'coordinates': [
           [userLatLng.longitude, userLatLng.latitude],
           [otherUserLatLng.longitude, otherUserLatLng.latitude],
         ]

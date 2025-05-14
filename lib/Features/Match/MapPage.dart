@@ -11,6 +11,7 @@ import 'package:hey_you/Features/Match/MeetNowPage.dart';
 import 'package:hey_you/utils/constants/colors.dart';
 
 import 'BottomSheet.dart';
+import 'MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
 import 'MatchPopup.dart';
 
 class MapPage extends StatefulWidget {
@@ -36,18 +37,24 @@ class _MapPageState extends State<MapPage> {
         .doc(currentUser.id)
         .snapshots()
         .listen((snapshot) async {
+
       if (!snapshot.exists || !mounted) return;
 
       final currentMatchId = snapshot.data()?['CurrentMatch'];
 
-      if (currentMatchId == null || currentMatchId == '') return;
+      if (currentMatchId == null || currentMatchId == '') {
+        setState(() {
+          current = null;
+        });
+
+        return;
+      };
 
       final CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
 
       if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
 
       setState(() {
-        print("UPDATING CURRENT IN: MAP PAGE");
         current = currentMatchNow;
         user = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
       });
@@ -122,6 +129,8 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       appBar: const TopBar(backArrow: false),
       body: Container(
