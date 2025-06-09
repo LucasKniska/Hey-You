@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Common/topbar.dart';
+import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
 import 'package:hey_you/Features/EditProfile/profile_controller.dart';
 import 'package:hey_you/Features/PersonalityQuiz/PersonalityQuiz.dart';
 import 'package:hey_you/utils/constants/text_string.dart';
@@ -23,6 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
 
     final controller = Get.put(ProfileController());
+    final signOutController = Get.put(AuthenticationRepository());
 
     return Scaffold(
       appBar: TopBar(),
@@ -138,6 +140,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   )
                 ],
               ),
+
+
+              SizedBox(height: TSizes.spaceBtwSections),
+
+              SizedBox(
+                width: double.infinity,
+                  child: ElevatedButton.icon(
+                  icon: Icon(Iconsax.logout),
+                  label: Text("Sign Out"),
+                  onPressed: () => signOutController.signOut(),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                )
+              )
+
+
             ],
           ),
         ),

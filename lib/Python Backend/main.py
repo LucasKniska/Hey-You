@@ -23,7 +23,6 @@ def match_users(request: SingleUserRequest):
     # create_new_match(user1, user2, db)
     pass
 
-
 @app.post("/reject-match")
 def reject_match(match_id: IdRequest):
 
@@ -53,7 +52,6 @@ def reject_match(match_id: IdRequest):
 
     return {"status": "Match rejected", "match_id": match_id}
 
-
 @app.post("/accept-match")
 def accept_match(match_id: IdRequest):
     # Keeps a reference of the match document
@@ -79,7 +77,6 @@ def accept_match(match_id: IdRequest):
     })
 
     return {"status": "Match accepted", "match_id": match_id}
-
 
 @app.post("/complete-match")
 def complete_match(match_id: UserMatchRequest):

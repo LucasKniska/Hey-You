@@ -8,8 +8,12 @@ import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/Match/MeetNowPage.dart';
+import 'package:hey_you/Features/Match/scheduledMeetUps.dart';
 import 'package:hey_you/utils/constants/colors.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
+import '../../utils/constants/sizes.dart';
+import '../../utils/constants/text_string.dart';
 import 'BottomSheet.dart';
 import 'MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
 import 'MatchPopup.dart';
@@ -215,6 +219,13 @@ class _MapPageState extends State<MapPage> {
               const SizedBox(height: 8),
               const Divider(thickness: 1, color: Colors.black12),
             ],
+
+            /// Scheduled Meet Ups Section
+            sectionTitle(Iconsax.clock, TTexts.scheduledMeetUps),
+            SizedBox(height: TSizes.spaceBtwItems),
+
+            ScheduledConnections(),
+
           ],
         ),
       ),
@@ -226,4 +237,26 @@ class _MapPageState extends State<MapPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+}
+
+
+Widget sectionTitle(IconData icon, String title) {
+  return Container(
+    padding: EdgeInsets.symmetric(vertical: 8),
+    decoration: BoxDecoration(
+      color: TColors.accent,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        SizedBox(width: 10),
+        Icon(icon, color: Colors.black),
+        SizedBox(width: 10),
+        Text(
+          title,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ],
+    ),
+  );
 }

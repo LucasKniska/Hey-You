@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Features/ViewConnections/previousConnections.dart';
-import 'package:hey_you/Features/ViewConnections/scheduledMeetUps.dart';
+import 'package:hey_you/Features/Match/scheduledMeetUps.dart';
 import 'package:hey_you/utils/constants/sizes.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
@@ -47,14 +47,6 @@ class ContactsPage extends StatelessWidget {
             ),
 
             SizedBox(height: TSizes.spaceBtwSections),
-
-            /// Scheduled Meet Ups Section
-            sectionTitle(Iconsax.clock, TTexts.scheduledMeetUps),
-            SizedBox(height: TSizes.spaceBtwItems),
-
-            ScheduledConnections(),
-
-
 
             /// Previous Connections Sections
             sectionTitle(Iconsax.personalcard, TTexts.previousConnections),

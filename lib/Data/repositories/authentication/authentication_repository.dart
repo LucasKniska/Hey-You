@@ -7,6 +7,7 @@ import 'package:get_storage/get_storage.dart';
 
 import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
+import '../../../utils/theme/snackbars.dart';
 
 class AuthenticationRepository extends GetxController{
   static AuthenticationRepository get instance => Get.find();
@@ -45,6 +46,15 @@ class AuthenticationRepository extends GetxController{
 
     } catch (e) {
       throw 'Something went wrong. Please try again';
+    }
+  }
+
+  Future<void> signOut() async {
+    try{
+      await FirebaseAuth.instance.signOut();
+      Get.to(() => LoginScreen());
+    } catch (e) {
+      TSnackBars.errorSnackBar(title: 'There has been an error signing out of your account');
     }
   }
 
