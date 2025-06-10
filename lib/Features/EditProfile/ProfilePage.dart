@@ -69,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
               SizedBox(height: TSizes.spaceBtwItems),
 
-              /// Biography
+              /// Biography Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -92,10 +92,31 @@ class _ProfilePageState extends State<ProfilePage> {
                   decoration: InputDecoration(
                     hintText: TTexts.publicBioHint,
                     contentPadding: const EdgeInsets.all(12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    counterText: (!controller.editBiography.value) ? '' : null,
 
+                    // Default border
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+
+                    // 👇 Conditional enabled border
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: !controller.editBiography.value ? Colors.black : Colors.grey,
+                      ),
+                    ),
+
+                    // 👇 Conditional focused border
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: !controller.editBiography.value ? Colors.black : Colors.grey,
+                        width: 2,
+                      ),
+                    ),
                   ),
-                ),
+                )
               ),
 
               SizedBox(height: TSizes.spaceBtwSections),
@@ -103,7 +124,6 @@ class _ProfilePageState extends State<ProfilePage> {
               /// Active Search Modifications
               Text('Active Search Modifications', style: Theme.of(context).textTheme.headlineSmall),
               SizedBox(height: TSizes.spaceBtwItems),
-
 
 
               Text((currentUser.temporaryModifications.isEmpty) ? 'Create New Daily Modifications in Map View' : 'Daily Modifications', style: Theme.of(context).textTheme.bodyLarge),

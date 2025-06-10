@@ -3,6 +3,7 @@ import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Data/TemporaryModifications.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/utils/constants/sizes.dart';
+import 'package:hey_you/utils/theme/snackbars.dart';
 
 class ModificationBottomSheet extends StatefulWidget {
   const ModificationBottomSheet({super.key});
@@ -21,9 +22,21 @@ class _ModificationBottomSheetState extends State<ModificationBottomSheet> {
     if (text.isNotEmpty) {
       setState(() {
         if (!_isPermanent) {
-          currentUser.temporaryModifications.add(TemporaryModification(start: DateTime.now(), modification: text));
+
+          if(currentUser.temporaryModifications.length < 5) {
+            currentUser.temporaryModifications.add(TemporaryModification(start: DateTime.now(), modification: text));
+          } else {
+            TSnackBars.errorSnackBar(title: 'Can only have 5 temporary modifications.');
+          }
+
         } else {
-          currentUser.permanentModifications.add(text);
+
+          if(currentUser.permanentModifications.length < 5){
+            currentUser.permanentModifications.add(text);
+          } else{
+            TSnackBars.errorSnackBar(title: 'Can only have 5 permanent modifications.');
+          }
+
         }
         _controller.clear();
       });
@@ -74,7 +87,7 @@ class _ModificationBottomSheetState extends State<ModificationBottomSheet> {
                   child: TextField(
                     controller: _controller,
                     focusNode: _focusNode,
-                    maxLength: 50, // Set maximum characters
+                    maxLength: 40, // Set maximum characters
                     buildCounter: (BuildContext context, {int? currentLength, int? maxLength, bool? isFocused}) {
                       if (isFocused ?? false) {
                         return Text(
@@ -115,6 +128,8 @@ class _ModificationBottomSheetState extends State<ModificationBottomSheet> {
               ],
             ),
             const SizedBox(height: 20),
+
+            /// Temporary Modifications Section
             if (currentUser.temporaryModifications.isNotEmpty) ...[
               const Text(
                 'Temporary Modifications',
@@ -130,8 +145,11 @@ class _ModificationBottomSheetState extends State<ModificationBottomSheet> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 20),
             ],
+
+            const SizedBox(height: 20),
+
+            /// Permanent Modifications Section
             if (currentUser.permanentModifications.isNotEmpty) ...[
               const Text(
                 'Permanent Modifications',

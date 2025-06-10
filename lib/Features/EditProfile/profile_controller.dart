@@ -17,6 +17,7 @@ class ProfileController extends GetxController{
 
   @override
   void onInit() {
+    super.onInit();
     // Set biography value
     try{
       biography.text = currentUser.biography;
@@ -26,8 +27,13 @@ class ProfileController extends GetxController{
   }
 
   void saveBiography(){
-    if(editBiography.value){
+    if(!editBiography.value){
       currentUser.biography = biography.text;
+
+      final user = Get.put(UserRepository());
+
+      user.updateUserField(currentUser, 'Biography', currentUser.biography);
+
     }
   }
 

@@ -1,4 +1,5 @@
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -66,8 +67,6 @@ class SignInController extends GetxController {
       Get.put(UserRepository());
 
       currentUser = await UserRepository.instance.getUserById(userCredentials.user!.uid);
-
-      TSnackBars.successSnackBar(title: 'You have successfully signed in!', message: 'Create even more connections!');
 
       Get.offAll(() => const NavigationMenu());
 
