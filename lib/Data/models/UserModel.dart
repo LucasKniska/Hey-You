@@ -38,7 +38,7 @@ class UserModel {
             .toList(),
         permanentModifications = (json['PermanentModifications'] as List).map((e) => e as String).toList(),
         location = Map<String, double>.from(json['Location'] as Map),
-        currentMatch = json['CurrentMatch'] as String,
+        currentMatch = json['CurrentMatch'] ?? '',
         scheduledConnections = (json['ScheduledConnections'] as List).map((e) => e as String).toList(),
         previousConnections = (json['PreviousConnections'] as List).map((e) => e as String).toList(),
         totalConnections = json['TotalConnections'] as int;

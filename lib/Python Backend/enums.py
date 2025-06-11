@@ -23,6 +23,7 @@ class UserResponse(str, Enum):
     MEET_LATER_ACCEPTED = "meet_later_accepted"
     REJECT = "reject"
     NOT_SELECTED = "not_selected"
+    COMPLETED = "completed"
 
     def to_json(self) -> str:
         return self.value

@@ -15,7 +15,7 @@ class User(BaseModel):
     permanentModifications: List[str]
     location: Geolocation
     currentMatch: str
-    previousConnections: List[PreviousConnection]
+    previousConnections: List[str]
     scheduledConnections: List[str]
 
     @classmethod
@@ -35,16 +35,8 @@ class User(BaseModel):
                 for tm in data.get("TemporaryModifications", [])
             ],
             permanentModifications=data.get("PermanentModifications", []),
-            location=Geolocation.from_json(data.get('location', {})),
+            location=Geolocation.from_json(data.get('Location', {})),
             currentMatch=data.get("CurrentMatch") or "",
-            previousConnections=[
-                PreviousConnection(
-                    userId=pc["serId"],
-                    related=pc["related"],
-                    connectionTime=datetime.fromisoformat(pc["connectionTime"]),
-                    connectionPlace=Geolocation(**pc["connectionPlace"])
-                )
-                for pc in data.get("PreviousConnections", [])
-            ],
+            previousConnections=data.get("PreviousConnections", []),
             scheduledConnections=data.get("ScheduledConnections", [])
         )

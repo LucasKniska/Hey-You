@@ -1,6 +1,10 @@
 
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:hey_you/utils/constants/api_constants.dart';
+import 'package:http/http.dart' as http;
 
 import '../../models/UserModel.dart';
 
@@ -28,6 +32,7 @@ class UserRepository extends GetxController{
       return UserModel.fromJson(user.data()!);
 
     } catch (e) {
+      print(e);
       throw 'Please try again.';
     }
   }
@@ -40,6 +45,26 @@ class UserRepository extends GetxController{
     } catch (e) {
       print('Could not update: $field');
     }
+  }
+
+  Future<void> updateCurrentMatchField(UserModel user) async {
+
+    // Do nothing if there is no current match
+    if(user.currentMatch == '') return;
+
+    final url = Uri.parse(APIConstants.updateMatchLocation);
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'id': user.id
+      })
+    );
+
+    print(response);
   }
 
 

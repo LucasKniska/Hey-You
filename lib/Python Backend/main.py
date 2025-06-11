@@ -20,7 +20,6 @@ def match_users(request: SingleUserRequest):
     # create_new_match(user1, user2, db)
     pass
 
-
 @app.post("/reject-match")
 def reject_match(match_id: IdRequest):
 
@@ -50,7 +49,6 @@ def reject_match(match_id: IdRequest):
 
     return {"status": "Match rejected", "match_id": match_id}
 
-
 @app.post("/accept-match")
 def accept_match(match_id: IdRequest):
     # Keeps a reference of the match document
@@ -77,22 +75,40 @@ def accept_match(match_id: IdRequest):
 
     return {"status": "Match accepted", "match_id": match_id}
 
+@app.post("/complete-match")
+def complete_match(match_id: UserMatchRequest):
+    # Check if other user is already completed
+    # If it is, call close match
 
-@app.post("/close-match")
-def close_match(match_id: IdRequest):
     # Keeps a reference of the match document
     match_ref = db.collection(const.NEW_MATCHES).document(match_id.id)
     match_data = Match.from_json(match_ref.get().to_dict())
 
-    if not match_data:
-        return {"error": "Match not found"}
+    if match_data.userData[0].id == match_id.user_id:
+        match_data.userData[0].response = UserResponse.COMPLETED
+    else:
+        match_data.userData[1].response = UserResponse.COMPLETED
+
+    # Check if both users have completed the match
+    if(match_data.userData[0].response != UserResponse.COMPLETED or match_data.userData[1].response != UserResponse.COMPLETED):        
+        # updated this users response
+        match_ref.update({
+            'userData': [
+                match_data.userData[0].to_json(),
+                match_data.userData[1].to_json()
+            ]
+        })
+        
+        return {"status": "Match not completed by both users", "match_id": match_id.id}
     
+    # Both users have completed the match and have made a connection
+    match_data.meetingPlace = match_data.userData[0].location
+
+    match_data.status = MatchStatus.COMPLETED
+
     # Gets the users from the match
     user1 = match_data.userData[0].id
     user2 = match_data.userData[1].id
-
-    match_data.meetingPlace = match_data.userData[0].location
-    match_data.status = MatchStatus.COMPLETED
 
     # Update the user documents to remove the match reference
     user1_ref = db.collection(const.USERS).document(user1).update({
@@ -109,3 +125,34 @@ def close_match(match_id: IdRequest):
     match_ref.delete()
 
     return {"status": "Match closed", "match_id": match_id}
+
+@app.post("/update-location")
+def update_location(user_id: IdRequest):
+    # Keeps a reference of the user document
+    doc = db.collection(const.USERS).document(user_id.id).get()
+    if doc.exists:
+        user = User.from_json(doc.to_dict())
+    else:
+        return {"error": "User not found"}
+
+            
+    # Keeps a reference of the match document
+    match_ref = db.collection(const.NEW_MATCHES).document(user.currentMatch)
+
+    match_data = Match.from_json(match_ref.get().to_dict())
+    if not match_data:
+        return {"error": "Match not found"}
+    
+    if(match_data.userData[0].id == user_id.id):
+        match_data.userData[0].location = user.location
+    else:
+        match_data.userData[1].location = user.location
+
+    match_ref.update({
+        'userData': [
+            match_data.userData[0].to_json(),
+            match_data.userData[1].to_json()
+        ]
+    })
+
+    return {"status": "Location updated", "user_id": user_id}

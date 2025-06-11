@@ -1,12 +1,16 @@
 
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+import '../../../Common/navigation_menu.dart';
 import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
+import '../../../utils/theme/snackbars.dart';
+import '../user/user_repository.dart';
 
 class AuthenticationRepository extends GetxController{
   static AuthenticationRepository get instance => Get.find();
@@ -24,8 +28,19 @@ class AuthenticationRepository extends GetxController{
   screenRedirect() async {
     // Local Storage
     deviceStorage.writeIfNull('isFirstTime', true);
-    deviceStorage.read('isFirstTime') != true ? Get.offAll(() => const LoginScreen()) : Get.offAll(const OnBoardingScreen());
 
+    if (!deviceStorage.read('isFirstTime')) {
+
+      if(FirebaseAuth.instance.currentUser != null) {
+        Get.put(UserRepository());
+        currentUser = await UserRepository.instance.getUserById(FirebaseAuth.instance.currentUser!.uid);
+        Get.offAll(() => const NavigationMenu());
+      } else {
+        Get.offAll(() => const LoginScreen());
+      }
+    } else {
+      Get.offAll(const OnBoardingScreen());
+    }
   }
 
 
@@ -45,6 +60,15 @@ class AuthenticationRepository extends GetxController{
 
     } catch (e) {
       throw 'Something went wrong. Please try again';
+    }
+  }
+
+  Future<void> signOut() async {
+    try{
+      await FirebaseAuth.instance.signOut();
+      Get.to(() => LoginScreen());
+    } catch (e) {
+      TSnackBars.errorSnackBar(title: 'There has been an error signing out of your account');
     }
   }
 

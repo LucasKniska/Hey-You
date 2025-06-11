@@ -19,7 +19,6 @@ class LoginScreen extends StatelessWidget {
 
     final controller = Get.put(SignInController());
 
-
     return Scaffold(
       body: SingleChildScrollView(
         child: ConstrainedBox(
