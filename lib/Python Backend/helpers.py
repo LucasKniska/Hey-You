@@ -15,18 +15,9 @@ def get_quiz_answers(user_id, db):
     doc = db.collection(const.USERS).document(user_id).get()
     return doc.to_dict().get('TemporaryModifications', [])
 
-def cosine_similarity(vec1, vec2):
-    dot = sum(x * y for x, y in zip(vec1, vec2))
-    norm1 = math.sqrt(sum(x ** 2 for x in vec1))
-    norm2 = math.sqrt(sum(x ** 2 for x in vec2))
-    return dot / (norm1 * norm2 + 1e-8)
-
 def get_location(user_id, db):
     doc = db.collection(const.USERS).document(user_id).get()
     return doc.to_dict().get('location', {'lat': 0, 'lon': 0})
-
-def midpoint(lat1, lon1, lat2, lon2):
-    return {'lat': (lat1 + lat2) / 2, 'lon': (lon1 + lon2) / 2}
 
 def get_same_quiz_answers(userQuizAnswers, user2QuizAnswers):
     sameAnswers = []
