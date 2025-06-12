@@ -134,6 +134,8 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
 
+    print(user);
+    print(current);
 
     return Scaffold(
       appBar: const TopBar(backArrow: false),

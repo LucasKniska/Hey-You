@@ -21,6 +21,10 @@ class UserMatchRequest(BaseModel):
     id: str
     user_id: str
 
+class LocationUpdateRequest(BaseModel):
+    user_id: str
+    geolocation: 'Geolocation'
+
 class Geolocation(BaseModel):
     lat: float
     long: float

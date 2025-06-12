@@ -114,11 +114,11 @@ def complete_match(match_id: UserMatchRequest):
     user2 = match_data.userData[1].id
 
     # Update the user documents to remove the match reference
-    user1_ref = db.collection(const.USERS).document(user1).update({
+    db.collection(const.USERS).document(user1).update({
         'CurrentMatch': None,
         'PreviousConnections': firestore.ArrayUnion([match_id.id])
     })
-    user2_ref = db.collection(const.USERS).document(user2).update({
+    db.collection(const.USERS).document(user2).update({
         'CurrentMatch': None,
         'PreviousConnections': firestore.ArrayUnion([match_id.id])
     })
@@ -130,26 +130,36 @@ def complete_match(match_id: UserMatchRequest):
     return {"status": "Match closed", "match_id": match_id}
 
 @app.post("/update-location")
-def update_location(user_id: IdRequest):
+def update_location(request: LocationUpdateRequest):
+    
     # Keeps a reference of the user document
-    doc = db.collection(const.USERS).document(user_id.id).get()
-    if doc.exists:
-        user = User.from_json(doc.to_dict())
+    user_ref = db.collection(const.USERS).document(request.user_id)
+    if user_ref.get().exists:
+        user = User.from_json(user_ref.get().to_dict())
     else:
         return {"error": "User not found"}
 
-            
+    # updates the user location
+    user_ref.update({
+        'Location': request.geolocation.to_json()
+    })
+
+    # Checks if the user has a current match
+    if not user.currentMatch:
+        return {"status": "No current match to update location"}
+
     # Keeps a reference of the match document
     match_ref = db.collection(const.NEW_MATCHES).document(user.currentMatch)
 
     match_data = Match.from_json(match_ref.get().to_dict())
     if not match_data:
-        return {"error": "Match not found"}
-    
-    if(match_data.userData[0].id == user_id.id):
-        match_data.userData[0].location = user.location
+        return {"error": "No match found"}
+
+    # Update the user's location in the match if it exists    
+    if(match_data.userData[0].id == request.user_id):
+        match_data.userData[0].location = request.geolocation
     else:
-        match_data.userData[1].location = user.location
+        match_data.userData[1].location = request.geolocation
 
     match_ref.update({
         'userData': [
@@ -158,4 +168,4 @@ def update_location(user_id: IdRequest):
         ]
     })
 
-    return {"status": "Location updated", "user_id": user_id}
+    return {"status": "Location updated", "user_id": request.user_id}

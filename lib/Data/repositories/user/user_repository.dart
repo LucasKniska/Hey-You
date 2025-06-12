@@ -2,6 +2,8 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/utils/constants/api_constants.dart';
 import 'package:http/http.dart' as http;
@@ -47,12 +49,10 @@ class UserRepository extends GetxController{
     }
   }
 
-  Future<void> updateCurrentMatchField(UserModel user) async {
+  /// Sends API Call to update the current location of the user
+  Future<void> updateLocation(Position pos) async {
 
-    // Do nothing if there is no current match
-    if(user.currentMatch == '') return;
-
-    final url = Uri.parse(APIConstants.updateMatchLocation);
+    final url = Uri.parse(APIConstants.updateLocation);
 
     final response = await http.post(
       url,
@@ -60,12 +60,15 @@ class UserRepository extends GetxController{
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'id': user.id
+        'user_id': FirebaseAuth.instance.currentUser!.uid,
+        'geolocation': {
+          'lat': pos.latitude,
+          'long': pos.longitude
+        }
       })
     );
 
-    print(response);
+    print("update location response");
+    print(response.body);
   }
-
-
 }

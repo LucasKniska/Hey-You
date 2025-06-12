@@ -19,7 +19,6 @@ class LocationController extends GetxController {
       currentPosition.value = pos;
     });
 
-    // 🔁 Listen and trigger backend updates
     ever(currentPosition, (Position? pos) {
       if (pos != null) {
         _updateBackend(pos);
@@ -66,12 +65,10 @@ class LocationController extends GetxController {
 
   Future<void> _updateBackend(Position pos) async {
 
+    // TODO: If location did not change enough
     // If the location did not change, do not update anything
     if(currentUser.location['lat'] == pos.latitude && currentUser.location['long'] == pos.longitude) return;
 
-    print("UPDATING LOCATION");
-
-    // Replace with Firestore/REST/etc.
     Get.put(UserRepository());
 
     currentUser.location = {
@@ -79,11 +76,7 @@ class LocationController extends GetxController {
       'long': pos.longitude
     };
 
-    UserRepository.instance.updateUserField(currentUser, 'Location', {'lat': pos.latitude, 'long': pos.longitude});
+    UserRepository.instance.updateLocation(pos);
 
-    if(currentUser.currentMatch != '') {
-      print('Trying to update location for match');
-      UserRepository.instance.updateCurrentMatchField(currentUser);
-    }
   }
 }
