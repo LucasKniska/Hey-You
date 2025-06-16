@@ -1,9 +1,6 @@
 from fastapi import FastAPI
-from typing import List
-from pydantic import BaseModel
 import firebase_admin
 from firebase_admin import credentials, firestore
-import math
 from enums import UserResponse
 from models.models import *
 from helpers import *
