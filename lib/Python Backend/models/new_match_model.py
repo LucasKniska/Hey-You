@@ -60,6 +60,9 @@ class Match(BaseModel):
 
     @classmethod
     def from_json(cls, data: dict):
+
+        print(data)
+
         return cls(
             id=data.get("id"),
             expirationTime=datetime.fromisoformat(data["expirationTime"]),

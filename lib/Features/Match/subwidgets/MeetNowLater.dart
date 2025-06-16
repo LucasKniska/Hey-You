@@ -23,7 +23,7 @@ class _MeetNowLaterState extends State<MeetNowLater> {
       if(widget.current.userData[0].response != 'not_selected'){
         return 'The other user wants to connect!';
       } else {
-        return 'Want to Connect? Spark the Connection Below!';
+        return 'Want to Connect? Spark the Connection!';
       }
     } else {
       if(widget.current.userData[1].response != 'not_selected'){

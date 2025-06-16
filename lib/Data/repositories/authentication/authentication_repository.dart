@@ -32,9 +32,15 @@ class AuthenticationRepository extends GetxController{
     if (!deviceStorage.read('isFirstTime')) {
 
       if(FirebaseAuth.instance.currentUser != null) {
-        Get.put(UserRepository());
-        currentUser = await UserRepository.instance.getUserById(FirebaseAuth.instance.currentUser!.uid);
-        Get.offAll(() => const NavigationMenu());
+
+        try {
+          Get.put(UserRepository());
+          currentUser = await UserRepository.instance.getUserById(FirebaseAuth.instance.currentUser!.uid);
+          Get.offAll(() => const NavigationMenu());
+        } catch (e) {
+          Get.offAll(() => const LoginScreen());
+        }
+
       } else {
         Get.offAll(() => const LoginScreen());
       }

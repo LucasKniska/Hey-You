@@ -82,10 +82,22 @@ def accept_match(match_id: IdRequest):
 def complete_match(match_id: UserMatchRequest):
     # Check if other user is already completed
     # If it is, call close match
+    
+    user_id_ref = db.collection(const.USERS).document(match_id.user_id)
+    if user_id_ref.get().exists:
+        user_data = User.from_json(user_id_ref.get().to_dict())
+        match_id.id = user_data.currentMatch
+    else:
+        return {"error": "User not found"}
+
 
     # Keeps a reference of the match document
     match_ref = db.collection(const.NEW_MATCHES).document(match_id.id)
-    match_data = Match.from_json(match_ref.get().to_dict())
+
+    if match_ref.get().exists:
+        match_data = Match.from_json(match_ref.get().to_dict())
+    else:
+        return {"error": "Match not found"}
 
     if match_data.userData[0].id == match_id.user_id:
         match_data.userData[0].response = UserResponse.COMPLETED
@@ -94,6 +106,9 @@ def complete_match(match_id: UserMatchRequest):
 
     # Check if both users have completed the match
     if(match_data.userData[0].response != UserResponse.COMPLETED or match_data.userData[1].response != UserResponse.COMPLETED):        
+
+        print("Match not completed by both users")
+
         # updated this users response
         match_ref.update({
             'userData': [

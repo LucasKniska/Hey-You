@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -71,8 +72,17 @@ class _MeetNowPageState extends State<MeetNowPage> {
         .snapshots()
         .listen((snapshot) async {
       if (!snapshot.exists || !mounted) {
+
+        var userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).get();
+
+        bool successfulMatch = userSnapshot['PreviousConnections'] != currentUser.previousConnections.length;
+        print('Successful Match Check: $successfulMatch');
+        print('Snapshot data check: ${snapshot.data()}');
+        print('User snapshot data check: ${userSnapshot}');
+
         setState(() {
           _closePage = true;
+          _pageController.connected = successfulMatch;
         });
         return;
       };
@@ -125,6 +135,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
     if(_closePage){
 
       if(_pageController.connected){
+        print('Showing connected circle splash screen.');
         return ConnectedCircleSplashScreen(
           onFinish: () {
             Get.back();

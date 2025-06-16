@@ -21,11 +21,24 @@ def testCreateMatch():
     match_id = initialize_new_match(user1, user2, match, db)
     return match_id
 
+# def testCreateAcceptMatch():
+#     user1 = 'gmwlBqTibHhob4nD5LwYuHJKq8p2'
+#     user2 = 'XVPG8lYKGKOBddsh7FZznrD4EaT2'
+
+#     user12 = get_user_by_id(user1, db)
+#     user22 = get_user_by_id(user2, db)
+
+#     match = get_match_object(user12, user22)
+#     match_id = initialize_new_match(user12, user22, match, db)
+
+#     accept_match(IdRequest(id=match_id))
+
 
 """
 Tests making a match between two users
 """
 matchId = testCreateMatch()
+# matchId = testCreateAcceptMatch()
 
 """ 
 Tests if closing the match works

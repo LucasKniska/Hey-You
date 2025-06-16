@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +24,6 @@ class MeetNowController {
 
     final url = Uri.parse(APIConstants.completeMatch);
 
-    print(url);
     final http.Response response = await http.post(
         url,
         headers: {
@@ -31,19 +31,9 @@ class MeetNowController {
         },
         body: jsonEncode({
           'id': c,
-          'user_id': currentUser.id
+          'user_id': FirebaseAuth.instance.currentUser!.uid
         })
     );
-
-    // Decode JSON body
-    final Map<String, dynamic> data = json.decode(response.body);
-    final String status = data['status'];
-
-    print(status);
-
-    if (status == 'Match closed') {
-      connected = true;
-    }
   }
 
 }
