@@ -141,6 +141,43 @@ def complete_match(match_id: UserMatchRequest):
 
     return {"status": "Match closed", "match_id": match_id}
 
+@app.post("/cancel-complete-match")
+def cancel_complete_match(match_id: UserMatchRequest):
+
+    user_id_ref = db.collection(const.USERS).document(match_id.user_id)
+    if user_id_ref.get().exists:
+        user_data = User.from_json(user_id_ref.get().to_dict())
+        match_id.id = user_data.currentMatch
+    else:
+        return {"error": "User not found"}
+
+    # Keeps a reference of the match document
+    match_ref = db.collection(const.NEW_MATCHES).document(match_id.id)
+    match_data = Match.from_json(match_ref.get().to_dict())
+
+    if not match_data:
+        return {"error": "Match not found"}
+
+    # Check if the user is part of the match
+    if match_data.userData[0].id != match_id.user_id and match_data.userData[1].id != match_id.user_id:
+        return {"error": "User not part of the match"}
+
+    # Update the user's response to not selected
+    if match_data.userData[0].id == match_id.user_id:
+        match_data.userData[0].response = UserResponse.MEET_NOW
+    else:
+        match_data.userData[1].response = UserResponse.MEET_NOW
+
+    # Update the match document
+    match_ref.update({
+        'userData': [
+            match_data.userData[0].to_json(),
+            match_data.userData[1].to_json()
+        ]
+    })
+
+    return {"status": "Match cancelled", "match_id": match_id.id}
+
 @app.post("/update-location")
 def update_location(request: LocationUpdateRequest):
     

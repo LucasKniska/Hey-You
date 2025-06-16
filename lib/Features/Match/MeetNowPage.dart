@@ -4,18 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hey_you/utils/constants/connection_parameters.dart';
+import 'package:hey_you/Features/Match/subwidgets/ConnectionAchievedButton.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
 
-import '../../Common/navigation_menu.dart';
 import '../../Common/topbar.dart';
 import '../../Data/models/CurrentMatch.dart';
 import '../../Data/repositories/user/user_repository.dart';
-import '../../utils/constants/sizes.dart';
-import '../ViewConnections/ContactsPage.dart';
 import 'MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
 import 'controllers/meetNow_controller.dart';
 
@@ -38,6 +34,8 @@ class MeetNowPage extends StatefulWidget {
 class _MeetNowPageState extends State<MeetNowPage> {
 
   final MeetNowController _pageController = MeetNowController();
+
+  late CurrentMatch currentMatch;
 
   GoogleMapController? _controller;
   Set<Polyline> _polylines = {};
@@ -76,10 +74,6 @@ class _MeetNowPageState extends State<MeetNowPage> {
         var userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).get();
 
         bool successfulMatch = userSnapshot['PreviousConnections'] != currentUser.previousConnections.length;
-        print('Successful Match Check: $successfulMatch');
-        print('Snapshot data check: ${snapshot.data()}');
-        print('User snapshot data check: ${userSnapshot}');
-
         setState(() {
           _closePage = true;
           _pageController.connected = successfulMatch;
@@ -88,6 +82,11 @@ class _MeetNowPageState extends State<MeetNowPage> {
       };
 
       final current = CurrentMatch.fromJson(snapshot.data()!);
+
+
+      setState(() {
+        currentMatch = current;
+      });
 
       final LatLng newUserLatLng;
       final LatLng newOtherUserLatLng;
@@ -182,23 +181,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
                       Text('To: $otherUserAddress'),
                       Text('Distance: ${(_distanceMeters / 1000).toStringAsFixed(2)} km'),
 
-                      (_distanceMeters < TConnectionParameters.distanceToConnection) ?
-
-                        Column(
-                          children: [
-                            const SizedBox(height: TSizes.spaceBtwItems), // spacing before button
-
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  _pageController.confirmMeeting();
-                                },
-                                child: const Text('Connection Achieved?'),
-                              ),
-                            ),
-                          ],
-                        ) : SizedBox.shrink(),
+                      ConnectionAchieved(current: currentMatch, pageController: _pageController, distance: _distanceMeters)
                     ],
                   ),
                 ),

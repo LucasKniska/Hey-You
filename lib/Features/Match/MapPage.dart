@@ -30,6 +30,8 @@ class _MapPageState extends State<MapPage> {
   CurrentMatch? current;
   int? user;
 
+  RxString MatchHeader = ''.obs;
+
   late final StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _userMatchSubscription;
 
   @override
@@ -54,13 +56,24 @@ class _MapPageState extends State<MapPage> {
         return;
       };
 
-      final CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
+      CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
 
       if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
+
+      var matchHeaderUpdate;
+      if (currentMatchNow.status == 'new') {
+        matchHeaderUpdate = 'New Connection!'.obs;
+      } else if (currentMatchNow.status == 'now') {
+        matchHeaderUpdate = 'Meet Up Now!'.obs;
+      } else {
+        matchHeaderUpdate = ''.obs;
+      }
+
 
       setState(() {
         current = currentMatchNow;
         user = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
+        MatchHeader = matchHeaderUpdate;
       });
 
       if (currentMatchNow.status != 'new') return;
@@ -87,10 +100,26 @@ class _MapPageState extends State<MapPage> {
         backgroundColor: Colors.blue,
         colorText: Colors.white,
         duration: const Duration(seconds: 8),
-        onTap: (snack) {
+        onTap: (snack) async {
           try {
             if (currentMatchNow.id.isNotEmpty) {
-              Get.dialog(MatchPopup(current: currentMatchNow));
+              await Get.dialog(MatchPopup(current: currentMatchNow));
+
+              final refreshed = await loadCurrentMatch(currentMatchNow.id);
+
+
+              if (refreshed != null && user != null && refreshed.status == 'new') {
+                MatchHeader = 'New Connection!'.obs;
+              } else if (refreshed != null && user != null && refreshed.status == 'now') {
+                MatchHeader = 'Meet Up Now!'.obs;
+              }
+
+              if (refreshed != null) {
+                setState(() {
+                  current = refreshed;
+                });
+              }
+
             }
           } catch (e) {}
         },
@@ -134,9 +163,6 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
 
-    print(user);
-    print(current);
-
     return Scaffold(
       appBar: const TopBar(backArrow: false),
       body: Container(
@@ -145,19 +171,27 @@ class _MapPageState extends State<MapPage> {
         padding: TSpacingStyle.normalPadding,
         child: Column(
           children: [
-            if (current != null && user != null && current!.status == 'new') ...[
-              Text(
-                'New Connection!',
+
+
+            if (current != null) ...[
+              Obx(() => Text(
+                MatchHeader.value,
                 style: Theme.of(context).textTheme.headlineMedium,
-              ),
+              )),
               const SizedBox(height: 8),
               Material(
                 color: TColors.accent,
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
                   onTap: () {
-                    if (current!.id.isNotEmpty) {
+                    if (current!.id.isNotEmpty && current!.status == 'new') {
                       Get.dialog(MatchPopup(current: current!));
+                    } else {
+                      Get.to(() => MeetNowPage(
+                        current: current!,
+                        userLocation: current!.userData[0].location,
+                        otherUserLocation: current!.userData[1].location,
+                      ));
                     }
                   },
                   borderRadius: BorderRadius.circular(12),
@@ -182,46 +216,6 @@ class _MapPageState extends State<MapPage> {
               const SizedBox(height: 8),
               const Divider(thickness: 1, color: Colors.black12),
             ],
-            if (current != null && user != null && current!.status == 'now') ...[
-              Text(
-                'Meet Up Now!',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Material(
-                color: TColors.accent,
-                borderRadius: BorderRadius.circular(12),
-                child: InkWell(
-                  onTap: () {
-                    Get.to(() => MeetNowPage(
-                      current: current!,
-                      userLocation: current!.userData[0].location,
-                      otherUserLocation: current!.userData[1].location,
-                    ));
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  highlightColor: Colors.white.withOpacity(0.2),
-                  splashColor: Colors.black.withOpacity(0.1),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.black, width: 1),
-                    ),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        (user! == 1) ? current!.userData[0].userName : current!.userData[1].userName,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Divider(thickness: 1, color: Colors.black12),
-            ],
-
             /// Scheduled Meet Ups Section
             sectionTitle(Iconsax.clock, TTexts.scheduledMeetUps),
             SizedBox(height: TSizes.spaceBtwItems),

@@ -123,7 +123,7 @@ class _MatchPopupState extends State<MatchPopup> {
     });
 
 
-    // Checks if the match has been confirmed
+    /// Checks if the match has been confirmed
     if( (other.response == 'meet_now' || other.response == 'meet_later') && (current.userData[user].response == 'meet_now' || current.userData[user].response == 'meet_later')){
 
       // Change the data to create a new match
@@ -132,13 +132,14 @@ class _MatchPopupState extends State<MatchPopup> {
       // Loading screen type
       return ConnectedSplashScreen(
           onFinish: () => {
-            Navigator.pop(context)
+            Navigator.pop(context),
+            setState(() {})
           }
       );
 
     }
 
-    // Checks if the timer has run out
+    /// Checks if the timer has run out
     if(_remaining < Duration.zero){
       print("DELETING CURRENT MATCH");
 
@@ -149,7 +150,9 @@ class _MatchPopupState extends State<MatchPopup> {
       return RejectedSplashScreen(
         onFinish: () => {
           // Change the data to create a new match
-          Navigator.pop(context)
+          Navigator.pop(context),
+          setState(() {})
+
         },
       );
     }

@@ -14,9 +14,11 @@ import '../../../utils/constants/api_constants.dart';
 class MeetNowController {
 
   bool connected = false;
-
+  bool pressedConnectionAchieved = false;
 
   Future<void> confirmMeeting () async {
+
+    pressedConnectionAchieved = true;
 
     Get.put(MatchRepository());
 
@@ -33,6 +35,29 @@ class MeetNowController {
           'id': c,
           'user_id': FirebaseAuth.instance.currentUser!.uid
         })
+    );
+
+
+  }
+
+  Future<void> cancelConfirmMeeting() async {
+
+    pressedConnectionAchieved = false;
+
+    Get.put(MatchRepository());
+
+    String c = currentUser.currentMatch;
+    final url = Uri.parse(APIConstants.cancelCompleteMatch);
+
+    final http.Response response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'id': c,
+        'user_id': FirebaseAuth.instance.currentUser!.uid
+      })
     );
   }
 
