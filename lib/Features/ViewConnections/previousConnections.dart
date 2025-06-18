@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hey_you/Features/ViewConnections/controllers/previousConnections_controller.dart';
 
@@ -16,6 +15,7 @@ class _PreviousConnection extends State<PreviousConnection> {
 
   final PreviousConnectionController controller = PreviousConnectionController();
   List<PreviousMatch> previousMatches = [];
+  bool loading = true;
 
   @override
   void initState() {
@@ -28,6 +28,7 @@ class _PreviousConnection extends State<PreviousConnection> {
       final matches = await controller.getPreviousMatches();
       setState(() {
         previousMatches = matches;
+        loading = false;
       });
     } catch (e) {
       print("Error fetching previous matches: $e");
@@ -38,17 +39,21 @@ class _PreviousConnection extends State<PreviousConnection> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-
-
-        ListView.builder(
-          shrinkWrap: true,
-          physics:
-              NeverScrollableScrollPhysics(), // Prevents scrolling inside a Column
-          itemCount: previousMatches.length, // Previous matches from data section
-          itemBuilder: (context, index) {
-            return _ConnectionRow(match: previousMatches[index]);
-          },
-        ),
+        if (loading)
+          const Center(
+            child: CircularProgressIndicator(
+              color: Colors.grey,
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(), // Prevents scrolling inside a Column
+            itemCount: previousMatches.length,
+            itemBuilder: (context, index) {
+              return _ConnectionRow(match: previousMatches[index]);
+            },
+          ),
       ],
     );
   }

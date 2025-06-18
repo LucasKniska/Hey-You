@@ -21,45 +21,46 @@ class OnBoardingScreen extends StatelessWidget {
 
         padding: TSpacingStyle.paddingWithAppBarHeight,
 
-        child: Column(
-          children: [
-            Text(TTexts.onBoardingTitle0, style: Theme.of(context).textTheme.headlineLarge),
-            const SizedBox(height: TSizes.spaceBtwItems),
-            Text(TTexts.onBoardingTitle1, style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: TSizes.spaceBtwItems),
-            Text(TTexts.onBoardingUnder1, style: Theme.of(context).textTheme.bodyMedium),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Text(TTexts.onBoardingTitle0, style: Theme.of(context).textTheme.headlineLarge),
+              const SizedBox(height: TSizes.spaceBtwItems),
+              Text(TTexts.onBoardingTitle1, style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: TSizes.spaceBtwItems),
+              Text(TTexts.onBoardingUnder1, style: Theme.of(context).textTheme.bodyMedium),
+          
+              const SizedBox(height: TSizes.spaceBtwSections),
+          
+          
+              Text(TTexts.onBoardingTitle2, style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: TSizes.spaceBtwItems),
+              StepCard(stepNumber: '1', title: TTexts.onBoardingCard1, description: TTexts.onBoardingUnderCard1),
+              const SizedBox(height: TSizes.spaceBtwItems),
+              StepCard(stepNumber: '2', title: TTexts.onBoardingCard2, description: TTexts.onBoardingUnderCard2),
+              const SizedBox(height: TSizes.spaceBtwItems),
+              StepCard(stepNumber: '3', title: TTexts.onBoardingCard3, description: TTexts.onBoardingUnderCard3),
+              const SizedBox(height: TSizes.spaceBtwItems),
+          
 
-            const SizedBox(height: TSizes.spaceBtwSections),
-
-
-            Text(TTexts.onBoardingTitle2, style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: TSizes.spaceBtwItems),
-            StepCard(stepNumber: '1', title: TTexts.onBoardingCard1, description: TTexts.onBoardingUnderCard1),
-            const SizedBox(height: TSizes.spaceBtwItems),
-            StepCard(stepNumber: '2', title: TTexts.onBoardingCard2, description: TTexts.onBoardingUnderCard2),
-            const SizedBox(height: TSizes.spaceBtwItems),
-            StepCard(stepNumber: '3', title: TTexts.onBoardingCard3, description: TTexts.onBoardingUnderCard3),
-            const SizedBox(height: TSizes.spaceBtwItems),
-
-            const Spacer(),
-
-            /// Sign In Button
-            SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () {
-              final storage = GetStorage();
-              storage.write('isFirstTime', false);
-              Get.to(() => LoginScreen());
-            }, child: const Text(TTexts.onBoardingSignIn))),
-            const SizedBox(height: TSizes.spaceBtwItems),
-
-            /// Sign Up Button
-            SizedBox(width: double.infinity, child: OutlinedButton(onPressed: () {
-              final storage = GetStorage();
-              storage.write('isFirstTime', false);
-              Get.to(() => SignUpScreen());
-            }, child: const Text(TTexts.onBoardingSignUp)))
-
-
-          ]
+              /// Sign In Button
+              SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () {
+                final storage = GetStorage();
+                storage.write('isFirstTime', false);
+                Get.to(() => LoginScreen());
+              }, child: const Text(TTexts.onBoardingSignIn))),
+              const SizedBox(height: TSizes.spaceBtwItems),
+          
+              /// Sign Up Button
+              SizedBox(width: double.infinity, child: OutlinedButton(onPressed: () {
+                final storage = GetStorage();
+                storage.write('isFirstTime', false);
+                Get.to(() => SignUpScreen());
+              }, child: const Text(TTexts.onBoardingSignUp)))
+          
+          
+            ]
+          ),
         ),
       )
     );

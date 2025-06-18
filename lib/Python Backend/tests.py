@@ -40,7 +40,7 @@ def testCreateAcceptMatch():
 """
 Tests making a match between two users
 """
-# matchId = testCreateMatch()
+matchId = testCreateMatch()
 # matchId = testCreateAcceptMatch()
 
 """ 
@@ -57,4 +57,4 @@ Tests if updated the match based off of user responses works
 """
 Tests if getting previous connections works
 """
-testGetPreviousConnections()
+# testGetPreviousConnections()

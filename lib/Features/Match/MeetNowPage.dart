@@ -198,6 +198,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
     // Only show the loading progress indicator on the first load
     if(_loading == true) setState(() => _loading = true);
 
+    print("LOADING AND GETTING DIRECTIONS");
     final directions = await _getDirections();
     final polylinePoints = directions['polyline'];
     final distance = directions['distance'];
@@ -267,6 +268,8 @@ class _MeetNowPageState extends State<MeetNowPage> {
         ]
       }),
     );
+
+    print("Router API Response: ${response.body}");
 
     if (response.statusCode != 200) {
       throw Exception('Directions failed: ${response.body}');

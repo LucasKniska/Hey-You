@@ -69,7 +69,6 @@ class _MapPageState extends State<MapPage> {
         matchHeaderUpdate = ''.obs;
       }
 
-
       setState(() {
         current = currentMatchNow;
         user = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;

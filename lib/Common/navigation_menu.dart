@@ -10,9 +10,14 @@ import '../Features/Match/MapPage.dart';
 import '../Features/ViewConnections/ContactsPage.dart';
 import '../utils/constants/colors.dart';
 
-class NavigationMenu extends StatelessWidget {
+class NavigationMenu extends StatefulWidget {
   const NavigationMenu({super.key});
 
+  @override
+  State<NavigationMenu> createState() => _NavigationMenuState();
+}
+
+class _NavigationMenuState extends State<NavigationMenu> {
   @override
   Widget build(BuildContext context) {
 
@@ -57,7 +62,10 @@ class NavigationMenu extends StatelessWidget {
           ),
       ),
 
-      body: Obx(() => controller.screens[controller.selectedIndex.value]),
+      body: Obx(() => IndexedStack(
+        index: controller.selectedIndex.value,
+        children: controller.screens,
+      )),
     );
   }
 }
@@ -65,5 +73,16 @@ class NavigationMenu extends StatelessWidget {
 class NavigationController extends GetxController{
   final Rx<int> selectedIndex = 0.obs;
 
-  final screens = [ContactsPage(), MapPage(), ProfilePage()];
+  final List<Widget> screens = <Widget>[
+    ContactsPage(),
+    MapPage(),
+    ProfilePage(),
+  ];
+
+
+  final RxBool refreshContacts = false.obs;
+
+  void triggerContactsRefresh() {
+    refreshContacts.value = !refreshContacts.value;
+  }
 }
