@@ -1,8 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hey_you/Features/ViewConnections/controllers/previousConnections_controller.dart';
 
 import '../../Data/models/PreviousMatch.dart';
 import '../../utils/constants/sizes.dart';
-import '../../utils/constants/text_string.dart';
 
 class PreviousConnection extends StatefulWidget {
   const PreviousConnection({super.key});
@@ -12,6 +13,26 @@ class PreviousConnection extends StatefulWidget {
 }
 
 class _PreviousConnection extends State<PreviousConnection> {
+
+  final PreviousConnectionController controller = PreviousConnectionController();
+  List<PreviousMatch> previousMatches = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPreviousMatches(); // Call async function
+  }
+
+  Future<void> fetchPreviousMatches() async {
+    try {
+      final matches = await controller.getPreviousMatches();
+      setState(() {
+        previousMatches = matches;
+      });
+    } catch (e) {
+      print("Error fetching previous matches: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +65,8 @@ class _ConnectionRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        connectionTitle(TTexts.previousConnectionDateDetails(match.connectedOn, match.location['title']!), context),
-        previousCard(TTexts.previousConnectionUserDetails(match), context),
+        connectionTitle(match.previousConnectionDateDetails(), context),
+        previousCard(match.previousConnectionUserDetails(), context),
         SizedBox(height: TSizes.spaceBtwItems)
       ]
     );

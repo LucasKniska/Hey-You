@@ -64,15 +64,6 @@ class TTexts {
   static const String scheduledMeetUps = 'Scheduled Meet Ups';
   static const String previousConnections = 'Previous Connections';
 
-  static String previousConnectionDateDetails(DateTime date, String place) {
-    String formatted = DateFormat('MMMM, d y').format(date);
-    return 'You connected on $formatted @ $place';
-  }
-
-  static String previousConnectionUserDetails(PreviousMatch match){
-    return "${match.userData["user1"]?["userName"]} - ${match.related[0]}, ${match.related[1]}";
-  }
-
   static String scheduledConnectionDateDetails(DateTime date){
     String formatted = DateFormat('MMMM, d y').format(date);
     return 'You matched on $formatted!';

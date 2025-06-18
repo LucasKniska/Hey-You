@@ -5,9 +5,13 @@ class APIConstants {
   static const String tAPIKey = '';
 
   /// Endpoints for api
-  static const String updateMatchStatus = 'http://192.168.1.120:8000/accept-match';
-  static const String deleteMatch = 'http://192.168.1.120:8000/reject-match';
-  static const String updateLocation = 'http://192.168.1.120:8000/update-location';
-  static const String completeMatch = 'http://192.168.1.120:8000/complete-match';
-  static const String cancelCompleteMatch = 'http://192.168.1.120:8000/cancel-complete-match';
+  static const String base = 'http://192.168.1.8:8000';
+  static const String base2 = 'http://192.168.1.120:8000';
+
+  static const String updateMatchStatus = '$base/accept-match';
+  static const String deleteMatch = '$base/reject-match';
+  static const String updateLocation = '$base/update-location';
+  static const String completeMatch = '$base/complete-match';
+  static const String cancelCompleteMatch = '$base/cancel-complete-match';
+  static const String getPreviousConnections = '$base/get-previous-connections';
 }

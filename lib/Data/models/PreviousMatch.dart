@@ -1,32 +1,66 @@
 
 
-List<PreviousMatch> previousMatches = [PreviousMatch(), PreviousMatch(), PreviousMatch()];
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
+import 'CurrentMatch.dart';
 
 class PreviousMatch {
+  final String id;
+  final List<String> related;
+  final DateTime createdOn;
+  final DateTime expirationTime;
+  final List<UserData> userData;
+  final String status;
+  final List<String> possiblePlaces;
+  final List<DateTime> possibleTimes;
+  final Map<String, double> meetingPlace;
 
-  String id = "0913845sjadf";
+  PreviousMatch({
+    required this.id,
+    required this.related,
+    required this.createdOn,
+    required this.expirationTime,
+    required this.userData,
+    required this.status,
+    required this.possiblePlaces,
+    required this.possibleTimes,
+    required this.meetingPlace,
+  });
 
-  Map<String, Map<String, String>> userData = {
-    "user1": {
-      "userName": "Lucas K",
-      'userBio': 'User Bio',
-      'id': '398uaisjdflka',
-    },
-    'user2': {
-      'userName': "Carmelo K",
-      'userBio': 'Uesr Bio',
-      'id': '239845uasdjf',
-    }
-  };
+  factory PreviousMatch.fromJson(Map<String, dynamic> json) {
+    return PreviousMatch(
+      id: json['id'],
+      related: List<String>.from(json['related'] ?? []),
+      createdOn: DateTime.parse(json['createdOn']),
+      expirationTime: DateTime.parse(json['expirationTime']),
+      userData: (json['userData'] as List)
+          .map((u) => UserData.fromJson(u))
+          .toList(),
+      status: json['status'] is String
+          ? json['status']
+          : json['status'].toString().split('.').last, // handles enum format
+      possiblePlaces: List<String>.from(json['possiblePlaces'] ?? []),
+      possibleTimes: (json['possibleTimes'] as List? ?? [])
+          .map((t) => DateTime.parse(t))
+          .toList(),
+      meetingPlace: Map<String, double>.from(json['meetingPlace']
+          .map((k, v) => MapEntry(k, (v as num).toDouble()))),
+    );
+  }
 
-  List<String> related = ["Economics", 'Exploring NYC'];
+  String previousConnectionDateDetails() {
+    String formatted = DateFormat('MMMM, d y').format(createdOn);
+    //TODO Name the created place based on latitude and longitude
+    return 'You connected on $formatted @ place';
+  }
 
-  DateTime createdOn = DateTime(2025, 4, 14);
-  DateTime connectedOn = DateTime(2025, 4, 15);
-  Map<String, String> location = {
-    'lat': '23',
-    'long': '23',
-    'title': 'Columbia'
-  };
+  String previousConnectionUserDetails(){
+
+    int user = (userData[0].id == FirebaseAuth.instance.currentUser!.uid) ? 1 : 0;
+
+    return '${userData[user].userName} - ${related[0]}, ${related[1]}';
+  }
 }
+
+

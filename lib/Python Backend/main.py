@@ -218,3 +218,27 @@ def update_location(request: LocationUpdateRequest):
     })
 
     return {"status": "Location updated", "user_id": request.user_id}
+
+@app.get("/get-previous-connections")
+def get_previous_connections(user_id: str):
+    # Keeps a reference of the user document
+    user_ref = db.collection(const.USERS).document(user_id)
+    if user_ref.get().exists:
+        user = User.from_json(user_ref.get().to_dict())
+    else:
+        return {"error": "User not found"}
+
+    # Get previous connections
+    previous_connections = user.previousConnections
+
+    if not previous_connections:
+        return {"status": "No previous connections found"}
+
+    matches = []
+    for match_id in previous_connections:
+        match_ref = db.collection(const.COMPLETED_MATCHES).document(match_id)
+        if match_ref.get().exists:
+            match_data = Match.from_json(match_ref.get().to_dict())
+            matches.append(match_data.to_json())
+
+    return {"previous_connections": matches}
