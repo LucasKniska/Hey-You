@@ -163,9 +163,8 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: const TopBar(backArrow: false),
       body: Container(
-        color: Colors.black12,
+        color: Colors.white,
         alignment: Alignment.center,
         padding: TSpacingStyle.normalPadding,
         child: Column(

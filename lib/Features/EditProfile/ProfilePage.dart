@@ -27,7 +27,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final signOutController = Get.put(AuthenticationRepository());
 
     return Scaffold(
-      appBar: TopBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: TSpacingStyle.normalPadding,

@@ -25,7 +25,6 @@ class ContactsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: TopBar(),
       body: SingleChildScrollView(
         padding: TSpacingStyle.normalPadding,
         child: Column(

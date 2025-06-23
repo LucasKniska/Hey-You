@@ -34,7 +34,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
       flexibleSpace: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [TColors.primary, TColors.accent], // you can change these!
+            colors: [TColors.primary, TColors.accent, TColors.accent, TColors.primary], // you can change these!
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

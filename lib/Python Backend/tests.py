@@ -36,11 +36,27 @@ def testCreateAcceptMatch():
 
     accept_match(IdRequest(id=match_id))
 
+def testResetDatabase():
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+
+    for each in db.collection(const.USERS).stream():
+        db.collection(const.USERS).document(each.id).update({
+            'PreviousConnections': [],
+        })
+    for each in db.collection(const.NEW_MATCHES).stream():
+        db.collection(const.NEW_MATCHES).document(each.id).delete()
+    for each in db.collection(const.REJECTED_MATCHES).stream():
+        db.collection(const.REJECTED_MATCHES).document(each.id).delete()
+    for each in db.collection(const.COMPLETED_MATCHES).stream():
+        db.collection(const.COMPLETED_MATCHES).document(each.id).delete()
+
 
 """
 Tests making a match between two users
 """
-matchId = testCreateMatch()
+# matchId = testCreateMatch()
 # matchId = testCreateAcceptMatch()
 
 """ 
