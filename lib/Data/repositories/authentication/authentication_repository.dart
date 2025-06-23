@@ -27,7 +27,7 @@ class AuthenticationRepository extends GetxController{
   }
 
 
-  screenRedirect() async {
+  Future<void> screenRedirect() async {
     // Local Storage
     deviceStorage.writeIfNull('isFirstTime', true);
 
@@ -69,7 +69,7 @@ class AuthenticationRepository extends GetxController{
     try{
       return await _auth.createUserWithEmailAndPassword(email: email, password: password);
     } catch (e) {
-      throw Exception('Error with authentication. Something went wrong.');
+      rethrow;
     }
 
   }
@@ -95,6 +95,14 @@ class AuthenticationRepository extends GetxController{
   Future<void> sendEmailVerificationLink() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> sendPasswordResetLink(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {
       print(e.toString());
     }

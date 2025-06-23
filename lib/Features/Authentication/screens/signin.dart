@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Features/Authentication/controllers/signin_controller.dart';
+import 'package:hey_you/Features/Authentication/screens/forgotPassword.dart';
 import 'package:hey_you/Features/Authentication/screens/signup.dart';
 import 'package:hey_you/utils/constants/text_string.dart';
 import 'package:hey_you/utils/validators/validation.dart';
@@ -113,7 +114,9 @@ class LoginScreen extends StatelessWidget {
                                 ),
                                 Spacer(),
                                 GestureDetector(
-                                  onTap: () {},
+                                  onTap: () {
+                                    Get.to(() => ForgotPasswordScreen());
+                                  },
                                   child: Text(
                                     TTexts.forgotPassword,
                                     style: TextStyle(color: TColors.primary),

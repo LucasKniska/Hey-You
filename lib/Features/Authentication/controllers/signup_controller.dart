@@ -1,4 +1,5 @@
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/navigation_menu.dart';
@@ -44,8 +45,6 @@ class SignupController extends GetxController {
 
       // Do internet check
 
-
-
       // Storing user data
       final userCredential = await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
 
@@ -65,10 +64,16 @@ class SignupController extends GetxController {
 
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many connections as possible!');
 
-      print('Going to screen redirect');
       await AuthenticationRepository.instance.screenRedirect();
-      print('Completed screen redirect');
 
+    } on FirebaseAuthException catch (e) {
+      Get.offAll(() => SignUpScreen());
+
+      if (e.code == 'email-already-in-use') {
+        TSnackBars.errorSnackBar(title: 'The email: "${email.text}" is already in use.', message: 'Try signing up or forgot password.');
+      } else {
+        TSnackBars.errorSnackBar(title: 'There has been an error creating your account', message: e.toString());
+      }
     } catch (e) {
       Get.offAll(() => SignUpScreen());
       TSnackBars.errorSnackBar(title: 'There has been an error creating your account', message: e.toString());

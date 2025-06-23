@@ -41,6 +41,10 @@ class TTexts {
   static const String rememberMe = 'Remember Me';
   static const String forgotPassword = 'Forgot Password?';
 
+  static const String forgotPasswordSubtext = "Enter your email address and we'll send you a link to reset your password.";
+  static const String sendResetEmail = 'Send Reset Link';
+  static const String rememberPassword = 'Remember your password? ';
+
   static const String createAccount = 'Create an Account';
   static const String createAccountUnder = 'Join Hey You to connect with people nearby';
   static const String termsOfService1 = 'I agree to the ';
