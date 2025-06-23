@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:hey_you/Features/Authentication/screens/emailVerification.dart';
+import 'package:hey_you/Features/PersonalityQuiz/PersonalityQuiz.dart';
 
 import '../../../Common/navigation_menu.dart';
 import '../../../Features/Authentication/screens/signin.dart';
@@ -33,10 +35,22 @@ class AuthenticationRepository extends GetxController{
 
       if(FirebaseAuth.instance.currentUser != null) {
 
+        /// User is signed in
         try {
           Get.put(UserRepository());
           currentUser = await UserRepository.instance.getUserById(FirebaseAuth.instance.currentUser!.uid);
-          Get.offAll(() => const NavigationMenu());
+
+          if(FirebaseAuth.instance.currentUser!.emailVerified == true){
+            if(currentUser.quizAnswers.isEmpty){
+              Get.offAll(() => PersonalityQuizPage());
+            } else {
+              Get.offAll(() => const NavigationMenu());
+            }
+
+          }else{
+            Get.offAll(EmailVerificationScreen());
+          }
+
         } catch (e) {
           Get.offAll(() => const LoginScreen());
         }
@@ -78,4 +92,11 @@ class AuthenticationRepository extends GetxController{
     }
   }
 
+  Future<void> sendEmailVerificationLink() async {
+    try {
+      await _auth.currentUser?.sendEmailVerification();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 }

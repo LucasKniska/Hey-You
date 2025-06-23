@@ -68,11 +68,13 @@ class SignInController extends GetxController {
 
       currentUser = await UserRepository.instance.getUserById(userCredentials.user!.uid);
 
-      Get.offAll(() => const NavigationMenu());
+      print('Going to screen redirect');
+      await AuthenticationRepository.instance.screenRedirect();
+      print('Completed screen redirect');
 
     } catch (e) {
       Get.offAll(() => LoginScreen());
-      TSnackBars.errorSnackBar(title: 'There has been an error signing into your account', message: e.toString());
+      TSnackBars.errorSnackBar(title: 'There has been an error signing into your account');
     }
   }
 }

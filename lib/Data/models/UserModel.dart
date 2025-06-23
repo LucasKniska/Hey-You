@@ -17,7 +17,7 @@ class UserModel {
       firstName = '',
       lastName = '',
       biography = '',
-      quizAnswers = [],
+      quizAnswers = <int>[],
       temporaryModifications = [],
       permanentModifications = [],
       location = {},

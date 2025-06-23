@@ -65,7 +65,9 @@ class SignupController extends GetxController {
 
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many connections as possible!');
 
-      Get.offAll(() => const NavigationMenu());
+      print('Going to screen redirect');
+      await AuthenticationRepository.instance.screenRedirect();
+      print('Completed screen redirect');
 
     } catch (e) {
       Get.offAll(() => SignUpScreen());

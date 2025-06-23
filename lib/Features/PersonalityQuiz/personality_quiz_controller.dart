@@ -12,15 +12,16 @@ import '../../utils/theme/snackbars.dart';
 
 class PersonalityQuizController {
 
-
   void setAnswer(int pageIndex, int value){
       questionList[pageIndex].answer = value;
   }
 
   void initAnswers() {
 
-    for(int i = 0; i < questionList.length; i++){
-      questionList[i].answer = currentUser.quizAnswers[i];
+    if (currentUser.quizAnswers.isNotEmpty){
+      for(int i = 0; i < questionList.length; i++){
+        questionList[i].answer = currentUser.quizAnswers[i];
+      }
     }
 
   }
