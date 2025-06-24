@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../Data/models/PreviousMatch.dart';
@@ -26,6 +27,7 @@ class PreviousConnectionController {
       // Pull the list under 'previous_connections'
       final List<dynamic> connections = jsonResponse['previous_connections'] ?? [];
 
+      currentUser.totalConnections = connections.length;
       // Convert each entry into a PreviousMatch
       return connections.map((json) => PreviousMatch.fromJson(json)).toList();
     } else {

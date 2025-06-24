@@ -7,13 +7,16 @@ import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
+import 'package:hey_you/Features/EditProfile/ProfilePage.dart';
 import 'package:hey_you/Features/Match/MeetNowPage.dart';
 import 'package:hey_you/Features/Match/scheduledMeetUps.dart';
 import 'package:hey_you/utils/constants/colors.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
+import '../../Data/models/UserModel.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
+import '../EditProfile/profile_controller.dart';
 import 'BottomSheet.dart';
 import 'MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
 import 'MatchPopup.dart';
@@ -25,12 +28,13 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class _MapPageState extends State<MapPage> with AutomaticKeepAliveClientMixin {
+
   Timer? matchTimer;
   CurrentMatch? current;
   int? user;
 
-  RxString MatchHeader = ''.obs;
+  RxString matchHeader = ''.obs;
 
   late final StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _userMatchSubscription;
 
@@ -46,6 +50,12 @@ class _MapPageState extends State<MapPage> {
 
       if (!snapshot.exists || !mounted) return;
 
+      print("updating current user");
+      currentUser = UserModel.fromJson(snapshot.data()!);
+      final profile = Get.find<ProfileController>();
+      profile.updateMods();
+      print("updating mods");
+
       final currentMatchId = snapshot.data()?['CurrentMatch'];
 
       if (currentMatchId == null || currentMatchId == '') {
@@ -58,21 +68,23 @@ class _MapPageState extends State<MapPage> {
 
       CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
 
+      print('Current Match Now: $currentMatchNow');
+
       if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
 
-      var matchHeaderUpdate;
+      String matchHeaderUpdate;
       if (currentMatchNow.status == 'new') {
-        matchHeaderUpdate = 'New Connection!'.obs;
+        matchHeaderUpdate = 'New Connection!';
       } else if (currentMatchNow.status == 'now') {
-        matchHeaderUpdate = 'Meet Up Now!'.obs;
+        matchHeaderUpdate = 'Meet Up Now!';
       } else {
-        matchHeaderUpdate = ''.obs;
+        matchHeaderUpdate = '';
       }
 
       setState(() {
         current = currentMatchNow;
         user = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
-        MatchHeader = matchHeaderUpdate;
+        matchHeader.value = matchHeaderUpdate;
       });
 
       if (currentMatchNow.status != 'new') return;
@@ -98,26 +110,28 @@ class _MapPageState extends State<MapPage> {
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.blue,
         colorText: Colors.white,
-        duration: const Duration(seconds: 8),
+        duration: const Duration(seconds: 5),
         onTap: (snack) async {
           try {
             if (currentMatchNow.id.isNotEmpty) {
-              await Get.dialog(MatchPopup(current: currentMatchNow));
 
-              final refreshed = await loadCurrentMatch(currentMatchNow.id);
+              Get.dialog(MatchPopup(current: currentMatchNow)).then((_) async {
+                print('Finished Match Popup Dialogue (then)');
 
+                final refreshed = await loadCurrentMatch(currentMatchNow.id);
+                print('Loaded new version of current match');
 
-              if (refreshed != null && user != null && refreshed.status == 'new') {
-                MatchHeader = 'New Connection!'.obs;
-              } else if (refreshed != null && user != null && refreshed.status == 'now') {
-                MatchHeader = 'Meet Up Now!'.obs;
-              }
-
-              if (refreshed != null) {
-                setState(() {
-                  current = refreshed;
-                });
-              }
+                if (refreshed != null) {
+                  setState(() {
+                    current = refreshed;
+                    matchHeader.value = refreshed.status == 'new'
+                        ? 'New Connection!'
+                        : refreshed.status == 'now'
+                        ? 'Meet Up Now!'
+                        : '';
+                  });
+                }
+              });
 
             }
           } catch (e) {}
@@ -162,6 +176,8 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
 
+    super.build(context);
+
     return Scaffold(
       body: Container(
         color: Colors.white,
@@ -173,7 +189,7 @@ class _MapPageState extends State<MapPage> {
 
             if (current != null) ...[
               Obx(() => Text(
-                MatchHeader.value,
+                matchHeader.value,
                 style: Theme.of(context).textTheme.headlineMedium,
               )),
               const SizedBox(height: 8),
@@ -183,7 +199,21 @@ class _MapPageState extends State<MapPage> {
                 child: InkWell(
                   onTap: () {
                     if (current!.id.isNotEmpty && current!.status == 'new') {
-                      Get.dialog(MatchPopup(current: current!));
+                      Get.dialog(MatchPopup(current: current!)).then((_) async {
+                        final refreshed = await loadCurrentMatch(current!.id);
+
+                        if (refreshed != null) {
+                          setState(() {
+                            current = refreshed;
+                            matchHeader.value = refreshed.status == 'new'
+                                ? 'New Connection!'
+                                : refreshed.status == 'now'
+                                ? 'Meet Up Now!'
+                                : '';
+                          });
+                        }
+                      }
+                      );
                     } else {
                       Get.to(() => MeetNowPage(
                         current: current!,
@@ -231,6 +261,9 @@ class _MapPageState extends State<MapPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 

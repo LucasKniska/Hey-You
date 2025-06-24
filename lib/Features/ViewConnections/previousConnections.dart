@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hey_you/Common/widgets/emptyFieldWidget.dart';
 import 'package:hey_you/Features/ViewConnections/controllers/previousConnections_controller.dart';
 
 import '../../Data/models/PreviousMatch.dart';
@@ -45,7 +46,7 @@ class _PreviousConnection extends State<PreviousConnection> {
               color: Colors.grey,
             ),
           )
-        else
+        else if (previousMatches.isNotEmpty)
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(), // Prevents scrolling inside a Column
@@ -53,7 +54,12 @@ class _PreviousConnection extends State<PreviousConnection> {
             itemBuilder: (context, index) {
               return _ConnectionRow(match: previousMatches[index]);
             },
-          ),
+          )
+        else
+          EmptyStateWidget(
+            title: 'You currently have no connections',
+            description: 'Match with someone to fill out your list of contacts!',
+          )
       ],
     );
   }
@@ -81,7 +87,7 @@ class _ConnectionRow extends StatelessWidget {
   Widget connectionTitle(String text, BuildContext context) {
     return Text(
       text,
-        style: Theme.of(context).textTheme.bodySmall
+      style: Theme.of(context).textTheme.bodySmall
     );
   }
 

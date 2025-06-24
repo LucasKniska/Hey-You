@@ -128,11 +128,13 @@ def complete_match(match_id: UserMatchRequest):
     # Update the user documents to remove the match reference
     db.collection(const.USERS).document(user1).update({
         'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match_id.id])
+        'PreviousConnections': firestore.ArrayUnion([match_id.id]),
+        'TotalConnections': firestore.Increment(1)
     })
     db.collection(const.USERS).document(user2).update({
         'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match_id.id])
+        'PreviousConnections': firestore.ArrayUnion([match_id.id]),
+        'TotalConnections': firestore.Increment(1)
     })
 
     # Move document to closed matches

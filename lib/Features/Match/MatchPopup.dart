@@ -73,9 +73,6 @@ class _MatchPopupState extends State<MatchPopup> {
     return "${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}";
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
 
@@ -92,8 +89,6 @@ class _MatchPopupState extends State<MatchPopup> {
         try {
           if (current != currentMatch) {
             setState(() {
-
-              print("UPDATED OTHER");
 
               current = currentMatch;
 
@@ -132,8 +127,7 @@ class _MatchPopupState extends State<MatchPopup> {
       // Loading screen type
       return ConnectedSplashScreen(
           onFinish: () => {
-            Navigator.pop(context),
-            setState(() {})
+            Get.back(),
           }
       );
 
@@ -141,7 +135,6 @@ class _MatchPopupState extends State<MatchPopup> {
 
     /// Checks if the timer has run out
     if(_remaining < Duration.zero){
-      print("DELETING CURRENT MATCH");
 
       HowToMeetController.deleteCurrentMatch(current);
 

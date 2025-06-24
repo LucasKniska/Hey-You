@@ -56,7 +56,7 @@ def testResetDatabase():
 """
 Tests making a match between two users
 """
-# matchId = testCreateMatch()
+matchId = testCreateMatch()
 # matchId = testCreateAcceptMatch()
 
 """ 

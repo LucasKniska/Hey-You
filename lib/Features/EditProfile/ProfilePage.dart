@@ -57,7 +57,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '${currentUser.totalConnections} Connections',
+                          currentUser.totalConnections != 1 ?
+                            '${currentUser.totalConnections} Connections' :
+                            '1 Connection',
                           style: TextStyle(fontWeight: FontWeight.w500),
                         )
                       ],
@@ -124,26 +126,30 @@ class _ProfilePageState extends State<ProfilePage> {
               Text('Active Search Modifications', style: Theme.of(context).textTheme.headlineSmall),
               SizedBox(height: TSizes.spaceBtwItems),
 
-
               Text((currentUser.temporaryModifications.isEmpty) ? 'Create New Daily Modifications in Map View' : 'Daily Modifications', style: Theme.of(context).textTheme.bodyLarge),
 
-              Wrap(
+              Obx(() => Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: currentUser.temporaryModifications.map((e) => _buildChip(e.modification, isPermanent: false, controller: controller)).toList()
-              ),
+                children: controller.temporaryMods
+                    .map((mod) => _buildChip(mod, isPermanent: false, controller: controller))
+                    .toList(),
+              )),
+
 
 
               SizedBox(height: TSizes.spaceBtwItems),
 
               Text((currentUser.permanentModifications.isEmpty) ? 'Create New Permanent Modifications in Map View' : 'Permanent Modifications', style: Theme.of(context).textTheme.bodyLarge),
 
-
-              Wrap(
+              Obx(() => Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: currentUser.permanentModifications.map((e) => _buildChip(e, isPermanent: true, controller: controller)).toList()
-              ),
+                children: controller.permanentMods
+                    .map((mod) => _buildChip(mod, isPermanent: true, controller: controller))
+                    .toList(),
+              )),
+
 
               const SizedBox(height: 24),
 
@@ -189,10 +195,9 @@ class _ProfilePageState extends State<ProfilePage> {
         style: const TextStyle(color: Colors.white),
       ),
       backgroundColor: Colors.blue,
-      // deleteIcon: const Icon(Icons.close, color: Colors.white, size: 18),
-      // onDeleted: () { controller.obsForChips.value = !controller.obsForChips.value; controller.deleteModification(description: text, permanent: isPermanent); },
+      deleteIcon: const Icon(Icons.close, color: Colors.white, size: 18),
+      onDeleted: () { controller.deleteModification(description: text, permanent: isPermanent); },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
-
 }

@@ -14,12 +14,19 @@ import '../../utils/constants/colors.dart';
 import '../../utils/constants/text_string.dart';
 
 
-class ContactsPage extends StatelessWidget {
+class ContactsPage extends StatefulWidget {
 
   const ContactsPage({super.key});
 
   @override
+  State<ContactsPage> createState() => _ContactsPageState();
+}
+
+class _ContactsPageState extends State<ContactsPage> with AutomaticKeepAliveClientMixin{
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
 
     final NavigationController controller = Get.find<NavigationController>();
 
@@ -72,7 +79,6 @@ class ContactsPage extends StatelessWidget {
     );
   }
 
-
   Widget sectionTitle(IconData icon, String title) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8),
@@ -94,4 +100,6 @@ class ContactsPage extends StatelessWidget {
     );
   }
 
+  @override
+  bool get wantKeepAlive => true;
 }

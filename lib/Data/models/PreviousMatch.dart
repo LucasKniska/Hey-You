@@ -59,7 +59,12 @@ class PreviousMatch {
 
     int user = (userData[0].id == FirebaseAuth.instance.currentUser!.uid) ? 1 : 0;
 
-    return '${userData[user].userName} - ${related[0]}, ${related[1]}';
+    return '${userData[user].userName} - ${related[0]}';
+  }
+
+  @override
+  String toString() {
+    return 'Previous Match: $id';
   }
 }
 

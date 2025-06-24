@@ -17,6 +17,7 @@ class User(BaseModel):
     currentMatch: str
     previousConnections: List[str]
     scheduledConnections: List[str]
+    totalConnections: int = 0
 
     @classmethod
     def from_json(cls, data: dict):
@@ -38,5 +39,6 @@ class User(BaseModel):
             location=Geolocation.from_json(data.get('Location', {})),
             currentMatch=data.get("CurrentMatch") or "",
             previousConnections=data.get("PreviousConnections", []),
-            scheduledConnections=data.get("ScheduledConnections", [])
+            scheduledConnections=data.get("ScheduledConnections", []),
+            totalConnections=data.get("TotalConnections", 0)
         )
