@@ -52,7 +52,7 @@ class _MapPageState extends State<MapPage> with AutomaticKeepAliveClientMixin {
 
       print("updating current user");
       currentUser = UserModel.fromJson(snapshot.data()!);
-      final profile = Get.find<ProfileController>();
+      final profile = Get.put(ProfileController());
       profile.updateMods();
       print("updating mods");
 
@@ -159,19 +159,15 @@ class _MapPageState extends State<MapPage> with AutomaticKeepAliveClientMixin {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: const ModificationBottomSheet(),
-        );
-      },
+      backgroundColor: Colors.transparent, // Let the blur & rounded modal show
+      builder: (context) => const ModificationFullSheet(),
     );
+
+    // After sheet is closed, update/save user
     Get.put(UserRepository());
     UserRepository.instance.saveUserRecord(currentUser);
   }
+
 
   @override
   Widget build(BuildContext context) {

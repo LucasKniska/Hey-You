@@ -84,8 +84,23 @@ class UserModel {
 
 
   @override
-  String toString(){
-    return '$firstName $lastName';
+  String toString() {
+    return '''
+      UserModel(
+        id: $id,
+        email: $email,
+        name: $firstName $lastName,
+        biography: ${biography.isEmpty ? '(none)' : biography},
+        quizAnswers: $quizAnswers,
+        temporaryModifications: [${temporaryModifications.map((mod) => mod.toString()).join(', ')}],
+        permanentModifications: $permanentModifications,
+        location: $location,
+        currentMatch: $currentMatch,
+        scheduledConnections: $scheduledConnections,
+        previousConnections: $previousConnections,
+        totalConnections: $totalConnections
+      )''';
   }
+
 
 }
