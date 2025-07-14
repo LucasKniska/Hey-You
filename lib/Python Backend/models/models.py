@@ -1,9 +1,12 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-
 # === Models ===
+class QuestionAnswersRequest(BaseModel):
+    user_id: str
+    question_answers: Dict[str, Any]
+
 class UserIDRequest(BaseModel):
     user_ids: List[str]
 

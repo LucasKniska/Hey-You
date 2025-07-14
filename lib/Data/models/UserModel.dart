@@ -17,7 +17,7 @@ class UserModel {
       firstName = '',
       lastName = '',
       biography = '',
-      quizAnswers = <int>[],
+      quizAnswers = <String, int>{},
       temporaryModifications = [],
       permanentModifications = [],
       location = {},
@@ -32,17 +32,24 @@ class UserModel {
         firstName = json['FirstName'] as String,
         lastName = json['LastName'] as String,
         biography = json['Biography'] as String,
-        quizAnswers = (json['QuizAnswers'] as List).map((e) => e as int).toList(),
-        temporaryModifications = (json['TemporaryModifications'] as List)
-            .map((e) => new TemporaryModification.fromJson(e))
-            .toList(),
-        permanentModifications = (json['PermanentModifications'] as List).map((e) => e as String).toList(),
+        quizAnswers = (json['QuizAnswers'] is Map<String, dynamic>)
+            ? (json['QuizAnswers'] as Map<String, dynamic>).map((k, v) => MapEntry(k, v as int))
+            : {},
+        temporaryModifications = (json['TemporaryModifications'] as List<dynamic>?)
+            ?.map((e) => TemporaryModification.fromJson(e))
+            .toList() ?? [],
+        permanentModifications = (json['PermanentModifications'] as List<dynamic>?)
+            ?.map((e) => e as String)
+            .toList() ?? [],
         location = Map<String, double>.from(json['Location'] as Map),
         currentMatch = json['CurrentMatch'] ?? '',
-        scheduledConnections = (json['ScheduledConnections'] as List).map((e) => e as String).toList(),
-        previousConnections = (json['PreviousConnections'] as List).map((e) => e as String).toList(),
+        scheduledConnections = (json['ScheduledConnections'] as List<dynamic>?)
+            ?.map((e) => e as String)
+            .toList() ?? [],
+        previousConnections = (json['PreviousConnections'] as List<dynamic>?)
+            ?.map((e) => e as String)
+            .toList() ?? [],
         totalConnections = json['TotalConnections'] as int;
-
 
   String id;
 
@@ -50,7 +57,7 @@ class UserModel {
   String firstName;
   String lastName;
   String biography;
-  List<int> quizAnswers;
+  Map<String, int> quizAnswers;
 
   List<TemporaryModification> temporaryModifications; // Need to know modification and time it was created
 

@@ -23,9 +23,36 @@ class UserRepository extends GetxController{
     try{
       await _db.collection('Users').doc(user.id).set(user.toJson());
     } catch (e) {
-      throw 'Something went wrong. Please try again.';
+      throw Exception('Something went wrong: $e');
     }
   }
+
+  Future<void> updateQuestionAnswers(UserModel user) async {
+    final url = Uri.parse(APIConstants.updateQuestionAnswers);
+
+    final payload = {
+      'user_id': user.id,
+      'question_answers': user.quizAnswers,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(payload),
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update: ${response.body}');
+      }
+      final body = json.decode(response.body);
+      if (body['error'] != null) {
+        throw Exception(body['error']);
+      }
+    } catch (e) {
+      throw Exception('Something went wrong: $e');
+    }
+  }
+
 
   Future<UserModel> getUserById(String id) async {
     try{

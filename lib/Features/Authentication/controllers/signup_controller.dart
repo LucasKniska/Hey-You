@@ -53,7 +53,7 @@ class SignupController extends GetxController {
         firstName: firstName.text.trim(),
         lastName: lastName.text.trim(),
         id: userCredential.user!.uid, biography: '',
-        quizAnswers: [], temporaryModifications: [], permanentModifications: [],
+        quizAnswers: {}, temporaryModifications: [], permanentModifications: [],
         location: {}, currentMatch: '', scheduledConnections: [], previousConnections: [], totalConnections: 0
       );
 

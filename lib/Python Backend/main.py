@@ -5,6 +5,8 @@ from enums import UserResponse
 from models.models import *
 from helpers import *
 import constants as const
+from fastapi import Body
+
 
 app = FastAPI()
 
@@ -14,6 +16,18 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 # === API Endpoints ===
+@app.post("/update-question-answers")
+def update_question_answers(request: QuestionAnswersRequest):
+    user_ref = db.collection(const.USERS).document(request.user_id)
+    if not user_ref.get().exists:
+        return {"error": "User not found"}
+    try:
+        user_ref.update({
+            'QuestionAnswers': request.question_answers
+        })
+        return {"status": "QuestionAnswers updated", "user_id": request.user_id}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/match-users")
 def match_users(request: SingleUserRequest):
@@ -22,8 +36,6 @@ def match_users(request: SingleUserRequest):
 
 @app.post("/reject-match")
 def reject_match(match_id: IdRequest):
-
-
     # Keeps a reference of the match document
     match_ref = db.collection(const.NEW_MATCHES).document(match_id.id)
     match_data = match_ref.get().to_dict()

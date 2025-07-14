@@ -20,10 +20,11 @@ class PersonalityQuizController {
 
     if (currentUser.quizAnswers.isNotEmpty){
       for(int i = 0; i < questionList.length; i++){
-        questionList[i].answer = currentUser.quizAnswers[i];
+        if(currentUser.quizAnswers[i.toString()] != null){
+          questionList[i].answer = currentUser.quizAnswers[i.toString()]!%10;
+        }
       }
     }
-
   }
 
   Future<void> submitQuiz() async {
@@ -34,10 +35,18 @@ class PersonalityQuizController {
     try {
       Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
-      currentUser.quizAnswers = questionList.map((e) => e.answer).toList();
+      print(questionList[0]);
+      print(questionList[1]);
+      print(questionList[2]);
+      print(questionList[3]);
+
+
+      currentUser.quizAnswers = {
+        for (final q in questionList) q.key: q.answer+q.type*10,
+      };
 
       final userRepository = Get.put(UserRepository());
-      userRepository.saveUserRecord(currentUser);
+      userRepository.updateQuestionAnswers(currentUser);
 
       TSnackBars.successSnackBar(title: 'You have successfully updated your personality quiz answers!', message: '');
 
