@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,11 +37,19 @@ class UserRepository extends GetxController{
     };
 
     try {
-      final response = await http.post(
+      final response = await http
+          .post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
+      )
+          .timeout(
+        const Duration(seconds: 10), // Set timeout to 10 seconds
+        onTimeout: () {
+          throw TimeoutException('Request timed out after 10 seconds');
+        },
       );
+
       if (response.statusCode != 200) {
         throw Exception('Failed to update: ${response.body}');
       }

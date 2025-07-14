@@ -55,6 +55,9 @@ class SignInController extends GetxController {
 
       // TODO Do internet check
 
+      final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+      Get.put(UserRepository());
+
       if (rememberMe.value) {
         localStorage.write('REMEMBER_EMAIL', email.text.trim());
         localStorage.write('REMEMBER_PASSWORD', password.text.trim());
@@ -62,9 +65,6 @@ class SignInController extends GetxController {
         localStorage.write('REMEMBER_EMAIL', '');
         localStorage.write('REMEMBER_PASSWORD', '');
       }
-
-      final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
-      Get.put(UserRepository());
 
       currentUser = await UserRepository.instance.getUserById(userCredentials.user!.uid);
 

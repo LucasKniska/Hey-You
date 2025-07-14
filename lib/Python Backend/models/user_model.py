@@ -1,7 +1,7 @@
 from models.models import Geolocation, PreviousConnection, TemporaryModification
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List
+from typing import List, Any, Dict
 
 
 class User(BaseModel):
@@ -10,7 +10,7 @@ class User(BaseModel):
     firstName: str
     lastName: str
     biography: str
-    quizAnswers: List[int]
+    quizAnswers: Dict[str, Any]
     temporaryModifications: List[TemporaryModification]
     permanentModifications: List[str]
     location: Geolocation
@@ -27,7 +27,7 @@ class User(BaseModel):
             firstName=data.get("FirstName", ""),
             lastName=data.get("LastName", ""),
             biography=data.get("Biography", ""),
-            quizAnswers=data.get("QuizAnswers", []),
+            quizAnswers=data.get("QuestionAnswers", {}),
             temporaryModifications=[
                 TemporaryModification(
                     start=datetime.fromisoformat(tm["start"]),

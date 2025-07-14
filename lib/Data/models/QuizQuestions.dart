@@ -17,9 +17,8 @@ final List<Question> questionList = <Question>[
   Question(title: 'I value objective logic over personal values when solving problems.', answer: 0, key: '15', type: 2),
   Question(title: 'I like having decisions settled well in advance.', answer: 0, key: '16', type: 2),
   Question(title: 'I keep my options open until the last possible moment.', answer: 0, key: '17', type: 2),
-  Question(title: 'Detailed schedules help me feel in control.', answer: 0, key: '18', type: 2),
-  Question(title: 'I’m comfortable adapting plans on the fly.', answer: 0, key: '19', type: 2),
-  Question(title: 'I prefer clear rules to spontaneous approaches.', answer: 0, key: '20', type: 2),
+  Question(title: 'What are your main interests?', answer: '', key: '20', type: 0),
+  Question(title: 'What are your current academic engagements?', answer: '', key: '23', type: 0),
 ];
 
 
@@ -27,7 +26,7 @@ final List<Question> questionList = <Question>[
 class Question {
 
   final String title;
-  int answer;
+  dynamic answer;
   String key;
   int type;
 

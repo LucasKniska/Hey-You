@@ -32,9 +32,10 @@ class UserModel {
         firstName = json['FirstName'] as String,
         lastName = json['LastName'] as String,
         biography = json['Biography'] as String,
-        quizAnswers = (json['QuizAnswers'] is Map<String, dynamic>)
-            ? (json['QuizAnswers'] as Map<String, dynamic>).map((k, v) => MapEntry(k, v as int))
-            : {},
+        quizAnswers = (json['QuestionAnswers'] is Map<String, dynamic>) ? Map<String, dynamic>.fromEntries(
+            (json['QuestionAnswers'] as Map<String, dynamic>).entries.map((entry) => MapEntry<String, dynamic>(entry.key, entry.value)),
+          )
+          : {},// Default to empty map
         temporaryModifications = (json['TemporaryModifications'] as List<dynamic>?)
             ?.map((e) => TemporaryModification.fromJson(e))
             .toList() ?? [],
@@ -57,7 +58,7 @@ class UserModel {
   String firstName;
   String lastName;
   String biography;
-  Map<String, int> quizAnswers;
+  Map<String, dynamic> quizAnswers;
 
   List<TemporaryModification> temporaryModifications; // Need to know modification and time it was created
 
@@ -109,5 +110,11 @@ class UserModel {
       )''';
   }
 
+  static dynamic _parseAnswer(dynamic v) {
+    if (v is int) return v;           // Keep integers as-is (e.g., 25)
+    if (v is String) return v;        // Keep strings as-is (e.g., "Coding")
+    if (v is num) return v.toInt();   // Convert numbers (e.g., double) to int
+    return null;                      // Return null for invalid types (or use 0 if preferred)
+  }
 
 }

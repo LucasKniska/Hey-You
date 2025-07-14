@@ -12,7 +12,10 @@ import '../../utils/theme/snackbars.dart';
 
 class PersonalityQuizController {
 
-  void setAnswer(int pageIndex, int value){
+
+  Map<String, TextEditingController> textControllers = {};
+
+  void setAnswer(int pageIndex, dynamic value){
       questionList[pageIndex].answer = value;
   }
 
@@ -20,11 +23,23 @@ class PersonalityQuizController {
 
     if (currentUser.quizAnswers.isNotEmpty){
       for(int i = 0; i < questionList.length; i++){
-        if(currentUser.quizAnswers[i.toString()] != null){
-          questionList[i].answer = currentUser.quizAnswers[i.toString()]!%10;
+        if(currentUser.quizAnswers[questionList[i].key] != null){
+
+
+          if(currentUser.quizAnswers[questionList[i].key].runtimeType == String){
+            textControllers.putIfAbsent(questionList[i].key, () => TextEditingController(text: currentUser.quizAnswers[questionList[i].key]));
+            questionList[i].answer = currentUser.quizAnswers[questionList[i].key];
+
+          } else {
+            questionList[i].answer = currentUser.quizAnswers[questionList[i].key]!%10;
+          }
+
+        } else if (questionList[i].type == 0) {
+          textControllers.putIfAbsent(questionList[i].key, () => TextEditingController());
         }
       }
     }
+
   }
 
   Future<void> submitQuiz() async {
@@ -33,29 +48,27 @@ class PersonalityQuizController {
 
     // Loading screen
     try {
-      Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
-
-      print(questionList[0]);
-      print(questionList[1]);
-      print(questionList[2]);
-      print(questionList[3]);
-
+      Get.to(() => const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
       currentUser.quizAnswers = {
-        for (final q in questionList) q.key: q.answer+q.type*10,
+        for (final q in questionList)
+          q.key: q.type == 0 ? q.answer.toString() : (q.answer ?? 0) + q.type * 10,
       };
 
       final userRepository = Get.put(UserRepository());
-      userRepository.updateQuestionAnswers(currentUser);
 
-      TSnackBars.successSnackBar(title: 'You have successfully updated your personality quiz answers!', message: '');
-
-
-      Get.offAll(() => NavigationMenu());
+      try {
+        await userRepository.updateQuestionAnswers(currentUser);
+        TSnackBars.successSnackBar(title: 'You have successfully updated your personality quiz answers!', message: '');
+        textControllers.values.forEach((controller) => controller.dispose());
+        Get.offAll(() => NavigationMenu());
+      } catch (e) {
+        Get.back();
+        TSnackBars.errorSnackBar(title: 'Could not update your personality quiz answers!', message: 'Please try again.');
+      }
     } on Exception catch (e) {
-      Get.offAll(() => PersonalityQuizPage());
-      TSnackBars.errorSnackBar(title: 'There has been an error submitting the quiz', message: '');
-
+      Get.back();
+      TSnackBars.errorSnackBar(title: 'Could not update your personality quiz answers!', message: 'Please try again.');
     }
 
   }

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Features/PersonalityQuiz/personality_quiz_controller.dart';
 import 'package:hey_you/Features/PersonalityQuiz/subwidgets/leftCenteredIconButton.dart';
 import 'package:hey_you/Features/PersonalityQuiz/subwidgets/rightCenteredIconButton.dart';
 
+import '../../Common/navigation_menu.dart';
 import '../../Data/models/QuizQuestions.dart';
+import '../../Data/repositories/authentication/authentication_repository.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/text_string.dart';
 
@@ -31,9 +35,9 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
   }
 
   bool get batchComplete =>
-      batchIndices.every((i) => (questionList[i].answer ?? 0) >= 1);
+      batchIndices.every((i) => questionList[i].type == 0 || (questionList[i].answer ?? 0) >= 1);
   double get progress =>
-      questionList.where((q) => (q.answer ?? 0) >= 1).length /
+      questionList.where((q) => q.type == 0 || (q.answer ?? 0) >= 1).length /
       questionList.length;
 
   // ── controllers ────────────────────────────────────────────────────
@@ -124,7 +128,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
           (context) => AlertDialog(
             title: const Text('Exit Quiz?'),
             content: const Text(
-              'Are you sure you want to exit? Your answers will be saved.',
+              'Are you sure you want to exit? You can choose to save or not to save.',
             ),
             actions: [
               TextButton(
@@ -132,12 +136,18 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                 child: const Text('Cancel'),
               ),
               TextButton(
+                onPressed: () => {
+                  _exit(),
+                  Get.offAll(() => NavigationMenu())
+                }, child: const Text('Exit', style: TextStyle(color: Colors.red)),
+              ),
+              TextButton(
                 onPressed:
                     () => {
-                      Navigator.of(context).pop(true),
+                      Get.offAll(() => NavigationMenu()),
                       controller.submitQuiz(),
                     },
-                child: const Text('Exit', style: TextStyle(color: Colors.red)),
+                child: const Text('Exit and Save', style: TextStyle(color: Colors.red)),
               ),
             ],
           ),
@@ -156,6 +166,10 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
       return;
     }
     controller.submitQuiz();
+  }
+
+  void _exit() {
+    controller.initAnswers();
   }
 
   // ── build ─────────────────────────────────────────────────────────
@@ -177,53 +191,88 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
           // ── info banner ──
           AnimatedCrossFade(
             duration: const Duration(milliseconds: 250),
-            crossFadeState:
-                showInfo ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+            crossFadeState: showInfo ? CrossFadeState.showFirst : CrossFadeState.showSecond,
             firstChild: Container(
               width: double.infinity,
               margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: TColors.secondary.withOpacity(.08),
+                gradient: LinearGradient(
+                  colors: [
+                    TColors.primary.withOpacity(0.1),
+                    TColors.secondary.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: TColors.primary.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Info Icon
                   Container(
-                    width: 10,
-                    height: 10,
-                    margin: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: accent,
+                      color: TColors.primary.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
+                    child: Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: TColors.primary,
+                    ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
+                  // Text Content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           TTexts.quizTitle,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: TColors.primary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           TTexts.quizUnder,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: Colors.black54),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
+                  // Close Button
                   InkWell(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
                     onTap: () => setState(() => showInfo = false),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4.0),
-                      child: Icon(Icons.close, size: 18, color: Colors.black45),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: TColors.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: Colors.black45,
+                      ),
                     ),
                   ),
                 ],
@@ -265,6 +314,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                         ),
                   ),
                   const SizedBox(height: 12),
+                  const Divider(color: Colors.black12, height: 1)
                 ],
               ),
             ),
@@ -304,7 +354,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                   itemBuilder: (_, i) {
                     final idx = batchIndices[i];
                     final q = questionList[idx];
-                    final answered = (q.answer ?? 0) >= 1;
+                    final answered = (q.answer != null && q.answer != '' && q.answer != 0);
 
                     return Card(
                       elevation: 2,
@@ -319,26 +369,21 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: accent.withOpacity(.15),
+                                    color: TColors.primary.withOpacity(.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     'Q${idx + 1}',
-                                    style: TextStyle(color: accent),
+                                    style: TextStyle(color: TColors.primary),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
                                     q.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: const TextStyle(fontWeight: FontWeight.w600),
                                   ),
                                 ),
                                 if (answered)
@@ -350,59 +395,59 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                               ],
                             ),
                             const SizedBox(height: 16),
-                            Row(
-                              children: List.generate(7, (n) {
-                                final sel = q.answer == n + 1;
-                                return Expanded(
-                                  child: InkWell(
-                                    onTap:
-                                        () => setState(
-                                          () =>
-                                              controller.setAnswer(idx, n + 1),
+                            if (q.type == 0) // Free-response question
+                              TextField(
+                                controller: controller.textControllers[q.key],
+                                onChanged: (value) {
+                                  setState(() {
+                                    q.answer = value; // Update the answer directly
+                                    controller.setAnswer(idx, value); // Update controller if needed
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  hintText: 'Enter your response...',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[100],
+                                ),
+                                maxLines: 3, // Allow multi-line input
+                                maxLength: 255,
+                              )
+                            else // Multiple-choice question
+                              Row(
+                                children: List.generate(7, (n) {
+                                  final sel = q.answer == n + 1;
+                                  return Expanded(
+                                    child: InkWell(
+                                      onTap: () => setState(() => controller.setAnswer(idx, n + 1)),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 150),
+                                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: sel ? TColors.primary : Colors.grey[200],
+                                          borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(n == 0 ? 16 : 4),
+                                            bottomLeft: Radius.circular(n == 0 ? 16 : 4),
+                                            topRight: Radius.circular(n == 6 ? 16 : 4),
+                                            bottomRight: Radius.circular(n == 6 ? 16 : 4),
+                                          ),
                                         ),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(
-                                        milliseconds: 150,
-                                      ),
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 1,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: sel ? accent : Colors.grey[200],
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(
-                                            n == 0 ? 16 : 4,
-                                          ),
-                                          bottomLeft: Radius.circular(
-                                            n == 0 ? 16 : 4,
-                                          ),
-                                          topRight: Radius.circular(
-                                            n == 6 ? 16 : 4,
-                                          ),
-                                          bottomRight: Radius.circular(
-                                            n == 6 ? 16 : 4,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${n + 1}',
-                                          style: TextStyle(
-                                            color:
-                                                sel
-                                                    ? Colors.white
-                                                    : Colors.black,
+                                        child: Center(
+                                          child: Text(
+                                            '${n + 1}',
+                                            style: TextStyle(
+                                              color: sel ? Colors.white : Colors.black,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                );
-                              }),
-                            ),
+                                  );
+                                }),
+                              ),
                           ],
                         ),
                       ),
@@ -441,7 +486,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                           foregroundColor: Colors.red[600],
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           side: const BorderSide(
                             color: Color(0xFFD32F2F),
@@ -470,26 +515,30 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                   )
                 else if (currentBatch == numBatches - 1)
                   Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(0, 38),
-                        backgroundColor: Colors.white,
-                        foregroundColor: TColors.primary,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
+                    flex: 2,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(80, 38),
+                          backgroundColor: Colors.white,
+                          foregroundColor: TColors.primary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
 
-                        padding: EdgeInsets.zero,
-                      ),
-                      onPressed: _back,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.arrow_back_ios_new, size: 18),
-                          SizedBox(width: 5),
-                          Text('Back'),
-                        ],
+                          padding: EdgeInsets.zero,
+                        ),
+                        onPressed: _back,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.arrow_back_ios_new, size: 18),
+                            SizedBox(width: 5),
+                            Text('Back'),
+                          ],
+                        ),
                       ),
                     ),
                   )
@@ -504,14 +553,14 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(0, 38),
+                              minimumSize: const Size(80, 38),
                               backgroundColor: Colors.white,
                               foregroundColor: TColors.primary,
                               elevation: 0,
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(18),
-                                  bottomLeft: Radius.circular(18),
+                                  topLeft: Radius.circular(12),
+                                  bottomLeft: Radius.circular(12),
                                   topRight: Radius.circular(0),
                                   bottomRight: Radius.circular(0),
                                 ),
@@ -524,7 +573,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                             ),
                             onPressed: _back,
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: const [
                                 Icon(Icons.arrow_back_ios_new, size: 18),
                                 SizedBox(width: 5),
@@ -543,7 +592,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                         Expanded(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(0, 38),
+                              minimumSize: const Size(80, 38),
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.red[600],
                               elevation: 0,
@@ -551,8 +600,8 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(0),
                                   bottomLeft: Radius.circular(0),
-                                  topRight: Radius.circular(18),
-                                  bottomRight: Radius.circular(18),
+                                  topRight: Radius.circular(14),
+                                  bottomRight: Radius.circular(14),
                                 ),
                               ),
                               side: const BorderSide(
@@ -563,7 +612,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                             ),
                             onPressed: _exitQuiz,
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: const [
                                 Icon(
                                   Icons.close,
