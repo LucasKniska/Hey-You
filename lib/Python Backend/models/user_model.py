@@ -1,7 +1,7 @@
-from models.models import Geolocation, PreviousConnection, TemporaryModification
 from pydantic import BaseModel
+from typing import List, Dict, Any
 from datetime import datetime
-from typing import List, Any, Dict
+from models.models import Geolocation, TemporaryModification
 
 
 class User(BaseModel):
@@ -16,8 +16,11 @@ class User(BaseModel):
     location: Geolocation
     currentMatch: str
     previousConnections: List[str]
-    scheduledConnections: List[str]
     totalConnections: int = 0
+    discoverable: bool = False
+    longestStreak: int = 0
+    currentStreak: int = 0
+    lastMatch: datetime = datetime.now()
 
     @classmethod
     def from_json(cls, data: dict):
@@ -36,9 +39,32 @@ class User(BaseModel):
                 for tm in data.get("TemporaryModifications", [])
             ],
             permanentModifications=data.get("PermanentModifications", []),
-            location=Geolocation.from_json(data.get('Location', {})),
+            location=Geolocation.from_json(data.get("Location", {})),
             currentMatch=data.get("CurrentMatch") or "",
             previousConnections=data.get("PreviousConnections", []),
-            scheduledConnections=data.get("ScheduledConnections", []),
-            totalConnections=data.get("TotalConnections", 0)
+            totalConnections=data.get("TotalConnections", 0),
+            discoverable=data.get("Discoverable", False),
+            longestStreak=data.get("LongestStreak", 0),
+            currentStreak=data.get("CurrentStreak", 0),
+            lastMatch=datetime.fromisoformat(data["LastMatch"]) if "LastMatch" in data else datetime.now()
         )
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "FirstName": self.firstName,
+            "LastName": self.lastName,
+            "Email": self.email,
+            "Biography": self.biography,
+            "QuestionAnswers": self.quizAnswers,
+            "TemporaryModifications": [tm.to_dict() for tm in self.temporaryModifications],
+            "PermanentModifications": self.permanentModifications,
+            "Location": self.location.to_dict(),
+            "CurrentMatch": self.currentMatch,
+            "PreviousConnections": self.previousConnections,
+            "TotalConnections": self.totalConnections,
+            "Discoverable": self.discoverable,
+            "LongestStreak": self.longestStreak,
+            "CurrentStreak": self.currentStreak,
+            "LastMatch": self.lastMatch.isoformat()
+        }

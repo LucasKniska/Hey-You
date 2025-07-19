@@ -12,6 +12,7 @@ import '../../../Common/location_services.dart';
 import '../../../Common/navigation_menu.dart';
 import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
+import '../../../Features/EditProfile/profile_controller.dart';
 import '../../../utils/theme/snackbars.dart';
 import '../user/user_repository.dart';
 
@@ -40,16 +41,10 @@ class AuthenticationRepository extends GetxController{
         try {
           Get.put(UserRepository());
           Get.put(LocationController());
-
-          final currentUser = UserRepository.instance.currentUser;
+          Get.lazyPut(()=> ProfileController());
 
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
-            if(currentUser.quizAnswers.isEmpty){
-              Get.offAll(() => PersonalityQuizPage());
-            } else {
-              Get.offAll(() => const NavigationMenu());
-            }
-
+            Get.offAll(() => const NavigationMenu());
           }else{
             Get.offAll(EmailVerificationScreen());
           }

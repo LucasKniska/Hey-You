@@ -46,16 +46,13 @@ class SignupController extends GetxController {
       // Do internet check
 
       // Storing user data
-      final userCredential = await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
+      await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
 
-      final newUser = UserModel(
-        email: email.text.trim(),
-        firstName: firstName.text.trim(),
-        lastName: lastName.text.trim(),
-        id: userCredential.user!.uid, biography: '',
-        quizAnswers: {}, temporaryModifications: [], permanentModifications: [],
-        location: {}, currentMatch: '', scheduledConnections: [], previousConnections: [], totalConnections: 0
-      );
+      UserModel newUser = UserModel.initial();
+      newUser.email = email.text.trim();
+      newUser.firstName = firstName.text.trim();
+      newUser.lastName = lastName.text.trim();
+      newUser.id = FirebaseAuth.instance.currentUser!.uid;
 
       final userRepository = Get.put(UserRepository());
       userRepository.saveUserRecord(newUser);

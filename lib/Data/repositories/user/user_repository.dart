@@ -85,6 +85,7 @@ class UserRepository extends GetxController {
           try {
             _currentUser.value = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
             _currentUser.value.id = FirebaseAuth.instance.currentUser!.uid;
+
             print('Current user updated: ${_currentUser.value.id}');
           } catch (e) {
             print('Error updating current user: $e');

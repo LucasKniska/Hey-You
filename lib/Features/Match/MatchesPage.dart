@@ -10,15 +10,11 @@ import 'package:hey_you/Features/Match/MeetNowPage.dart';
 import 'package:hey_you/Features/Match/subwidgets/MeetNowToggle.dart';
 import 'package:hey_you/Features/Match/subwidgets/SearchFilters.dart';
 import 'package:hey_you/Features/Match/subwidgets/SectionTitle.dart';
-import 'package:hey_you/utils/constants/colors.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
-import '../../Data/models/UserModel.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
-import '../EditProfile/profile_controller.dart';
 import '../ViewConnections/previousConnections.dart';
-import 'subwidgets/BottomSheet.dart';
 import 'MatchPopup.dart';
 
 class MapPage extends StatefulWidget {
@@ -152,7 +148,6 @@ class _MapPageState extends State<MapPage>
     _floatController.dispose();
     _colorController.dispose();
     _borderController.dispose();
-    _userMatchSubscription.cancel();
     matchTimer?.cancel();
     super.dispose();
   }
