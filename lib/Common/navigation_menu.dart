@@ -3,12 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/topbar.dart';
+import 'package:hey_you/Features/Leaderboards/LeaderboardsPage.dart';
 import 'package:hey_you/utils/constants/sizes.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import '../Features/EditProfile/ProfilePage.dart';
-import '../Features/Match/MapPage.dart';
-import '../Features/ViewConnections/ContactsPage.dart';
+import '../Features/Match/MatchesPage.dart';
 import '../utils/constants/colors.dart';
 
 class NavigationMenu extends StatefulWidget {
@@ -69,7 +69,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
             },
             destinations: const [
               NavigationDestination(icon: Icon(Iconsax.people), label: 'Contacts'),
-              NavigationDestination(icon: Icon(Iconsax.map), label: 'Map'),
+              NavigationDestination(icon: Icon(Iconsax.map), label: 'Match'),
               NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
             ],
           ),
@@ -92,7 +92,7 @@ class NavigationController extends GetxController {
   final PageController pageController = PageController();
 
   final List<Widget> screens = <Widget>[
-    ContactsPage(),
+    LeaderboardPage(),
     MapPage(),
     ProfilePage(),
   ];

@@ -20,17 +20,7 @@ def get_location(user_id, db):
     return doc.to_dict().get('location', {'lat': 0, 'lon': 0})
 
 def get_same_quiz_answers(userQuizAnswers, user2QuizAnswers):
-    sameAnswers = []
-    for i in range(len(userQuizAnswers)):
-        if userQuizAnswers[i] == user2QuizAnswers[i]:
-
-            # TODO Append the string that is similar about the related question
-            sameAnswers.append(str(userQuizAnswers[i]))
-
-            if len(sameAnswers) >= const.RELATED_INFO_MAX:
-                break
-
-    return sameAnswers
+    return ['1', '2', '3']
 
 def get_user_by_id(user_id, db):
     doc = db.collection(const.USERS).document(user_id).get()

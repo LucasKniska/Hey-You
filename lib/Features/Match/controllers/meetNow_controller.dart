@@ -16,6 +16,7 @@ class MeetNowController {
 
   bool connected = false;
   bool pressedConnectionAchieved = false;
+  final currentUser = UserRepository.instance.currentUser;
 
   Future<void> confirmMeeting () async {
 

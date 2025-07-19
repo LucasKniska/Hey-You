@@ -10,6 +10,8 @@ import '../../../utils/constants/api_constants.dart';
 
 class PreviousConnectionController {
 
+  final currentUser = UserRepository.instance.currentUser;
+
   Future<List<PreviousMatch>> getPreviousMatches() async {
 
     final url = Uri.parse('${APIConstants.getPreviousConnections}?user_id=${FirebaseAuth.instance.currentUser!.uid}');

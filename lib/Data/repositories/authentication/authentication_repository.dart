@@ -8,6 +8,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:hey_you/Features/Authentication/screens/emailVerification.dart';
 import 'package:hey_you/Features/PersonalityQuiz/PersonalityQuiz.dart';
 
+import '../../../Common/location_services.dart';
 import '../../../Common/navigation_menu.dart';
 import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
@@ -38,7 +39,9 @@ class AuthenticationRepository extends GetxController{
         /// User is signed in
         try {
           Get.put(UserRepository());
-          currentUser = await UserRepository.instance.getUserById(FirebaseAuth.instance.currentUser!.uid);
+          Get.put(LocationController());
+
+          final currentUser = UserRepository.instance.currentUser;
 
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
             if(currentUser.quizAnswers.isEmpty){
@@ -74,10 +77,11 @@ class AuthenticationRepository extends GetxController{
 
   }
 
-  Future<UserCredential> loginWithEmailAndPassword(String email, String password) async {
+  Future<void> loginWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password);
-
+      return await _auth.signInWithEmailAndPassword(email: email, password: password).then((UserCredential result) {
+        UserRepository.instance.startListeningToUser(result.user!.uid);
+      });
     } catch (e) {
       throw 'Something went wrong. Please try again';
     }
@@ -85,7 +89,9 @@ class AuthenticationRepository extends GetxController{
 
   Future<void> signOut() async {
     try{
-      await FirebaseAuth.instance.signOut();
+      await FirebaseAuth.instance.signOut().then((_) {
+        UserRepository.instance.stopListeningToUser();
+      });
       Get.to(() => LoginScreen());
     } catch (e) {
       TSnackBars.errorSnackBar(title: 'There has been an error signing out of your account');

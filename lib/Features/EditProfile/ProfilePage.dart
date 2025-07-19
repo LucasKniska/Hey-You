@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
-import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
 import 'package:hey_you/Features/EditProfile/profile_controller.dart';
 import 'package:hey_you/Features/PersonalityQuiz/PersonalityQuiz.dart';
@@ -11,7 +10,6 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/sizes.dart';
-import '../Match/BottomSheet.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -21,10 +19,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+
+  final currentUser = UserRepository.instance.currentUser;
+  final controller = Get.put(ProfileController());
+  final signOutController = Get.put(AuthenticationRepository());
+
+
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ProfileController());
-    final signOutController = Get.put(AuthenticationRepository());
 
     return Scaffold(
       body: SafeArea(
@@ -124,72 +126,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const SizedBox(height: TSizes.spaceBtwSections),
 
-              /// Active Search Modifications
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Search Filters', style: Theme.of(context).textTheme.headlineSmall),
-                  TextButton.icon(
-                    icon: const Icon(Iconsax.add_circle, color: TColors.primary),
-
-                    onPressed: () async {
-                      await showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent, // For rounded corners
-                      builder: (context) => const ModificationFullSheet(),
-                      );
-                      Get.put(UserRepository());
-                      UserRepository.instance.saveUserRecord(currentUser);
-                      // Optionally refresh your filter lists here
-                    },
-
-
-                    label: const Text('New Filter', style: TextStyle(color: TColors.primary)),
-                  )
-                ],
-              ),
-
-              Obx(() => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (controller.temporaryMods.isEmpty)
-                    ListTile(
-                      leading: const Icon(Iconsax.calendar, color: Colors.grey),
-                      title: const Text('No Daily Filters yet'),
-                      subtitle: const Text('Create one to personalize your daily matches'),
-                    )
-                  else
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: controller.temporaryMods
-                          .map((mod) => _buildChip(
-                          mod, isPermanent: false, controller: controller))
-                          .toList(),
-                    ),
-
-                  const SizedBox(height: TSizes.spaceBtwItems),
-
-                  if (controller.permanentMods.isEmpty)
-                    ListTile(
-                      leading: const Icon(Iconsax.lock, color: Colors.grey),
-                      title: const Text('No Permanent Filters yet'),
-                      subtitle: const Text('Create filters that stay active'),
-                    )
-                  else
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: controller.permanentMods
-                          .map((mod) => _buildChip(
-                          mod, isPermanent: true, controller: controller))
-                          .toList(),
-                    ),
-                ],
-              )),
-
-              const SizedBox(height: TSizes.spaceBtwSections),
 
               /// Personality Quiz Update
               Card(
@@ -259,40 +195,4 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
-  Widget _buildChip(
-      String text, {
-        required bool isPermanent,
-        required ProfileController controller,
-      }) {
-    final color = isPermanent ? Colors.deepPurpleAccent : Colors.blueAccent;
-    final icon = isPermanent ? Icons.push_pin_rounded : Icons.today_rounded;
-    return Chip(
-      avatar: Icon(icon, color: color, size: 16),
-      label: Text(
-        text,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      deleteIcon: Icon(Icons.close, color: color, size: 18),
-      onDeleted: () {
-        controller.deleteModification(
-          description: text,
-          permanent: isPermanent,
-        );
-      },
-      backgroundColor: color.withOpacity(0.1),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: color.withOpacity(0.22)),
-      ),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    );
-  }
-
 }

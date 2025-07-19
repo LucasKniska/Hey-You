@@ -60,8 +60,6 @@ class SignupController extends GetxController {
       final userRepository = Get.put(UserRepository());
       userRepository.saveUserRecord(newUser);
 
-      currentUser = newUser;
-
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many connections as possible!');
 
       await AuthenticationRepository.instance.screenRedirect();

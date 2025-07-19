@@ -3,18 +3,16 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
-import 'package:hey_you/Features/Match/ConnectedSplashScreen/ConnectedSplashScreen.dart';
-import 'package:hey_you/Features/Match/RejectedSplashScreen/RejectedSplashScreen.dart';
 import 'package:hey_you/Features/Match/controllers/howToMeet_controller.dart';
 import 'package:hey_you/Features/Match/subwidgets/MeetNowLater.dart';
 
 import '../../Data/models/QuizQuestions.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/sizes.dart';
-import 'RejectedSplashScreen/AnimatedXMark.dart';
+import 'SplashScreens/ConnectedSplashScreen/ConnectedSplashScreen.dart';
+import 'SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
 
 class MatchPopup extends StatefulWidget {
   final CurrentMatch current;
@@ -28,6 +26,7 @@ class MatchPopup extends StatefulWidget {
 class _MatchPopupState extends State<MatchPopup> {
   late Timer _timer;
   late Duration _remaining;
+  final currentUser = UserRepository.instance.currentUser;
 
 
   late CurrentMatch current;

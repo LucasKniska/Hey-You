@@ -12,6 +12,7 @@ import '../Features/Match/MatchPopup.dart';
 
 Future<CurrentMatch?> setupNotification() async {
 
+  final currentUser = UserRepository.instance.currentUser;
   CurrentMatch? matchFound;
 
   // Shows the popup if necessary
@@ -24,8 +25,6 @@ Future<CurrentMatch?> setupNotification() async {
     if (currentMatch != null && currentMatch != '') {
       // The item in current match that is showing up
       CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatch);
-
-
 
       if (currentMatchNow == null) return;
 

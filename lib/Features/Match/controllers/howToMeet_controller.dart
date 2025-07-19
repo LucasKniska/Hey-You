@@ -13,8 +13,9 @@ import '../../../Data/models/CurrentMatch.dart';
 class HowToMeetController extends GetxController{
   static HowToMeetController get instance => Get.find();
 
-  static void meetNowControl(CurrentMatch c) {
 
+  static void meetNowControl(CurrentMatch c) {
+    final currentUser = UserRepository.instance.currentUser;
     Get.put(MatchRepository());
 
     if(currentUser.id == c.userData[0].id){
@@ -30,6 +31,7 @@ class HowToMeetController extends GetxController{
   static void meetLaterControl(CurrentMatch c){
 
     Get.put(MatchRepository());
+    final currentUser = UserRepository.instance.currentUser;
 
     if(currentUser.id == c.userData[0].id){
       c.userData[0].response = 'meet_later';
@@ -42,6 +44,7 @@ class HowToMeetController extends GetxController{
 
   static void noDecisionControl(CurrentMatch c){
     Get.put(MatchRepository());
+    final currentUser = UserRepository.instance.currentUser;
 
     if(currentUser.id == c.userData[0].id){
       c.userData[0].response = 'not_selected';

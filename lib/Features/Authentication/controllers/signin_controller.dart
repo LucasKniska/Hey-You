@@ -66,8 +66,6 @@ class SignInController extends GetxController {
         localStorage.write('REMEMBER_PASSWORD', '');
       }
 
-      currentUser = await UserRepository.instance.getUserById(userCredentials.user!.uid);
-
       print('Going to screen redirect');
       await AuthenticationRepository.instance.screenRedirect();
       print('Completed screen redirect');

@@ -2,10 +2,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
-import '../../Data/TemporaryModifications.dart';
-import '../../Data/repositories/user/user_repository.dart';
-import '../../utils/theme/snackbars.dart';
+import '../../../Data/TemporaryModifications.dart';
+import '../../../Data/repositories/user/user_repository.dart';
+import '../../../utils/theme/snackbars.dart';
 
 
 class ModificationFullSheet extends StatefulWidget {
@@ -17,6 +18,7 @@ class ModificationFullSheet extends StatefulWidget {
 
 class _ModificationFullSheetState extends State<ModificationFullSheet> {
   final TextEditingController _controller = TextEditingController();
+  final currentUser = UserRepository.instance.currentUser;
   int _selectedType = 0;
   bool _isLoading = false;
 
@@ -66,7 +68,7 @@ class _ModificationFullSheetState extends State<ModificationFullSheet> {
                     ),
                   ),
                   // Title and subtitle
-                  Text('Add Filter',
+                  Text('Edit Filters',
                       style: textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 6.0),
@@ -206,7 +208,8 @@ class _ModificationFullSheetState extends State<ModificationFullSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildSection(
-                            icon: Icons.today_rounded,
+                            icon: Iconsax.calendar,
+                            icon2: Icons.today_rounded,
                             title: "Daily Filters",
                             mods: currentUser.temporaryModifications.map((mod) => mod.modification).toList(),
                             color: Colors.blueAccent,
@@ -220,7 +223,8 @@ class _ModificationFullSheetState extends State<ModificationFullSheet> {
                           ),
                           SizedBox(height: 20),
                           _buildSection(
-                            icon: Icons.push_pin_rounded,
+                            icon2: Icons.push_pin_rounded,
+                            icon: Iconsax.lock_1,
                             title: "Permanent Filters",
                             mods: currentUser.permanentModifications,
                             color: Colors.deepPurpleAccent,
@@ -265,6 +269,7 @@ class _ModificationFullSheetState extends State<ModificationFullSheet> {
 
   Widget _buildSection({
     required IconData icon,
+    required IconData icon2,
     required String title,
     required List<String> mods,
     required Color color,
@@ -291,7 +296,7 @@ class _ModificationFullSheetState extends State<ModificationFullSheet> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
               children: [
-                Icon(Icons.sentiment_satisfied_alt, color: color.withOpacity(0.6)),
+                Icon(icon2, color: color.withOpacity(0.6)),
                 SizedBox(width: 10),
                 Flexible(child: Text(emptyText, style: textTheme.bodyMedium!.copyWith(color: Colors.black38))),
               ],
@@ -304,7 +309,7 @@ class _ModificationFullSheetState extends State<ModificationFullSheet> {
             return Animate(
               effects: [FadeEffect(duration: 200.ms), ScaleEffect(duration: 200.ms)],
               child: Chip(
-                avatar: Icon(icon, color: color, size: 16),
+                avatar: Icon(icon2, color: color, size: 16),
                 label: Text(mod, style: textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w500)),
                 deleteIcon: Icon(Icons.close, size: 18),
                 onDeleted: () => onDelete(mod),

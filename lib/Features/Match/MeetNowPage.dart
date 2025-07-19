@@ -12,7 +12,7 @@ import 'package:geocoding/geocoding.dart';
 import '../../Common/topbar.dart';
 import '../../Data/models/CurrentMatch.dart';
 import '../../Data/repositories/user/user_repository.dart';
-import 'MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
+import 'SplashScreens/MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
 import 'controllers/meetNow_controller.dart';
 
 class MeetNowPage extends StatefulWidget {
@@ -32,6 +32,7 @@ class MeetNowPage extends StatefulWidget {
 }
 
 class _MeetNowPageState extends State<MeetNowPage> {
+  final currentUser = UserRepository.instance.currentUser;
 
   final MeetNowController _pageController = MeetNowController();
 

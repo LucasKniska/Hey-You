@@ -19,6 +19,9 @@ db = firestore.client()
 @app.post("/update-question-answers")
 def update_question_answers(request: QuestionAnswersRequest):
     user_ref = db.collection(const.USERS).document(request.user_id)
+
+    print(request)
+
     if not user_ref.get().exists:
         return {"error": "User not found"}
     try:

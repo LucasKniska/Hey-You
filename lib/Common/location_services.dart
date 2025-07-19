@@ -65,11 +65,10 @@ class LocationController extends GetxController {
 
   Future<void> _updateBackend(Position pos) async {
 
-    // TODO: If location did not change enough
-    // If the location did not change, do not update anything
-    if(currentUser.location['lat'] == pos.latitude && currentUser.location['long'] == pos.longitude) return;
+    final currentUser = UserRepository.instance.currentUser;
 
-    Get.put(UserRepository());
+    // TODO: If location did not change enough
+    if(currentUser.location['lat'] == pos.latitude && currentUser.location['long'] == pos.longitude) return;
 
     currentUser.location = {
       'lat': pos.latitude,

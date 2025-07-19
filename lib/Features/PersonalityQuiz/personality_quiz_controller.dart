@@ -12,7 +12,7 @@ import '../../utils/theme/snackbars.dart';
 
 class PersonalityQuizController {
 
-
+  final currentUser = UserRepository.instance.currentUser;
   Map<String, TextEditingController> textControllers = {};
 
   void setAnswer(int pageIndex, dynamic value){
@@ -48,6 +48,8 @@ class PersonalityQuizController {
 
     // Loading screen
     try {
+      final userRepository = UserRepository.instance;
+
       Get.to(() => const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
       currentUser.quizAnswers = {
@@ -55,10 +57,9 @@ class PersonalityQuizController {
           q.key: q.type == 0 ? q.answer.toString() : (q.answer ?? 0) + q.type * 10,
       };
 
-      final userRepository = Get.put(UserRepository());
 
       try {
-        await userRepository.updateQuestionAnswers(currentUser);
+        await userRepository.updateQuestionAnswers();
         TSnackBars.successSnackBar(title: 'You have successfully updated your personality quiz answers!', message: '');
         textControllers.values.forEach((controller) => controller.dispose());
         Get.offAll(() => NavigationMenu());
