@@ -105,12 +105,10 @@ class UserRepository extends GetxController {
     _currentUser.value = UserModel.initial(); // Reset to initial state
   }
 
-  /// Helper method to update current user locally (useful for immediate UI updates)
-  void updateCurrentUser(UserModel user) {
-    _currentUser.value = user;
-  }
+  Future<void> saveUserRecord({user2 = null}) async {
+    UserModel user = (user2 == null) ? currentUser : user2;
 
-  Future<void> saveUserRecord(UserModel user) async {
+
     print('Printing user: $user');
     try {
       await _db.collection('Users').doc(user.id).set(user.toJson());

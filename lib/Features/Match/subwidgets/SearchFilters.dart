@@ -40,7 +40,7 @@ Widget searchFilters(var context) {
               builder: (context) => const ModificationFullSheet(),
             );
             Get.find<UserRepository>();
-            UserRepository.instance.saveUserRecord(currentUser);
+            UserRepository.instance.saveUserRecord();
           },
         )
 

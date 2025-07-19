@@ -55,7 +55,7 @@ class SignupController extends GetxController {
       newUser.id = FirebaseAuth.instance.currentUser!.uid;
 
       final userRepository = Get.put(UserRepository());
-      userRepository.saveUserRecord(newUser);
+      userRepository.saveUserRecord(user2: newUser);
 
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many connections as possible!');
 

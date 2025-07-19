@@ -84,6 +84,10 @@ class AuthenticationRepository extends GetxController{
 
   Future<void> signOut() async {
     try{
+
+      UserRepository.instance.currentUser.discoverable = false;
+      await UserRepository.instance.saveUserRecord();
+
       await FirebaseAuth.instance.signOut().then((_) {
         UserRepository.instance.stopListeningToUser();
       });

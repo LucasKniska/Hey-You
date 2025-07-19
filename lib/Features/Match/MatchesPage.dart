@@ -14,6 +14,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
+import '../EditProfile/profile_controller.dart';
 import '../ViewConnections/previousConnections.dart';
 import 'MatchPopup.dart';
 
@@ -418,6 +419,7 @@ class _MapPageState extends State<MapPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    Get.put(ProfileController());
 
     return Scaffold(
       body: SingleChildScrollView(

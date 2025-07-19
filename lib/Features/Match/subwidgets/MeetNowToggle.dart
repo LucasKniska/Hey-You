@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:math' as math;
 
+import 'package:hey_you/Data/repositories/user/user_repository.dart';
+
 class MeetNowToggle extends StatelessWidget {
-  final RxBool isMeetNowEnabled = true.obs;
+  final RxBool isMeetNowEnabled = UserRepository.instance.currentUser.discoverable.obs;
 
   MeetNowToggle({super.key});
 
@@ -79,7 +81,7 @@ class MeetNowToggle extends StatelessWidget {
                   ),
                   // Toggle switch - now tappable
                   GestureDetector(
-                    onTap: () => isMeetNowEnabled.value = !enabled,
+                    onTap: () => {isMeetNowEnabled.value = !enabled, UserRepository.instance.currentUser.discoverable = isMeetNowEnabled.value, UserRepository.instance.saveUserRecord()},
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 50,
@@ -117,7 +119,7 @@ class MeetNowToggle extends StatelessWidget {
 
             // Animated button section
             GestureDetector(
-              onTap: () => isMeetNowEnabled.value = !enabled,
+              onTap: () => {isMeetNowEnabled.value = !enabled, UserRepository.instance.currentUser.discoverable = isMeetNowEnabled.value, UserRepository.instance.saveUserRecord()},
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeInOut,

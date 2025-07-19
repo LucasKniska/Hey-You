@@ -46,7 +46,5 @@ class ProfileController extends GetxController {
       currentUser.temporaryModifications.removeWhere((e) => e.modification == description);
     }
 
-    // Optional: persist user
-    UserRepository.instance.saveUserRecord(currentUser);
   }
 }
