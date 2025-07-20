@@ -35,7 +35,5 @@ class PreviousConnectionController {
     } else {
       throw Exception("Failed to fetch previous matches. Status code: ${response.statusCode}");
     }
-
-    return [];
   }
 }

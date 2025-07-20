@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Features/PersonalityQuiz/personality_quiz_controller.dart';
-import 'package:hey_you/Features/PersonalityQuiz/subwidgets/leftCenteredIconButton.dart';
 import 'package:hey_you/Features/PersonalityQuiz/subwidgets/rightCenteredIconButton.dart';
 
 import '../../Common/navigation_menu.dart';
 import '../../Data/models/QuizQuestions.dart';
-import '../../Data/repositories/authentication/authentication_repository.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/text_string.dart';
 
@@ -46,7 +43,6 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
       ScrollController(initialScrollOffset: offset);
 
   late final AnimationController _shakeCtrl;
-  late final Animation<double> _shake;
 
   // ── init / dispose ────────────────────────────────────────────────
   @override
@@ -62,12 +58,6 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
     )..addStatusListener((s) {
       if (s == AnimationStatus.completed) _shakeCtrl.value = 0;
     });
-
-    _shake = TweenSequence([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 14.0), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 14.0, end: -14.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -14.0, end: 0.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -177,12 +167,6 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
   Widget build(BuildContext context) {
     final accent = TColors.primary;
 
-    // shared nav-button style (uniform size)
-    final navBtnStyle = ElevatedButton.styleFrom(
-      minimumSize: const Size(120, 48),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-    );
 
     return Scaffold(
       appBar: TopBar(),

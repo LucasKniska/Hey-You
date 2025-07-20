@@ -1,9 +1,7 @@
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/Authentication/screens/signin.dart';
@@ -55,7 +53,7 @@ class SignInController extends GetxController {
 
       // TODO Do internet check
 
-      final userCredentials = await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+      await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
       Get.put(UserRepository());
 
       if (rememberMe.value) {

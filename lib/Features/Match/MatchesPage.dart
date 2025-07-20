@@ -49,7 +49,6 @@ class _MapPageState extends State<MapPage>
   late Animation<Color?> _colorAnimation2;
   late Animation<double> _borderAnimation;
 
-  late final StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _userMatchSubscription;
   late final UserRepository userRepository;
 
   @override
@@ -446,7 +445,7 @@ class _MapPageState extends State<MapPage>
 
                   SizedBox(height: TSizes.spaceBtwSections),
 
-                  sectionTitle(Iconsax.personalcard, 'Search Filters'),
+                  // sectionTitle(Iconsax.personalcard, 'Search Filters'),
                   SizedBox(height: TSizes.spaceBtwItems),
                   searchFilters(context),
 

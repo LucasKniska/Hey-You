@@ -42,18 +42,18 @@ class _NavigationMenuState extends State<NavigationMenu> {
             backgroundColor: Colors.white,
             elevation: 8,
             indicatorColor: TColors.accent,
-            labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>(
+            labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
                   (states) => TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: states.contains(MaterialState.selected)
+                color: states.contains(WidgetState.selected)
                     ? Colors.blue.shade700
                     : Colors.grey.shade600,
               ),
             ),
-            iconTheme: MaterialStateProperty.resolveWith<IconThemeData>(
+            iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
                   (states) => IconThemeData(
-                color: states.contains(MaterialState.selected)
+                color: states.contains(WidgetState.selected)
                     ? Colors.blue.shade700
                     : Colors.grey.shade500,
               ),

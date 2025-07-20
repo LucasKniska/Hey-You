@@ -36,7 +36,7 @@ class _PreviousConnection extends State<ScheduledConnections> {
 class _ConnectionRow extends StatelessWidget {
   final ScheduledMatch match;
 
-  const _ConnectionRow({super.key, required this.match});
+  const _ConnectionRow({required this.match});
 
   @override
   Widget build(BuildContext context) {

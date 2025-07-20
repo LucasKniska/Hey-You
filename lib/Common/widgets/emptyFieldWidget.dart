@@ -21,7 +21,7 @@ class EmptyStateWidget extends StatelessWidget {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: <Widget>[
           if (icon != null)
             Icon(icon, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
@@ -30,7 +30,7 @@ class EmptyStateWidget extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
-          if (description != null) ...[
+          if (description != null) ...<Widget>[
             const SizedBox(height: 8),
             Text(
               description!,
@@ -38,7 +38,7 @@ class EmptyStateWidget extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ],
-          if (onActionPressed != null && actionLabel != null) ...[
+          if (onActionPressed != null && actionLabel != null) ...<Widget>[
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: onActionPressed,

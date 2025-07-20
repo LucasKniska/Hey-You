@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hey_you/Features/Match/controllers/meetNow_controller.dart';
 
@@ -132,10 +131,6 @@ class ConnectionAchieved extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (distance < TConnectionParameters.distanceToConnection) {
-      int userNum =
-          current.userData[0].id == FirebaseAuth.instance.currentUser!.uid
-              ? 0
-              : 1;
       int other =
           current.userData[0].id == FirebaseAuth.instance.currentUser!.uid
               ? 1

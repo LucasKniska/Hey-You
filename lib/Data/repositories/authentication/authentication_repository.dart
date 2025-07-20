@@ -1,12 +1,10 @@
 
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:hey_you/Features/Authentication/screens/emailVerification.dart';
-import 'package:hey_you/Features/PersonalityQuiz/PersonalityQuiz.dart';
 
 import '../../../Common/location_services.dart';
 import '../../../Common/navigation_menu.dart';

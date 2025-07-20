@@ -12,7 +12,6 @@ import 'BottomSheet.dart';
 
 Widget searchFilters(var context) {
 
-  final currentUser = UserRepository.instance.currentUser;
   final controller = ProfileController.instance;
   final textTheme = Theme.of(context).textTheme;
 

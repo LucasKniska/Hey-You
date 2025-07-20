@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
-import 'package:hey_you/Features/PersonalityQuiz/PersonalityQuiz.dart';
 
 import '../../Common/navigation_menu.dart';
 import '../../Data/models/QuizQuestions.dart';

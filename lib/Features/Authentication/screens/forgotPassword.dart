@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
 import 'package:hey_you/Features/Authentication/controllers/forgotPassword_controller.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../Common/styles/spacing_styles.dart';

@@ -2,7 +2,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
 import 'package:hey_you/Features/Authentication/screens/signup.dart';
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hey_you/Data/models/UserModel.dart';
 
 import '../Data/repositories/user/user_repository.dart';
 
@@ -13,9 +14,9 @@ class LocationController extends GetxController {
   Future<void> onInit() async {
     super.onInit();
 
-    bool granted = await requestLocationPermission();
+    bool _ = await requestLocationPermission();
 
-    _subscription = Geolocator.getPositionStream().listen((pos) {
+    _subscription = Geolocator.getPositionStream().listen((Position pos) {
       currentPosition.value = pos;
     });
 
@@ -65,12 +66,12 @@ class LocationController extends GetxController {
 
   Future<void> _updateBackend(Position pos) async {
 
-    final currentUser = UserRepository.instance.currentUser;
+    final UserModel currentUser = UserRepository.instance.currentUser;
 
     // TODO: If location did not change enough
     if(currentUser.location['lat'] == pos.latitude && currentUser.location['long'] == pos.longitude) return;
 
-    currentUser.location = {
+    currentUser.location = <String, double>{
       'lat': pos.latitude,
       'long': pos.longitude
     };

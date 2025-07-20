@@ -1,5 +1,4 @@
 import 'package:hey_you/Data/TemporaryModifications.dart';
-import 'PreviousMatch.dart';
 
 class UserModel {
   String id;
