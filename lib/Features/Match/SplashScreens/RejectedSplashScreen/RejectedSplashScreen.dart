@@ -21,7 +21,7 @@ class _RejectedSplashScreenState extends State<RejectedSplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 750),
     );
 
     _fadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(_controller);

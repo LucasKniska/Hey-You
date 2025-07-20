@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:hey_you/Common/notification_for_match.dart';
 import 'package:hey_you/Features/Authentication/screens/emailVerification.dart';
 
 import '../../../Common/location_services.dart';
@@ -40,6 +41,7 @@ class AuthenticationRepository extends GetxController{
           Get.put(UserRepository());
           Get.put(LocationController());
           Get.lazyPut(()=> ProfileController());
+          setupNotification();
 
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
             Get.offAll(() => const NavigationMenu());

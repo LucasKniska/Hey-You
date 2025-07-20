@@ -7,22 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../Data/models/CurrentMatch.dart';
+import '../Data/models/UserModel.dart';
 import '../Data/repositories/user/user_repository.dart';
 import '../Features/Match/MatchPopup.dart';
 
 Future<CurrentMatch?> setupNotification() async {
 
-  final currentUser = UserRepository.instance.currentUser;
   CurrentMatch? matchFound;
+  final userRepo = UserRepository.instance;
 
   // Shows the popup if necessary
-  FirebaseFirestore.instance
-      .collection('Users')
-      .doc(currentUser.id)
-      .snapshots()
-      .listen((snapshot) async {
-    final currentMatch = snapshot.data()?['CurrentMatch'];
-    if (currentMatch != null && currentMatch != '') {
+  ever<UserModel?>(userRepo.currentUserRx, (user) async {
+    String currentMatch = user!.currentMatch;
+
+    if (currentMatch.isNotEmpty) {
+
       // The item in current match that is showing up
       CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatch);
 
@@ -35,25 +34,10 @@ Future<CurrentMatch?> setupNotification() async {
 
       int userNum = 0;
 
-      if (currentMatchNow.userData[userNum].id == currentUser.id) {
+      if (currentMatchNow.userData[userNum].id == user.id) {
         userNum = 1;
       }
 
-      final expiration = currentMatchNow.expirationTime;
-      final Rx<Duration> countdown =
-          expiration.difference(DateTime.now()).obs;
-
-      var matchTimer;
-
-      matchTimer?.cancel(); // Cancel any existing timer
-      matchTimer = Timer.periodic(Duration(seconds: 1), (t) {
-        final newRemaining = expiration.difference(DateTime.now());
-        countdown.value = newRemaining;
-        if (newRemaining <= Duration.zero) {
-          t.cancel();
-          matchTimer = null;
-        }
-      });
 
       Get.snackbar(
         'New Match!',
@@ -62,10 +46,11 @@ Future<CurrentMatch?> setupNotification() async {
         backgroundColor: Colors.blue,
         colorText: Colors.white,
         duration: const Duration(seconds: 8),
+        isDismissible: true,
         onTap: (snack) {
           try {
             if (currentMatchNow.id != '') {
-              Get.dialog(MatchPopup(current: currentMatchNow));
+              Get.dialog(MatchPopup(current: currentMatchNow, ));
             }
           } catch (e) {}
         },

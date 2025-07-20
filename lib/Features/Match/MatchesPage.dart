@@ -12,11 +12,14 @@ import 'package:hey_you/Features/Match/subwidgets/SearchFilters.dart';
 import 'package:hey_you/Features/Match/subwidgets/SectionTitle.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
+import '../../Data/models/UserModel.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
 import '../EditProfile/profile_controller.dart';
 import '../ViewConnections/previousConnections.dart';
 import 'MatchPopup.dart';
+import 'SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
+import 'controllers/howToMeet_controller.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -29,10 +32,13 @@ class _MapPageState extends State<MapPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
 
   Timer? matchTimer;
+  late Duration? remaining;
   CurrentMatch? current;
-  int? user;
-
+  int userNum = -1;
   RxString matchHeader = ''.obs;
+
+  final userRepo = UserRepository.instance;
+  final currentUser = UserRepository.instance.currentUser;
 
   // Enhanced animation controllers
   late AnimationController _glowController;
@@ -49,13 +55,70 @@ class _MapPageState extends State<MapPage>
   late Animation<Color?> _colorAnimation2;
   late Animation<double> _borderAnimation;
 
-  late final UserRepository userRepository;
-
   @override
   void initState() {
     super.initState();
 
-    // Initialize enhanced animations
+    remaining = null;
+
+    checkForCurrentMatch();
+
+    // Watch currentUser changes
+    ever<UserModel?>(userRepo.currentUserRx, (user) async {
+      if (user == null) return;
+
+      final profile = ProfileController.instance;
+      profile.updateMods();
+
+      final currentMatchId = user.currentMatch;
+
+
+      print('Reacting to user change in MapPage');
+      print(currentMatchId);
+      print(currentMatchId.isEmpty);
+
+      if (currentMatchId.isEmpty) {
+        setState(() {
+          current = null;
+        });
+        return;
+      }
+
+      CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
+
+
+      print('Current Match Now: $currentMatchNow');
+
+      if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
+      setState(() => remaining = Duration(minutes: 10));
+
+      matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if(context.mounted) {
+          final Duration newRemaining = currentMatchNow.expirationTime.difference(
+            DateTime.now(),
+          );
+          setState(() => remaining = newRemaining);
+        }
+      });
+
+
+      String matchHeaderUpdate;
+      if (currentMatchNow.status == 'new') {
+        matchHeaderUpdate = 'New Connection!';
+      } else if (currentMatchNow.status == 'now') {
+        matchHeaderUpdate = 'Meet Up Now!';
+      } else {
+        matchHeaderUpdate = '';
+      }
+
+      setState(() {
+        current = currentMatchNow;
+        userNum = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
+        matchHeader.value = matchHeaderUpdate;
+      });
+    });
+
+      // Initialize enhanced animations
     _glowController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
@@ -163,9 +226,9 @@ class _MapPageState extends State<MapPage>
   Widget _buildNewConnectionCard() {
     if (current == null) return const SizedBox.shrink();
 
-    final otherUserName = (user! == 1)
-        ? current!.userData[0].userName
-        : current!.userData[1].userName;
+    final otherUserName = (currentUser.id == current!.userData[0].id)
+        ? current!.userData[1].userName
+        : current!.userData[0].userName;
 
     return AnimatedBuilder(
       animation: Listenable.merge([
@@ -325,14 +388,7 @@ class _MapPageState extends State<MapPage>
 
                             const SizedBox(height: 4),
 
-                            Text(
-                              current!.status == 'new'
-                                  ? 'Time left to connect: '
-                                  : 'Ready to meet up!',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
+                            TimeToConnect(),
 
                             const SizedBox(height: 8),
 
@@ -418,7 +474,21 @@ class _MapPageState extends State<MapPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    Get.put(ProfileController());
+
+    /// Checks if the timer has run out
+    if(remaining != null && remaining! < Duration.zero && current != null){
+
+      HowToMeetController.deleteCurrentMatch(current!);
+      // Loading screen type
+      return RejectedSplashScreen(
+        onFinish: () => {
+          // Change the data to create a new match
+          setState(() {})
+
+        },
+      );
+    }
+
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -464,4 +534,94 @@ class _MapPageState extends State<MapPage>
 
   @override
   bool get wantKeepAlive => true;
+
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    return '${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}';
+  }
+
+
+  void checkForCurrentMatch() async {
+
+    UserModel user = currentUser;
+
+    final profile = ProfileController.instance;
+    profile.updateMods();
+
+    final currentMatchId = user.currentMatch;
+
+
+    print('Reacting to user change in MapPage');
+    print(currentMatchId);
+    print(currentMatchId.isEmpty);
+
+    if (currentMatchId.isEmpty) {
+      setState(() {
+        current = null;
+      });
+      return;
+    }
+
+    CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
+
+    print('Current Match Now: $currentMatchNow');
+
+    if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
+    setState(() => remaining = Duration(minutes: 10));
+
+    matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+
+      if(context.mounted) {
+        final Duration newRemaining = currentMatchNow.expirationTime.difference(
+          DateTime.now(),
+        );
+
+        setState(() => remaining = newRemaining);
+      }
+    });
+
+    String matchHeaderUpdate;
+    if (currentMatchNow.status == 'new') {
+      matchHeaderUpdate = 'New Connection!';
+    } else if (currentMatchNow.status == 'now') {
+      matchHeaderUpdate = 'Meet Up Now!';
+    } else {
+      matchHeaderUpdate = '';
+    }
+
+    setState(() {
+      current = currentMatchNow;
+      userNum = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
+      matchHeader.value = matchHeaderUpdate;
+    });
+  }
+
+
+  Widget TimeToConnect() {
+
+    if (current!.status != 'new') {
+      return Text(
+        'Ready to meet up!',
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: Colors.grey.shade600,
+        ),
+      );
+    }
+
+    if(remaining!.inSeconds < 120) {
+      return Text(
+        'Time left to connect: ' + _formatDuration(remaining!),
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: Colors.red,
+        ),
+      );
+    }
+
+    return Text(
+      'Time left to connect: ' + _formatDuration(remaining!),
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        color: Colors.grey.shade600,
+      ),
+    );
+  }
 }

@@ -25,8 +25,9 @@ class MatchPopup extends StatefulWidget {
 
 class _MatchPopupState extends State<MatchPopup> {
   late Timer _timer;
-  late Duration _remaining;
+  late Duration? _remaining;
   final currentUser = UserRepository.instance.currentUser;
+  late StreamSubscription listener;
 
 
   late CurrentMatch current;
@@ -36,8 +37,7 @@ class _MatchPopupState extends State<MatchPopup> {
 
   @override
   void initState() {
-    super.initState();
-    _remaining = widget.current.expirationTime.difference(DateTime.now());
+    _remaining = null;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
 
       if(context.mounted) {
@@ -58,35 +58,41 @@ class _MatchPopupState extends State<MatchPopup> {
 
     current = widget.current;
 
+    super.initState();
+
   }
 
   @override
   void dispose() {
+    listener.cancel();
     _timer.cancel();
     super.dispose();
   }
 
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
+  String _formatDuration(Duration? d) {
 
-    return "${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}";
+    if (d == null) return '';
+
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    return '${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}';
   }
 
   @override
   Widget build(BuildContext context) {
 
     // Update the current match variable whenever it updates on firebase
-    FirebaseFirestore.instance.collection('Users').doc(currentUser.id)
+    listener = FirebaseFirestore.instance.collection('Users').doc(currentUser.id)
         .snapshots()
         .listen((snapshot) async {
       final match = snapshot.data()?['CurrentMatch'];
       if (match != null && match != '') {
         CurrentMatch? currentMatch = await HowToMeetController.loadCurrentMatch(match);
 
-        if (currentMatch == null) return;
+        if (!mounted || currentMatch == null || currentMatch == current) return;
 
         try {
           if (current != currentMatch) {
+            if (!mounted) return;
             setState(() {
 
               current = currentMatch;
@@ -102,6 +108,8 @@ class _MatchPopupState extends State<MatchPopup> {
           }
         } catch (e) {
           setState(() {
+            if (!mounted) return;
+
             current = currentMatch;
 
             // u variable is set to whichever the current user is not
@@ -133,7 +141,7 @@ class _MatchPopupState extends State<MatchPopup> {
     }
 
     /// Checks if the timer has run out
-    if(_remaining < Duration.zero){
+    if(_remaining != null && _remaining! < Duration.zero){
 
       HowToMeetController.deleteCurrentMatch(current);
 
