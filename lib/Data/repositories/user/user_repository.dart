@@ -11,7 +11,6 @@ import 'package:http/http.dart' as http;
 
 import '../../models/UserModel.dart';
 
-
 class UserRepository extends GetxController {
   static UserRepository get instance => Get.find();
 

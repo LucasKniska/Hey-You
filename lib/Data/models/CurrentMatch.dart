@@ -11,6 +11,7 @@ class CurrentMatch {
   final List<UserData> userData;
   final String? currentProposedPlace;
   final String status;
+  final double distance;
 
   CurrentMatch({
     required this.createdOn,
@@ -21,7 +22,8 @@ class CurrentMatch {
     required this.related,
     required this.userData,
     required this.status,
-    this.currentProposedPlace
+    this.currentProposedPlace,
+    required this.distance
   });
 
   factory CurrentMatch.fromJson(Map<String, dynamic> json) {
@@ -38,14 +40,15 @@ class CurrentMatch {
       userData: (json['userData'] as List? ?? [])
           .map((u) => UserData.fromJson(u))
           .toList(),
-      status: json['status']
+      status: json['status'],
+      distance: json['distance'] ?? 0.0
     );
   }
 
   factory CurrentMatch.fromSame(CurrentMatch c){
     return CurrentMatch(createdOn: c.createdOn, expirationTime: c.expirationTime, id: c.id,
         possiblePlaces: c.possiblePlaces, possibleTimes: c.possibleTimes, related: c.related,
-        userData: c.userData, status: c.status);
+        userData: c.userData, status: c.status, distance: c.distance);
   }
 
 
@@ -59,20 +62,21 @@ class CurrentMatch {
       'possibleTimes': possibleTimes.map((d) => Timestamp.fromDate(d)).toList(),
       'related': related,
       'userData': userData.map((u) => u.toJson()).toList(),
-      'status': status
+      'status': status,
+      'distance': distance
     };
   }
 
   @override
   String toString() {
-    return '$createdOn, $related, $id, ${userData[0]}, ${userData[1]}, $status';
+    return '$createdOn, $expirationTime, $related, $id, ${userData[0]}, ${userData[1]}, $status, distance: $distance';
   }
 
   @override
   bool operator ==(Object o) {
     final CurrentMatch other = o as CurrentMatch;
 
-    return (id == other.id && listEquals(possiblePlaces, other.possiblePlaces) && status == other.status
+    return (id == other.id && distance == other.distance&& listEquals(possiblePlaces, other.possiblePlaces) && status == other.status
         && listEquals(possibleTimes, other.possibleTimes) && userData[0] == other.userData[0] && userData[1] == other.userData[1] && currentProposedPlace == other.currentProposedPlace);
   }
 }
@@ -83,13 +87,15 @@ class UserData {
   String userBio;
   String userName;
   Map<String, double> location;
+  int connections;
 
   UserData({
     required this.id,
     required this.response,
     required this.userBio,
     required this.userName,
-    required this.location
+    required this.location,
+    this.connections=0
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) {
@@ -99,6 +105,7 @@ class UserData {
       userBio: json['userBio'] ?? '',
       userName: json['userName'],
       location: Map<String, double>.from(json['location']?.map((k, v) => MapEntry(k, (v as num).toDouble())) ?? {}),
+      connections: json['connections'] ?? 0,
     );
   }
 
@@ -108,14 +115,15 @@ class UserData {
       'response': response,
       'userBio': userBio,
       'userName': userName,
-      'location': location
+      'location': location,
+      'connections': connections
     };
   }
 
 
   @override
   String toString() {
-    return '$id, $response';
+    return '$id, $userName, $response, connections: $connections';
   }
 
   @override

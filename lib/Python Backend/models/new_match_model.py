@@ -11,7 +11,8 @@ class UserMatchData(BaseModel):
     userName: str
     userBio: str
     response: UserResponse
-    location: Geolocation 
+    location: Geolocation
+    connections: Optional[int] = 0  # Added field
 
     def to_json(self) -> dict:
         return {
@@ -19,7 +20,8 @@ class UserMatchData(BaseModel):
             "userName": self.userName,
             "userBio": self.userBio,
             "response": self.response.to_json(),
-            "location": self.location.to_json()
+            "location": self.location.to_json(),
+            "connections": self.connections  # Added field
         }
 
     @classmethod
@@ -29,10 +31,9 @@ class UserMatchData(BaseModel):
             userName=data["userName"],
             userBio=data["userBio"],
             response=UserResponse.from_json(data["response"]),
-            location=Geolocation.from_json(data["location"])
+            location=Geolocation.from_json(data["location"]),
+            connections=data.get("connections", 0)  # Added field
         )
-
-
 
 class Match(BaseModel):
     id: Optional[str] = None
@@ -44,6 +45,7 @@ class Match(BaseModel):
     meetingPlace: Optional[Geolocation] = None
     userData: List[UserMatchData]
     status: MatchStatus
+    distance: Optional[float] = None  # Added field
 
     def to_json(self) -> dict:
         return {
@@ -55,14 +57,13 @@ class Match(BaseModel):
             "possiblePlaces": [place.to_json() for place in self.possiblePlaces],
             "meetingPlace": self.meetingPlace.to_json() if self.meetingPlace else None,
             "userData": [user.to_json() for user in self.userData],
-            "status": self.status
+            "status": self.status,
+            "distance": self.distance  # Added field
         }
 
     @classmethod
     def from_json(cls, data: dict):
-
         print(data)
-
         return cls(
             id=data.get("id"),
             expirationTime=datetime.fromisoformat(data["expirationTime"]),
@@ -72,5 +73,6 @@ class Match(BaseModel):
             possiblePlaces=[Geolocation.from_json(p) for p in data["possiblePlaces"]],
             meetingPlace=Geolocation.from_json(data["meetingPlace"]) if data.get("meetingPlace") else None,
             userData=[UserMatchData.from_json(u) for u in data["userData"]],
-            status=data.get("status") if data.get("status") else MatchStatus.NEW
+            status=data.get("status") if data.get("status") else MatchStatus.NEW,
+            distance=data.get("distance")  # Added field
         )

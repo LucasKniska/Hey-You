@@ -92,6 +92,9 @@ class _MapPageState extends State<MapPage>
       if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
       setState(() => remaining = Duration(minutes: 10));
 
+      if(matchTimer != null && matchTimer!.isActive){
+        matchTimer!.cancel();
+      }
       matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if(context.mounted) {
           final Duration newRemaining = currentMatchNow.expirationTime.difference(
@@ -477,7 +480,7 @@ class _MapPageState extends State<MapPage>
 
     /// Checks if the timer has run out
     if(remaining != null && remaining! < Duration.zero && current != null){
-
+      print('Printing remaining: ${_formatDuration(remaining!)}');
       HowToMeetController.deleteCurrentMatch(current!);
       // Loading screen type
       return RejectedSplashScreen(
@@ -558,7 +561,9 @@ class _MapPageState extends State<MapPage>
     if (currentMatchId.isEmpty) {
       setState(() {
         current = null;
+        remaining = null;
       });
+      matchTimer?.cancel();
       return;
     }
 
@@ -569,6 +574,9 @@ class _MapPageState extends State<MapPage>
     if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
     setState(() => remaining = Duration(minutes: 10));
 
+    if(matchTimer != null && matchTimer!.isActive){
+      matchTimer!.cancel();
+    }
     matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
 
       if(context.mounted) {

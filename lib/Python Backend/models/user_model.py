@@ -23,7 +23,7 @@ class User(BaseModel):
     lastMatch: datetime = datetime.now()
 
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: Dict[str, Any]):
         return cls(
             id=data.get("id", ""),
             email=data.get("Email", ""),

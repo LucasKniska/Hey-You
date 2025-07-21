@@ -41,7 +41,8 @@ def get_match_object(user1, user2):
         userName=user1.firstName + " " + user1.lastName[0] + ".",
         userBio=user1.biography,
         response=UserResponse.NOT_SELECTED,
-        location=user1.location
+        location=user1.location,
+        connections=len(user1.previousConnections)
     )
 
     userMatch2 = UserMatchData(
@@ -49,8 +50,11 @@ def get_match_object(user1, user2):
         userName=user2.firstName + " " + user2.lastName[0] + ".",
         userBio=user2.biography,
         response=UserResponse.NOT_SELECTED,
-        location=user2.location
+        location=user2.location,
+        connections=len(user2.previousConnections)
     )
+
+    distance = haversine_distance(user1.location, user2.location)
     
     match = Match(
         expirationTime=datetime.now() + timedelta(minutes=const.MINUTES_FOR_NEW_MATCH),
@@ -60,7 +64,8 @@ def get_match_object(user1, user2):
         possiblePlaces=[],
         currentProposedPlace=None,
         userData=[userMatch1, userMatch2],
-        status=MatchStatus.NEW
+        status=MatchStatus.NEW,
+        distance=distance
     )
 
     return match
@@ -89,3 +94,19 @@ def create_new_match(user1, user2, db):
     match = get_match_object(user1, user2)
     match_id = initialize_new_match(user1, user2, match, db)
     return match_id
+
+def haversine_distance(loc1, loc2):
+    """
+    Calculate the great-circle distance between two points 
+    on the Earth specified by Geolocation objects (lat, lon).
+    Returns distance in kilometers.
+    """
+    R = 6371  # Earth radius in kilometers
+    lat1, lon1 = math.radians(loc1.lat), math.radians(loc1.long)
+    lat2, lon2 = math.radians(loc2.lat), math.radians(loc2.long)
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c

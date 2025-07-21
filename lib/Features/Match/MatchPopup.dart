@@ -11,6 +11,7 @@ import 'package:hey_you/Features/Match/subwidgets/MeetNowLater.dart';
 import '../../Data/models/QuizQuestions.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/sizes.dart';
+import 'MatchesPage.dart';
 import 'SplashScreens/ConnectedSplashScreen/ConnectedSplashScreen.dart';
 import 'SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
 
@@ -77,8 +78,15 @@ class _MatchPopupState extends State<MatchPopup> {
     return '${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}';
   }
 
+  final double kmToMilesFactor = 0.621371;
+
   @override
   Widget build(BuildContext context) {
+
+    // Calculate distance in miles
+    double distanceInMiles = 0.0;
+    distanceInMiles = current.distance * kmToMilesFactor;
+
 
     // Update the current match variable whenever it updates on firebase
     listener = FirebaseFirestore.instance.collection('Users').doc(currentUser.id)
@@ -158,6 +166,8 @@ class _MatchPopupState extends State<MatchPopup> {
     }
 
 
+
+
     return Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
@@ -189,7 +199,9 @@ class _MatchPopupState extends State<MatchPopup> {
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   Text(
-                    'XX Connections',
+                    other.connections == 1 ?
+                      '${other.connections} Connection' :
+                      '${other.connections} Connections',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -197,22 +209,16 @@ class _MatchPopupState extends State<MatchPopup> {
 
               const Divider(thickness: 1.5),
 
-              Row(
-                children: [
-                  Text(
-                    'Time to make connection: ',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Text(
-                    _formatDuration(_remaining),
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
+
+              Text(
+                  'Distance from you: ${distanceInMiles.toStringAsFixed(2)} miles'
               ),
+
+              TimeToConnect(),
 
               const SizedBox(height: TSizes.spaceBtwItems),
 
-              Text('About', style: Theme.of(context).textTheme.titleMedium),
+              Text('Biography', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 4),
               Container(
                 width: double.infinity,
@@ -246,7 +252,7 @@ class _MatchPopupState extends State<MatchPopup> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    questionList[int.parse(t)].title,
+                    t,
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: Colors.white),
@@ -266,4 +272,32 @@ class _MatchPopupState extends State<MatchPopup> {
       );
 
   }
+
+
+  Widget TimeToConnect() {
+
+    if(_remaining == null) {
+      return Text(
+        'Time left to connect: ...',
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: Colors.grey.shade600,
+        ),
+      );
+    }
+
+    if(_remaining!.inSeconds < 120) {
+      return Text(
+        'Time left to connect: ${_formatDuration(_remaining!)}',
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          color: Colors.red,
+        ),
+      );
+    }
+    return Text(
+      'Time left to connect: ${_formatDuration(_remaining!)}',
+      style: Theme.of(context).textTheme.bodyLarge
+    );
+  }
+
+
 }
