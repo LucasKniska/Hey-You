@@ -121,11 +121,11 @@ class MeetNowToggle extends StatelessWidget {
             GestureDetector(
               onTap: () => {isMeetNowEnabled.value = !enabled, UserRepository.instance.currentUser.discoverable = isMeetNowEnabled.value, UserRepository.instance.saveUserRecord()},
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 1000),
                 curve: Curves.easeInOut,
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                 child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 1000),
                   switchInCurve: Curves.easeOut,
                   switchOutCurve: Curves.easeIn,
                   transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
