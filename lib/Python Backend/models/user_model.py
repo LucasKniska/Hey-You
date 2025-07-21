@@ -1,7 +1,7 @@
 from models.models import Geolocation, PreviousConnection, TemporaryModification
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List
+from typing import List, Any
 
 
 class User(BaseModel):
@@ -10,7 +10,7 @@ class User(BaseModel):
     firstName: str
     lastName: str
     biography: str
-    quizAnswers: List[int]
+    quizAnswers: dict[str, Any]
     temporaryModifications: List[TemporaryModification]
     permanentModifications: List[str]
     location: Geolocation
