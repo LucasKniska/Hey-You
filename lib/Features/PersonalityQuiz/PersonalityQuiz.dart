@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/topbar.dart';
 import 'package:hey_you/Features/PersonalityQuiz/personality_quiz_controller.dart';
+import 'package:hey_you/Features/PersonalityQuiz/subwidgets/infoBanner.dart';
 import 'package:hey_you/Features/PersonalityQuiz/subwidgets/rightCenteredIconButton.dart';
 
 import '../../Common/navigation_menu.dart';
@@ -173,97 +174,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
       body: Column(
         children: [
           // ── info banner ──
-          AnimatedCrossFade(
-            duration: const Duration(milliseconds: 250),
-            crossFadeState: showInfo ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-            firstChild: Container(
-              width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    TColors.primary.withOpacity(0.1),
-                    TColors.secondary.withOpacity(0.05),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: TColors.primary.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Info Icon
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: TColors.primary.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.info_outline,
-                      size: 20,
-                      color: TColors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Text Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          TTexts.quizTitle,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: TColors.primary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          TTexts.quizUnder,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Close Button
-                  InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () => setState(() => showInfo = false),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: TColors.primary.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        size: 18,
-                        color: Colors.black45,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            secondChild: const SizedBox(height: 0),
-          ),
+          InfoBanner(title: TTexts.quizTitle, description: TTexts.quizUnder),
 
           // ── progress bar & divider ──
           Material(

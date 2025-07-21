@@ -121,6 +121,7 @@ class _TopBarState extends State<TopBar>
       secondChild = _buildGradientContainer(nonDiscoverableGradientColors, false);
 
       return AppBar(
+        elevation: 4,
         automaticallyImplyLeading: false,
         leading: widget.backArrow
             ? IconButton(
@@ -173,7 +174,6 @@ class _TopBarState extends State<TopBar>
             );
           },
         ),
-        elevation: 0,
         backgroundColor: Colors.transparent,
       );
     });
