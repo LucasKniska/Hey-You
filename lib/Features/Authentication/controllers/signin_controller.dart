@@ -53,6 +53,7 @@ class SignInController extends GetxController {
 
       // TODO Do internet check
 
+      print('Login with email and password');
       await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
       Get.put(UserRepository());
 

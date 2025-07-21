@@ -38,7 +38,11 @@ class LoginScreen extends StatelessWidget {
                       child: IconButton(
                         icon: const Icon(Iconsax.arrow_left_3),
                         onPressed: () {
-                          Get.offAll(() => OnBoardingScreen());
+                          Get.offAll(
+                                () => OnboardingPage(), // Your page widget
+                            transition: Transition.leftToRight, // This slides the new page in from the right
+                            duration: Duration(milliseconds: 400), // Optional: controls animation speed
+                          );
                         },
                       ),
                     ),

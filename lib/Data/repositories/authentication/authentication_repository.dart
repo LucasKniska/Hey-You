@@ -57,7 +57,7 @@ class AuthenticationRepository extends GetxController{
         Get.offAll(() => const LoginScreen());
       }
     } else {
-      Get.offAll(const OnBoardingScreen());
+      Get.offAll(const OnboardingPage());
     }
   }
 
