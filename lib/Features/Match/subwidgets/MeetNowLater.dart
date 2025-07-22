@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hey_you/Features/Match/controllers/howToMeet_controller.dart';
-
 import '../../../Data/models/CurrentMatch.dart';
 import '../../../utils/constants/colors.dart';
 
@@ -16,16 +15,15 @@ class MeetNowLater extends StatefulWidget {
 
 class _MeetNowLaterState extends State<MeetNowLater> {
 
-
   String noDecisionSubtext() {
-    if(widget.user == 1){
-      if(widget.current.userData[0].response != 'not_selected'){
+    if (widget.user == 1) {
+      if (widget.current.userData[0].response != 'not_selected') {
         return 'The other user wants to connect!';
       } else {
         return 'Want to Connect? Spark the Connection!';
       }
     } else {
-      if(widget.current.userData[1].response != 'not_selected'){
+      if (widget.current.userData[1].response != 'not_selected') {
         return 'The other user wants to connect!';
       } else {
         return 'Want to Connect? Spark the Connection!';
@@ -33,49 +31,40 @@ class _MeetNowLaterState extends State<MeetNowLater> {
     }
   }
 
-
   Widget noDecision(CurrentMatch current) {
     return Column(
       children: [
+        const SizedBox(height: 4),
         Center(
           child: Text(
             noDecisionSubtext(),
-            style: Theme.of(context).textTheme.bodySmall,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
-
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TColors.secondary,
-                ),
-                onPressed: () => HowToMeetController.meetNowControl(current),
-                child: Text(
-                  'Meet Now',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: Colors.white),
-                ),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
               ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              elevation: 3,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TColors.secondary,
-                ),
-                onPressed: () => HowToMeetController.meetLaterControl(current),
-                child: Text(
-                  'Meet Later',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: Colors.white),
-                ),
-              ),
+            onPressed: () => HowToMeetController.meetNowControl(current),
+            child: Text(
+              'Meet Now',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -84,130 +73,72 @@ class _MeetNowLaterState extends State<MeetNowLater> {
   Widget meetNow(CurrentMatch current) {
     return Column(
       children: [
+        const SizedBox(height: 4),
         Center(
           child: Text(
             'Attempting to connect with other user!',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
+        SizedBox(
+          width: double.infinity,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: TColors.secondary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  elevation: 2,
                 ),
                 onPressed: null, // Disabled while loading
-                child: Stack(
+                child: Container(
+                  width: double.infinity,
                   alignment: Alignment.center,
-                  children: [
-                    // Centered text
-                    Center(
-                      child: Text(
-                        'Attempting to connect now',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(color: Colors.white),
-                      ),
-                    ),
-
-                    // X icon on the left
-                    Positioned(
-                      left: 10,
-                      child: IconButton(
-                        onPressed: () => HowToMeetController.noDecisionControl(current),
-                        icon: Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-
-                    // Spinner on the right
-                    const Positioned(
-                      right: 10,
-                      child: SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                  ],
+                  child: Text(
+                    'Attempting to connect now',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget meetLater(CurrentMatch current) {
-    return Column(
-      children: [
-        Center(
-          child: Text(
-            'Attempting to connect with other user!',
-            style: Theme.of(context).textTheme.bodySmall,
+              // X icon button (left)
+              Positioned(
+                left: 10,
+                child: IconButton(
+                  onPressed: () =>
+                      HowToMeetController.noDecisionControl(current),
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  splashRadius: 20,
+                  tooltip: 'Cancel',
+                ),
+              ),
+              // Spinner (right)
+              const Positioned(
+                right: 18,
+                child: SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TColors.secondary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: null, // Disabled while loading
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Centered text
-                    Center(
-                      child: Text(
-                        'Attempting to connect later',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(color: Colors.white),
-                      ),
-                    ),
-
-                    // X icon on the left
-                    Positioned(
-                      left: 10,
-                      child: IconButton(
-                          onPressed: () => HowToMeetController.noDecisionControl(current),
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                      ),
-                    ),
-
-                    // Spinner on the right
-                    const Positioned(
-                      right: 10,
-                      child: SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
@@ -218,9 +149,7 @@ class _MeetNowLaterState extends State<MeetNowLater> {
     return switch (widget.current.userData[widget.user].response) {
       'not_selected' => noDecision(widget.current),
       'meet_now' => meetNow(widget.current),
-      'meet_later' => meetLater(widget.current),
       String() => noDecision(widget.current),
     };
-
   }
 }

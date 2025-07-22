@@ -38,24 +38,26 @@ Future<CurrentMatch?> setupNotification() async {
         userNum = 1;
       }
 
+      if(!Get.isSnackbarOpen){
+        Get.snackbar(
+          'New Match!',
+          'You matched with ${currentMatchNow.userData[userNum].userName} Tap to view.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.blue,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 8),
+          isDismissible: true,
+          onTap: (snack) {
+            try {
+              if (currentMatchNow.id != '') {
+                Get.dialog(MatchPopup(current: currentMatchNow, ));
+              }
+            } catch (e) {}
+          },
+        );
+      }
+      }
 
-      Get.snackbar(
-        'New Match!',
-        'You matched with ${currentMatchNow.userData[userNum].userName} Tap to view.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.blue,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 8),
-        isDismissible: true,
-        onTap: (snack) {
-          try {
-            if (currentMatchNow.id != '') {
-              Get.dialog(MatchPopup(current: currentMatchNow, ));
-            }
-          } catch (e) {}
-        },
-      );
-    }
 
     });
 

@@ -34,16 +34,16 @@ class _ProfileHeaderAndStatsState extends State<ProfileHeaderAndStats> {
                 child: Container(
                   padding: const EdgeInsets.all(3), // Border thickness
                   decoration: const BoxDecoration(
-                    color: TColors.primary, // Border color
+                    color: Colors.white, // Border color
                     shape: BoxShape.circle,
                   ),
                   child: CircleAvatar(
                     radius: 34,
-                    backgroundColor: Colors.blue[100],
+                    backgroundColor: TColors.primary.withAlpha(180),
                     child: Text(
                       initials.isNotEmpty ? initials : '',
                       style: const TextStyle(
-                        color: TColors.primary,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 26,
                       ),

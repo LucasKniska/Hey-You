@@ -38,12 +38,12 @@ class AuthenticationRepository extends GetxController{
 
         /// User is signed in
         try {
-          Get.put(UserRepository());
-          Get.put(LocationController());
-          Get.lazyPut(()=> ProfileController());
-          setupNotification();
-
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
+            Get.put(UserRepository());
+            Get.put(LocationController());
+            Get.lazyPut(()=> ProfileController());
+            setupNotification();
+
             Get.offAll(() => const NavigationMenu());
           }else{
             Get.offAll(EmailVerificationScreen());
@@ -85,20 +85,19 @@ class AuthenticationRepository extends GetxController{
   Future<void> signOut() async {
     try{
 
+      UserRepository.instance.stopListeningToUser();
       UserRepository.instance.currentUser.discoverable = false;
       await UserRepository.instance.saveUserRecord();
-
-      await FirebaseAuth.instance.signOut().then((_) {
-        UserRepository.instance.stopListeningToUser();
-      });
+      await FirebaseAuth.instance.signOut();
       Get.offAll(() => LoginScreen());
     } catch (e) {
-      TSnackBars.errorSnackBar(title: 'There has been an error signing out of your account');
+      Get.offAll(() => LoginScreen());
     }
   }
 
   Future<void> sendEmailVerificationLink() async {
     try {
+
       await _auth.currentUser?.sendEmailVerification();
     } catch (e) {
       print(e.toString());

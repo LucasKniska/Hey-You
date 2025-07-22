@@ -10,6 +10,7 @@ import 'package:hey_you/Features/Match/subwidgets/MeetNowLater.dart';
 
 import '../../Data/models/QuizQuestions.dart';
 import '../../Data/repositories/user/user_repository.dart';
+import '../../utils/constants/colors.dart';
 import '../../utils/constants/sizes.dart';
 import 'MatchesPage.dart';
 import 'SplashScreens/ConnectedSplashScreen/ConnectedSplashScreen.dart';
@@ -30,37 +31,87 @@ class _MatchPopupState extends State<MatchPopup> {
   final currentUser = UserRepository.instance.currentUser;
   late StreamSubscription listener;
 
-
   late CurrentMatch current;
-  // The user is whichever index this current user is within the current match
   late int user;
   late UserData other;
+
+  final double kmToMilesFactor = 0.621371;
 
   @override
   void initState() {
     _remaining = null;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-
-      if(context.mounted) {
+      if (context.mounted) {
         final Duration newRemaining = widget.current.expirationTime.difference(
           DateTime.now(),
         );
-
         setState(() => _remaining = newRemaining);
       }
     });
 
     user = 1;
     other = widget.current.userData[0];
-    if(widget.current.userData[0].id == currentUser.id){
+    if (widget.current.userData[0].id == currentUser.id) {
       user = 0;
       other = widget.current.userData[1];
     }
 
     current = widget.current;
 
-    super.initState();
+    listener = FirebaseFirestore.instance
+        .collection('Matches')
+        .doc(currentUser.currentMatch)
+        .snapshots()
+        .listen((snapshot) async {
+      final match = snapshot.data();
 
+      if (match != null) {
+
+        CurrentMatch? currentMatch = CurrentMatch.fromJson(match);
+
+        if (!mounted) {
+          listener.cancel();
+          return;
+        }
+
+        if (currentMatch == current) return;
+
+        try {
+          if (current != currentMatch) {
+            if (!mounted) {
+              listener.cancel();
+              return;
+            }
+              setState(() {
+                current = currentMatch;
+
+                int u = 0;
+                if (current.userData[u].id == currentUser.id) {
+                  u = 1;
+                }
+                other = current.userData[u];
+              });
+            }
+
+        } catch (e) {
+          setState(() {
+            if (!mounted) {
+              listener.cancel();
+              return;
+            }
+            current = currentMatch;
+
+            int u = 0;
+            if (current.userData[u].id == currentUser.id) {
+              u = 1;
+            }
+            other = current.userData[u];
+          });
+        }
+      }
+    });
+
+    super.initState();
   }
 
   @override
@@ -71,212 +122,13 @@ class _MatchPopupState extends State<MatchPopup> {
   }
 
   String _formatDuration(Duration? d) {
-
     if (d == null) return '';
-
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     return '${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}';
   }
 
-  final double kmToMilesFactor = 0.621371;
-
-  @override
-  Widget build(BuildContext context) {
-
-    // Calculate distance in miles
-    double distanceInMiles = 0.0;
-    distanceInMiles = current.distance * kmToMilesFactor;
-
-
-    // Update the current match variable whenever it updates on firebase
-    listener = FirebaseFirestore.instance.collection('Users').doc(currentUser.id)
-        .snapshots()
-        .listen((snapshot) async {
-      final match = snapshot.data()?['CurrentMatch'];
-      if (match != null && match != '') {
-        CurrentMatch? currentMatch = await HowToMeetController.loadCurrentMatch(match);
-
-        if (!mounted || currentMatch == null || currentMatch == current) return;
-
-        try {
-          if (current != currentMatch) {
-            if (!mounted) return;
-            setState(() {
-
-              current = currentMatch;
-
-              // u variable is set to whichever the current user is not
-              int u = 0;
-              if (current.userData[u].id == currentUser.id) {
-                u = 1;
-              }
-              other = current.userData[u];
-
-            });
-          }
-        } catch (e) {
-          setState(() {
-            if (!mounted) return;
-
-            current = currentMatch;
-
-            // u variable is set to whichever the current user is not
-            int u = 0;
-            if (current.userData[u].id == currentUser.id) {
-              u = 1;
-            }
-            other = current.userData[u];
-
-          });
-        }
-      }
-    });
-
-
-    /// Checks if the match has been confirmed
-    if( (other.response == 'meet_now' || other.response == 'meet_later') && (current.userData[user].response == 'meet_now' || current.userData[user].response == 'meet_later')){
-
-      // Change the data to create a new match
-      HowToMeetController.updateMatchStatus(current);
-
-      // Loading screen type
-      return ConnectedSplashScreen(
-          onFinish: () => {
-            Get.back(),
-          }
-      );
-
-    }
-
-    /// Checks if the timer has run out
-    if(_remaining != null && _remaining! < Duration.zero){
-
-      HowToMeetController.deleteCurrentMatch(current);
-
-
-    // Loading screen type
-      return RejectedSplashScreen(
-        onFinish: () => {
-          // Change the data to create a new match
-          Navigator.pop(context),
-          setState(() {})
-
-        },
-      );
-    }
-
-
-
-
-    return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: TSpacingStyle.normalPadding / 2,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     Text(
-              //       'Hey You',
-              //       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
-              //     ),
-              //     IconButton(
-              //       icon: const Icon(Icons.close),
-              //       onPressed: () => Navigator.pop(context, 'reject'),
-              //     )
-              //   ],
-              // ),
-              const SizedBox(height: TSizes.spaceBtwItems),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    other.userName,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  Text(
-                    other.connections == 1 ?
-                      '${other.connections} Connection' :
-                      '${other.connections} Connections',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ],
-              ),
-
-              const Divider(thickness: 1.5),
-
-
-              Text(
-                  'Distance from you: ${distanceInMiles.toStringAsFixed(2)} miles'
-              ),
-
-              TimeToConnect(),
-
-              const SizedBox(height: TSizes.spaceBtwItems),
-
-              Text('Biography', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 4),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  other.userBio.isEmpty ? 'No User Bio' : other.userBio,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-
-              const SizedBox(height: TSizes.spaceBtwItems),
-
-              Text(
-                'Similar Interests and Traits:',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-
-              const SizedBox(height: TSizes.spaceBtwItems / 2),
-
-              ...current.related.map(
-                    (t) => Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  padding: const EdgeInsets.all(12),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.blue[300],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    t,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.white),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: TSizes.spaceBtwItems),
-
-              const SizedBox(height: TSizes.spaceBtwItems / 2),
-
-              MeetNowLater(current: current, user: user)
-
-            ],
-          ),
-        ),
-      );
-
-  }
-
-
   Widget TimeToConnect() {
-
-    if(_remaining == null) {
+    if (_remaining == null) {
       return Text(
         'Time left to connect: ...',
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -285,7 +137,7 @@ class _MatchPopupState extends State<MatchPopup> {
       );
     }
 
-    if(_remaining!.inSeconds < 120) {
+    if (_remaining!.inSeconds < 120) {
       return Text(
         'Time left to connect: ${_formatDuration(_remaining!)}',
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -295,9 +147,212 @@ class _MatchPopupState extends State<MatchPopup> {
     }
     return Text(
       'Time left to connect: ${_formatDuration(_remaining!)}',
-      style: Theme.of(context).textTheme.bodyLarge
+      style: Theme.of(context).textTheme.bodyLarge,
     );
   }
 
+  @override
+  Widget build(BuildContext context) {
+    double distanceInMiles = current.distance * kmToMilesFactor;
 
+    /// Checks if the match has been confirmed
+    if (other.response == 'meet_now' && current.userData[user].response == 'meet_now') {
+      // Change the data to create a new match
+      HowToMeetController.updateMatchStatus(current);
+
+      // Loading screen type
+      return ConnectedSplashScreen(
+        onFinish: () => {
+          Get.back(),
+        },
+      );
+    }
+
+    /// Checks if the timer has run out
+    if (_remaining != null && _remaining! < Duration.zero) {
+      HowToMeetController.deleteCurrentMatch(current);
+
+      // Loading screen type
+      return RejectedSplashScreen(
+        onFinish: () => {
+          Navigator.pop(context),
+          setState(() {})
+        },
+      );
+    }
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shadowColor: Colors.black,
+      elevation: 10,
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 32, 20, 20), // More top space
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
+                      ),
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: TColors.primary.withAlpha(180),
+                        child: Text(
+                          other.userName[0] + other.userName[other.userName.length-2],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 28,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(other.userName,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold, fontSize: 22),
+                          ),
+                          const SizedBox(height: 2),
+                          Text('${other.connections} Connection${other.connections == 1 ? '' : 's'}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey[600], fontSize: 15),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.place, size: 16, color: Colors.blue[200]),
+                              SizedBox(width: 4),
+                              Text(
+                                '${distanceInMiles.toStringAsFixed(2)} miles',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              SizedBox(width: 12),
+                              Icon(Icons.timer, size: 16, color: Colors.blue[200]),
+                              SizedBox(width: 4),
+                              _remaining == null
+                                  ? Text('...',
+                                  style: Theme.of(context).textTheme.bodySmall)
+                                  : Text(
+                                _formatDuration(_remaining!),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                  color: (_remaining!.inSeconds < 120)
+                                      ? Colors.red
+                                      : Colors.grey[700],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Divider(thickness: 1.5),
+
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Biography: ',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text: other.userBio.isEmpty ? 'No User Bio' : other.userBio,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: other.userBio.isEmpty ? Colors.grey : Colors.black,
+                          fontStyle: other.userBio.isEmpty ? FontStyle.italic : FontStyle.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+                // Why matched chips
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Why we matched you:',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 10),
+                Column(
+                  children: current.related.map((t) =>
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          border: Border.all(color: Colors.blue[100]!),
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.withOpacity(0.07),
+                              blurRadius: 2,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.blue[300], size: 20),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                t,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(color: Colors.blue[900], fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                  ).toList(),
+                ),
+                const SizedBox(height: 18),
+
+                // Meet Now button
+                MeetNowLater(current: current, user: user),
+
+                const SizedBox(height: 2),
+              ],
+            ),
+          ),
+          // X button
+          Positioned(
+            right: 2,
+            top: 2,
+            child: IconButton(
+              icon: Icon(Icons.close, color: Colors.grey[400], size: 26),
+              onPressed: () => Navigator.pop(context, 'reject'),
+              tooltip: "Close",
+            ),
+          ),
+        ],
+      ),
+    );
+
+  }
 }
