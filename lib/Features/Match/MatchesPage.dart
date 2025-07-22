@@ -91,20 +91,22 @@ class _MapPageState extends State<MapPage>
       print('Current Match Now: $currentMatchNow');
 
       if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
-      setState(() => remaining = Duration(minutes: 10));
 
-      if(matchTimer != null && matchTimer!.isActive){
-        matchTimer!.cancel();
-      }
-      matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if(context.mounted) {
-          final Duration newRemaining = currentMatchNow.expirationTime.difference(
-            DateTime.now(),
-          );
-          setState(() => remaining = newRemaining);
+      if(currentMatchNow.status != 'now') {
+        setState(() => remaining = Duration(minutes: 10));
+
+        if(matchTimer != null && matchTimer!.isActive){
+          matchTimer!.cancel();
         }
-      });
-
+        matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          if(context.mounted) {
+            final Duration newRemaining = currentMatchNow.expirationTime.difference(
+              DateTime.now(),
+            );
+            setState(() => remaining = newRemaining);
+          }
+        });
+      }
 
       String matchHeaderUpdate;
       if (currentMatchNow.status == 'new') {

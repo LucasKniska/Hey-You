@@ -58,58 +58,6 @@ class _MatchPopupState extends State<MatchPopup> {
 
     current = widget.current;
 
-    listener = FirebaseFirestore.instance
-        .collection('Matches')
-        .doc(currentUser.currentMatch)
-        .snapshots()
-        .listen((snapshot) async {
-      final match = snapshot.data();
-
-      if (match != null) {
-
-        CurrentMatch? currentMatch = CurrentMatch.fromJson(match);
-
-        if (!mounted) {
-          listener.cancel();
-          return;
-        }
-
-        if (currentMatch == current) return;
-
-        try {
-          if (current != currentMatch) {
-            if (!mounted) {
-              listener.cancel();
-              return;
-            }
-              setState(() {
-                current = currentMatch;
-
-                int u = 0;
-                if (current.userData[u].id == currentUser.id) {
-                  u = 1;
-                }
-                other = current.userData[u];
-              });
-            }
-
-        } catch (e) {
-          setState(() {
-            if (!mounted) {
-              listener.cancel();
-              return;
-            }
-            current = currentMatch;
-
-            int u = 0;
-            if (current.userData[u].id == currentUser.id) {
-              u = 1;
-            }
-            other = current.userData[u];
-          });
-        }
-      }
-    });
 
     super.initState();
   }
@@ -269,21 +217,24 @@ class _MatchPopupState extends State<MatchPopup> {
                 const SizedBox(height: 16),
                 Divider(thickness: 1.5),
 
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'Biography: ',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(
-                        text: other.userBio.isEmpty ? 'No User Bio' : other.userBio,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: other.userBio.isEmpty ? Colors.grey : Colors.black,
-                          fontStyle: other.userBio.isEmpty ? FontStyle.italic : FontStyle.normal,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Biography: ',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                      ),
-                    ],
+                        TextSpan(
+                          text: other.userBio.isEmpty ? 'No User Bio' : other.userBio,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: other.userBio.isEmpty ? Colors.grey : Colors.black,
+                            fontStyle: other.userBio.isEmpty ? FontStyle.italic : FontStyle.normal,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
