@@ -3,8 +3,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from enums import UserResponse
 from models.models import *
-from helpers import *
-import constants as const
+from helpers.helpers import *
+import constants.constants as const
 
 app = FastAPI()
 
@@ -249,7 +249,7 @@ from fastapi import FastAPI, HTTPException
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-from helpers import build_paragraph
+from helpers.helpers import build_paragraph
 import matching_algoLLM as cleaner
 import vector_distance as dist
 from models.models import User
