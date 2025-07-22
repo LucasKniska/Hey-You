@@ -91,7 +91,7 @@ class AuthenticationRepository extends GetxController{
       await FirebaseAuth.instance.signOut().then((_) {
         UserRepository.instance.stopListeningToUser();
       });
-      Get.to(() => LoginScreen());
+      Get.offAll(() => LoginScreen());
     } catch (e) {
       TSnackBars.errorSnackBar(title: 'There has been an error signing out of your account');
     }

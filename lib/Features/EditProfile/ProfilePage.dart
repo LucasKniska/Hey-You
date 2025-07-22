@@ -9,6 +9,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/sizes.dart';
+import 'components/StatsWidgets.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -75,7 +76,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     final firstName = currentUser.firstName.isNotEmpty ? currentUser.firstName : "User";
     final lastInitial = currentUser.lastName.isNotEmpty ? "${currentUser.lastName[0]}." : "";
     final initials = "${firstName.isNotEmpty ? firstName[0] : ''}${currentUser.lastName.isNotEmpty ? currentUser.lastName[0] : ''}";
-    final connections = currentUser.totalConnections;
     return Container(
       margin: const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -115,14 +115,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                     color: Color(0xFF1A1A1A),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "${connections == 1 ? '1 Connection' : '${connections} Connections'}",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
                   ),
                 ),
               ],
@@ -223,6 +215,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                           ),
                         ),
                         const SizedBox(height: TSizes.spaceBtwSections),
+
+                        StatsRow(currentUser: currentUser),
+
+                        const SizedBox(height: TSizes.spaceBtwSections),
+
                         Center(
                           child: OutlinedButton.icon(
                             icon: const Icon(Iconsax.logout, color: Color(0xFFEC3B3B)),
@@ -249,7 +246,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                                       child: Text('Cancel', style: TextStyle(color: Colors.black)),
                                     ),
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(true),
+                                      onPressed: () => AuthenticationRepository.instance.signOut(),
                                       child: const Text('Sign Out', style: TextStyle(color: Color(0xFFEF9A9A))),
                                     ),
                                   ],
