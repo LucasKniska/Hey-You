@@ -1,6 +1,6 @@
 # test_matching.py
-from matching_algoLLM import process_user_profile
-from vector_distance import profile_similarity
+from matching_calculations.matching_algoLLM import process_user_profile
+from matching_calculations.vector_distance import profile_similarity
 
 user1 = """
 I’m from New York City. I love playing with dogs, cats are cool too.

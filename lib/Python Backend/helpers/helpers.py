@@ -99,3 +99,35 @@ def create_new_match(user1, user2, db):
     match = get_match_object(user1, user2)
     match_id = initialize_new_match(user1, user2, match, db)
     return match_id
+
+
+
+# helpers/profile_builder.py
+from typing import Dict, Any
+
+def build_paragraph(user: "User") -> str:
+    """
+    Concatenate the public Biography, the 'AdditionalInfo'
+    field (if you decide to add it), and the **last 5** quiz answers.
+    """
+    parts: list[str] = []
+
+    # 1) bio
+    if user.biography:
+        parts.append(user.biography.strip())
+
+    # 2) optional extra free-text field
+    extra = getattr(user, "additionalInfo", "")
+    if extra:
+        parts.append(extra.strip())
+
+    # 3) last five quiz answers
+    if user.quizAnswers:
+        # keys in Firestore are strings: "1", "2", ...
+        keys = sorted(map(int, user.quizAnswers.keys()))
+        last_five = keys[-5:]
+        answers = " ".join(str(user.quizAnswers[str(k)]) for k in last_five)
+        parts.append(answers)
+
+    # combine
+    return " ".join(parts)
