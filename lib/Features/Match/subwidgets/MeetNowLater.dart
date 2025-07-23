@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:hey_you/Data/repositories/matching/match_repository.dart';
 import 'package:hey_you/Features/Match/controllers/howToMeet_controller.dart';
 import '../../../Data/models/CurrentMatch.dart';
 import '../../../utils/constants/colors.dart';
 
 class MeetNowLater extends StatefulWidget {
-  const MeetNowLater({super.key, required this.current, required this.user});
+  const MeetNowLater({super.key, required this.user});
 
-  final CurrentMatch current;
   final int user;
 
   @override
@@ -15,15 +16,17 @@ class MeetNowLater extends StatefulWidget {
 
 class _MeetNowLaterState extends State<MeetNowLater> {
 
+  final matchRepo = MatchRepository.instance;
+
   String noDecisionSubtext() {
     if (widget.user == 1) {
-      if (widget.current.userData[0].response != 'not_selected') {
+      if (matchRepo.currentMatch!.userData[0].response != 'not_selected') {
         return 'The other user wants to connect!';
       } else {
         return 'Want to Connect? Spark the Connection!';
       }
     } else {
-      if (widget.current.userData[1].response != 'not_selected') {
+      if (matchRepo.currentMatch!.userData[1].response != 'not_selected') {
         return 'The other user wants to connect!';
       } else {
         return 'Want to Connect? Spark the Connection!';
@@ -56,7 +59,7 @@ class _MeetNowLaterState extends State<MeetNowLater> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               elevation: 3,
             ),
-            onPressed: () => HowToMeetController.meetNowControl(current),
+            onPressed: () => {HowToMeetController.meetNowControl(current), setState((){})},
             child: Text(
               'Meet Now',
               style: Theme.of(context)
@@ -115,7 +118,7 @@ class _MeetNowLaterState extends State<MeetNowLater> {
                 left: 10,
                 child: IconButton(
                   onPressed: () =>
-                      HowToMeetController.noDecisionControl(current),
+                      {HowToMeetController.noDecisionControl(current), setState((){})},
                   icon: Icon(
                     Icons.close,
                     color: Colors.white,
@@ -146,10 +149,32 @@ class _MeetNowLaterState extends State<MeetNowLater> {
 
   @override
   Widget build(BuildContext context) {
-    return switch (widget.current.userData[widget.user].response) {
-      'not_selected' => noDecision(widget.current),
-      'meet_now' => meetNow(widget.current),
-      String() => noDecision(widget.current),
-    };
+    return Obx(() {
+
+      // Always get the latest value INSIDE the Obx!
+      final match = MatchRepository.instance.currentMatchRx.value;
+      print(match);
+
+      if (match == null) {
+        return const SizedBox.shrink();
+      }
+      // Defensive: userData list check (avoid range error)
+      if (widget.user >= match.userData.length) {
+        return const Text("Invalid user index");
+      }
+      final response = match.userData[widget.user].response;
+
+
+      // You can use a switch or if/else here
+      switch (response) {
+        case 'not_selected':
+          return noDecision(match);
+        case 'meet_now':
+          return meetNow(match);
+        default:
+          return noDecision(match);
+      }
+    });
   }
+
 }

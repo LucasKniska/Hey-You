@@ -58,7 +58,7 @@ class SignupController extends GetxController {
 
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many matching as possible!');
 
-      await AuthenticationRepository.instance.screenRedirect();
+      AuthenticationRepository.instance.screenRedirect();
 
     } on FirebaseAuthException catch (e) {
       Get.offAll(() => SignUpScreen());

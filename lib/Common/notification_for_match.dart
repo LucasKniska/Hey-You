@@ -50,7 +50,7 @@ Future<CurrentMatch?> setupNotification() async {
           onTap: (snack) {
             try {
               if (currentMatchNow.id != '') {
-                Get.dialog(MatchPopup(current: currentMatchNow, ));
+                Get.dialog(MatchPopup());
               }
             } catch (e) {}
           },

@@ -24,14 +24,14 @@ class AuthenticationRepository extends GetxController{
   bool firstTryLogin = true;
 
   @override
-  void onReady() async {
+  void onReady() {
     FlutterNativeSplash.remove();
-    await screenRedirect();
+    screenRedirect();
     firstTryLogin = false;
   }
 
 
-  Future<void> screenRedirect() async {
+  void screenRedirect() {
     // Local Storage
     deviceStorage.writeIfNull('isFirstTime', true);
 
@@ -43,12 +43,11 @@ class AuthenticationRepository extends GetxController{
         try {
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
 
+            Get.lazyPut(() => MatchRepository());
             if(firstTryLogin){
               Get.put(UserRepository());
             }
-
             Get.put(LocationController());
-            Get.put(MatchRepository());
             Get.put(ProfileController());
             setupNotification();
 
@@ -84,8 +83,9 @@ class AuthenticationRepository extends GetxController{
 
   Future<void> loginWithEmailAndPassword(String email, String password) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
-    } catch (e) {
+      return await _auth.signInWithEmailAndPassword(email: email, password: password).then((UserCredential result) {
+        UserRepository.instance.startListeningToUser(result.user!.uid);
+      });    } catch (e) {
       throw 'Something went wrong. Please try again';
     }
   }

@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
+import 'package:hey_you/Data/repositories/matching/match_repository.dart';
 import 'package:hey_you/Features/Match/controllers/howToMeet_controller.dart';
 import 'package:hey_you/Features/Match/subwidgets/MeetNowLater.dart';
 
 import '../../Data/models/QuizQuestions.dart';
+import '../../Data/models/UserModel.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/sizes.dart';
@@ -17,21 +19,16 @@ import 'SplashScreens/ConnectedSplashScreen/ConnectedSplashScreen.dart';
 import 'SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
 
 class MatchPopup extends StatefulWidget {
-  final CurrentMatch current;
-
-  const MatchPopup({super.key, required this.current});
+  const MatchPopup({super.key});
 
   @override
   State<MatchPopup> createState() => _MatchPopupState();
 }
 
 class _MatchPopupState extends State<MatchPopup> {
-  late Timer _timer;
-  late Duration? _remaining;
-  final currentUser = UserRepository.instance.currentUser;
-  late StreamSubscription listener;
 
-  late CurrentMatch current;
+  MatchRepository matchRepo = MatchRepository.instance;
+
   late int user;
   late UserData other;
 
@@ -39,35 +36,22 @@ class _MatchPopupState extends State<MatchPopup> {
 
   @override
   void initState() {
-    _remaining = null;
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (context.mounted) {
-        final Duration newRemaining = widget.current.expirationTime.difference(
-          DateTime.now(),
-        );
-        setState(() => _remaining = newRemaining);
-      }
-    });
+
+    final UserModel currentUser = UserRepository.instance.currentUser;
+    CurrentMatch current = MatchRepository.instance.currentMatch!;
 
     user = 1;
-    other = widget.current.userData[0];
-    if (widget.current.userData[0].id == currentUser.id) {
+    other = current.userData[0];
+    if (current.userData[0].id == currentUser.id) {
       user = 0;
-      other = widget.current.userData[1];
+      other = current.userData[1];
     }
 
-    current = widget.current;
-
+    current = current;
 
     super.initState();
   }
 
-  @override
-  void dispose() {
-    listener.cancel();
-    _timer.cancel();
-    super.dispose();
-  }
 
   String _formatDuration(Duration? d) {
     if (d == null) return '';
@@ -75,59 +59,23 @@ class _MatchPopupState extends State<MatchPopup> {
     return '${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}';
   }
 
-  Widget TimeToConnect() {
-    if (_remaining == null) {
-      return Text(
-        'Time left to connect: ...',
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: Colors.grey.shade600,
-        ),
-      );
-    }
-
-    if (_remaining!.inSeconds < 120) {
-      return Text(
-        'Time left to connect: ${_formatDuration(_remaining!)}',
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: Colors.red,
-        ),
-      );
-    }
-    return Text(
-      'Time left to connect: ${_formatDuration(_remaining!)}',
-      style: Theme.of(context).textTheme.bodyLarge,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    double distanceInMiles = current.distance * kmToMilesFactor;
 
-    /// Checks if the match has been confirmed
-    if (other.response == 'meet_now' && current.userData[user].response == 'meet_now') {
-      // Change the data to create a new match
-      HowToMeetController.updateMatchStatus(current);
+    // /// Checks if the match has been confirmed
+    // if (other.response == 'meet_now' && current.userData[user].response == 'meet_now') {
+    //   // Change the data to create a new match
+    //   HowToMeetController.updateMatchStatus(current);
+    //
+    //   // Loading screen type
+    //   return ConnectedSplashScreen(
+    //     onFinish: () => {
+    //       Get.back(),
+    //     },
+    //   );
+    // }
 
-      // Loading screen type
-      return ConnectedSplashScreen(
-        onFinish: () => {
-          Get.back(),
-        },
-      );
-    }
-
-    /// Checks if the timer has run out
-    if (_remaining != null && _remaining! < Duration.zero) {
-      HowToMeetController.deleteCurrentMatch(current);
-
-      // Loading screen type
-      return RejectedSplashScreen(
-        onFinish: () => {
-          Navigator.pop(context),
-          setState(() {})
-        },
-      );
-    }
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -186,27 +134,35 @@ class _MatchPopupState extends State<MatchPopup> {
                             children: [
                               Icon(Icons.place, size: 16, color: Colors.blue[200]),
                               SizedBox(width: 4),
+
+                              Obx(() =>
+
                               Text(
-                                '${distanceInMiles.toStringAsFixed(2)} miles',
+                                '${(matchRepo.currentMatchRx.value!.distance * kmToMilesFactor).toStringAsFixed(2)} miles',
                                 style: Theme.of(context).textTheme.bodySmall,
-                              ),
+                              )),
                               SizedBox(width: 12),
                               Icon(Icons.timer, size: 16, color: Colors.blue[200]),
-                              SizedBox(width: 4),
-                              _remaining == null
-                                  ? Text('...',
-                                  style: Theme.of(context).textTheme.bodySmall)
-                                  : Text(
-                                _formatDuration(_remaining!),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                  color: (_remaining!.inSeconds < 120)
-                                      ? Colors.red
-                                      : Colors.grey[700],
-                                ),
+
+
+                      SizedBox(width: 4),
+
+
+                      Obx(() =>
+                            Text(
+                            _formatDuration(MatchRepository.instance.remainingTimeRx.value),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                            color: (MatchRepository.instance.remainingTimeRx.value.inSeconds < 120)
+                            ? Colors.red
+                                : Colors.grey[700],
+                            ),
+                            )
                               ),
+
+
                             ],
                           ),
                         ],
@@ -247,7 +203,7 @@ class _MatchPopupState extends State<MatchPopup> {
                 ),
                 const SizedBox(height: 10),
                 Column(
-                  children: current.related.map((t) =>
+                  children: matchRepo.currentMatch!.related.map((t) =>
                       Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
@@ -285,7 +241,7 @@ class _MatchPopupState extends State<MatchPopup> {
                 const SizedBox(height: 18),
 
                 // Meet Now button
-                MeetNowLater(current: current, user: user),
+                MeetNowLater(user: user),
 
                 const SizedBox(height: 2),
               ],

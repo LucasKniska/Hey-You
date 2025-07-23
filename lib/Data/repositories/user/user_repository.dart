@@ -50,7 +50,7 @@ class UserRepository extends GetxController {
             try {
               // Update the current user
               _currentUser.value = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
-
+              MatchRepository.instance.startCurrentMatchListener();
               print('Current user updated: ${_currentUser.value.id}');
             } catch (e) {
               print('Error updating current user: $e');

@@ -16,7 +16,6 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../Data/models/UserModel.dart';
 import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
-import '../EditProfile/profile_controller.dart';
 import '../ViewConnections/previousConnections.dart';
 import 'MatchPopup.dart';
 import 'SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
@@ -31,16 +30,11 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
-
-  Timer? matchTimer;
-  late Duration? remaining;
-  CurrentMatch? current;
   int userNum = -1;
   RxString matchHeader = ''.obs;
 
   final userRepo = UserRepository.instance;
-  final currentUser = UserRepository.instance.currentUser;
-  final currentMatch = MatchRepository.instance.currentMatch;
+  UserModel currentUser = UserRepository.instance.currentUser;
 
   // Enhanced animation controllers
   late AnimationController _glowController;
@@ -60,154 +54,67 @@ class _MapPageState extends State<MapPage>
   @override
   void initState() {
     super.initState();
-    remaining = null;
 
-    checkForCurrentMatch();
-
-    // Watch currentUser changes
-    ever<UserModel?>(userRepo.currentUserRx, (user) async {
-      if (user == null) return;
-
-      final profile = ProfileController.instance;
-      profile.updateMods();
-
-      final currentMatchId = user.currentMatch;
-
-
-      print('Reacting to user change in MapPage');
-      print(currentMatchId);
-      print(currentMatchId.isEmpty);
-
-      if (currentMatchId.isEmpty) {
-        setState(() {
-          current = null;
-        });
-        return;
-      }
-
-      CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
-
-
-      print('Current Match Now: $currentMatchNow');
-
-      if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
-
-      if(currentMatchNow.status != 'now') {
-        setState(() => remaining = Duration(minutes: 10));
-
-        if(matchTimer != null && matchTimer!.isActive){
-          matchTimer!.cancel();
-        }
-        matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          if(context.mounted) {
-            final Duration newRemaining = currentMatchNow.expirationTime.difference(
-              DateTime.now(),
-            );
-            setState(() => remaining = newRemaining);
-          }
-        });
-      }
-
-      String matchHeaderUpdate;
-      if (currentMatchNow.status == 'new') {
-        matchHeaderUpdate = 'New Connection!';
-      } else if (currentMatchNow.status == 'now') {
-        matchHeaderUpdate = 'Meet Up Now!';
-      } else {
-        matchHeaderUpdate = '';
-      }
-
-      setState(() {
-        current = currentMatchNow;
-        userNum = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
-        matchHeader.value = matchHeaderUpdate;
-      });
-    });
-
-      // Initialize enhanced animations
+    // Initialize enhanced animations
     _glowController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
-    )
-      ..repeat(reverse: true);
+    )..repeat(reverse: true);
 
     _shimmerController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
-    )
-      ..repeat();
+    )..repeat();
 
     _floatController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
-    )
-      ..repeat(reverse: true);
+    )..repeat(reverse: true);
 
     _colorController = AnimationController(
       duration: const Duration(seconds: 5),
       vsync: this,
-    )
-      ..repeat(reverse: true);
+    )..repeat(reverse: true);
 
     _borderController = AnimationController(
       duration: const Duration(seconds: 6),
       vsync: this,
-    )
-      ..repeat();
+    )..repeat();
 
     // Glow animation - subtle intensity changes
-    _glowAnimation = Tween<double>(
-      begin: 0.1,
-      end: 0.4,
-    ).animate(CurvedAnimation(
-      parent: _glowController,
-      curve: Curves.easeInOut,
-    ));
+    _glowAnimation = Tween<double>(begin: 0.1, end: 0.4).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+    );
 
     // Gentler shimmer animation
-    _shimmerAnimation = Tween<double>(
-      begin: -1.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _shimmerController,
-      curve: Curves.easeInOut,
-    ));
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
 
     // Subtle floating animation
-    _floatAnimation = Tween<double>(
-      begin: -2.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _floatController,
-      curve: Curves.easeInOut,
-    ));
+    _floatAnimation = Tween<double>(begin: -2.0, end: 2.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
 
     // Color breathing animations
     _colorAnimation1 = ColorTween(
       begin: Colors.blue.shade400,
       end: Colors.purple.shade400,
-    ).animate(CurvedAnimation(
-      parent: _colorController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _colorController, curve: Curves.easeInOut),
+    );
 
     _colorAnimation2 = ColorTween(
       begin: Colors.lightBlue.shade300,
       end: Colors.pink.shade300,
-    ).animate(CurvedAnimation(
-      parent: _colorController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _colorController, curve: Curves.easeInOut),
+    );
 
     // Border light animation
-    _borderAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _borderController,
-      curve: Curves.easeInOut,
-    ));
-
+    _borderAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _borderController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -217,12 +124,15 @@ class _MapPageState extends State<MapPage>
     _floatController.dispose();
     _colorController.dispose();
     _borderController.dispose();
-    matchTimer?.cancel();
     super.dispose();
   }
 
   Future<CurrentMatch?> loadCurrentMatch(String matchId) async {
-    final doc = await FirebaseFirestore.instance.collection('Matches').doc(matchId).get();
+    final doc =
+        await FirebaseFirestore.instance
+            .collection('Matches')
+            .doc(matchId)
+            .get();
     if (doc.exists) {
       return CurrentMatch.fromJson(doc.data()!);
     }
@@ -230,11 +140,14 @@ class _MapPageState extends State<MapPage>
   }
 
   Widget _buildNewConnectionCard() {
+    final current = MatchRepository.instance.currentMatch; // always latest
+    final currentUser = UserRepository.instance.currentUser;
     if (current == null) return const SizedBox.shrink();
 
-    final otherUserName = (currentUser.id == current!.userData[0].id)
-        ? current!.userData[1].userName
-        : current!.userData[0].userName;
+    final otherUserName =
+        (currentUser.id == current.userData[0].id)
+            ? current.userData[1].userName
+            : current.userData[0].userName;
 
     return AnimatedBuilder(
       animation: Listenable.merge([
@@ -248,7 +161,7 @@ class _MapPageState extends State<MapPage>
         return Transform.translate(
           offset: Offset(0, _floatAnimation.value),
           child: Container(
-            margin: const EdgeInsets.only(left: 16, right: 16),
+            margin: const EdgeInsets.only(left: 16, right: 16, top: 4),
             child: Stack(
               children: [
                 // Subtle glow effect
@@ -263,7 +176,9 @@ class _MapPageState extends State<MapPage>
                         spreadRadius: _glowAnimation.value * 3,
                       ),
                       BoxShadow(
-                        color: Colors.purple.withOpacity(_glowAnimation.value * 0.5),
+                        color: Colors.purple.withOpacity(
+                          _glowAnimation.value * 0.5,
+                        ),
                         blurRadius: 20 + (_glowAnimation.value * 5),
                         offset: const Offset(0, 8),
                         spreadRadius: _glowAnimation.value * 2,
@@ -284,7 +199,9 @@ class _MapPageState extends State<MapPage>
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      transform: GradientRotation(_shimmerAnimation.value * 0.5),
+                      transform: GradientRotation(
+                        _shimmerAnimation.value * 0.5,
+                      ),
                     ),
                   ),
                 ),
@@ -294,7 +211,9 @@ class _MapPageState extends State<MapPage>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3 + (_borderAnimation.value * 0.4)),
+                      color: Colors.white.withOpacity(
+                        0.3 + (_borderAnimation.value * 0.4),
+                      ),
                       width: 1.5,
                     ),
                   ),
@@ -311,31 +230,22 @@ class _MapPageState extends State<MapPage>
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        if (current!.id.isNotEmpty && current!.status == 'new') {
-                          Get.dialog(MatchPopup(current: current!)).then((_) async {
-                            final refreshed = await loadCurrentMatch(current!.id);
-                            if (refreshed != null) {
-                              setState(() {
-                                current = refreshed;
-                                matchHeader.value = refreshed.status == 'new'
-                                    ? 'New Connection!'
-                                    : refreshed.status == 'now'
-                                    ? 'Meet Up Now!'
-                                    : '';
-                              });
-                            }
-                          });
+                        if (current.id.isNotEmpty &&
+                            current.status == 'new') {
+                          Get.dialog(MatchPopup());
                         } else {
-                          Get.to(() => MeetNowPage(
-                            current: current!,
-                            userLocation: current!.userData[0].location,
-                            otherUserLocation: current!.userData[1].location,
-                          ));
+                          Get.to(
+                            () => MeetNowPage(
+                              current: current,
+                              userLocation: current.userData[0].location,
+                              otherUserLocation: current.userData[1].location,
+                            ),
+                          );
                         }
                       },
                       borderRadius: BorderRadius.circular(18),
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
                         child: Column(
                           children: [
                             // Celebration emoji and header
@@ -343,13 +253,17 @@ class _MapPageState extends State<MapPage>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const SizedBox(width: 8),
-                                Obx(() => Text(
-                                  matchHeader.value,
-                                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade700,
+                                Obx(
+                                  () => Text(
+                                    matchHeader.value,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.headlineMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                    ),
                                   ),
-                                )),
+                                ),
                                 const SizedBox(width: 8),
                               ],
                             ),
@@ -386,7 +300,9 @@ class _MapPageState extends State<MapPage>
 
                             Text(
                               otherUserName,
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              style: Theme.of(
+                                context,
+                              ).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey.shade800,
                               ),
@@ -394,7 +310,10 @@ class _MapPageState extends State<MapPage>
 
                             const SizedBox(height: 4),
 
+                            TextDetailingChoice(),
+                            const SizedBox(height: 2),
                             TimeToConnect(),
+
 
                             const SizedBox(height: 8),
 
@@ -418,14 +337,19 @@ class _MapPageState extends State<MapPage>
                               ),
                               child: ElevatedButton(
                                 onPressed: () {
-                                  if (current!.id.isNotEmpty && current!.status == 'new') {
-                                    Get.dialog(MatchPopup(current: current!));
+                                  if (current.id.isNotEmpty &&
+                                      current.status == 'new') {
+                                    Get.dialog(MatchPopup());
                                   } else {
-                                    Get.to(() => MeetNowPage(
-                                      current: current!,
-                                      userLocation: current!.userData[0].location,
-                                      otherUserLocation: current!.userData[1].location,
-                                    ));
+                                    Get.to(
+                                      () => MeetNowPage(
+                                        current: current,
+                                        userLocation:
+                                            current.userData[0].location,
+                                        otherUserLocation:
+                                            current.userData[1].location,
+                                      ),
+                                    );
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -443,14 +367,14 @@ class _MapPageState extends State<MapPage>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      current!.status == 'new'
+                                      current.status == 'new'
                                           ? Iconsax.search_normal_1
                                           : Iconsax.location,
                                       color: Colors.white,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      current!.status == 'new'
+                                      current.status == 'new'
                                           ? 'View Profile'
                                           : 'Meet Now',
                                       style: const TextStyle(
@@ -481,21 +405,6 @@ class _MapPageState extends State<MapPage>
   Widget build(BuildContext context) {
     super.build(context);
 
-    /// Checks if the timer has run out
-    if(remaining != null && remaining! < Duration.zero && current != null){
-      print('Printing remaining: ${_formatDuration(remaining!)}');
-      HowToMeetController.deleteCurrentMatch(current!);
-      // Loading screen type
-      return RejectedSplashScreen(
-        onFinish: () => {
-          // Change the data to create a new match
-          setState(() {})
-
-        },
-      );
-    }
-
-
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -504,7 +413,7 @@ class _MapPageState extends State<MapPage>
             MeetNowToggle(),
 
             // NEW CONNECTION CARD - Enhanced with subtle animations
-            _buildNewConnectionCard(),
+            Obx(() => _buildNewConnectionCard()),
 
             /// Combined Header and Possible Matches Section
             Container(
@@ -516,7 +425,10 @@ class _MapPageState extends State<MapPage>
                   // Section title
                   Container(
                     padding: const EdgeInsets.only(left: 4, bottom: 8),
-                    child: sectionTitle(Iconsax.people, 'Possible Matches Near You'),
+                    child: sectionTitle(
+                      Iconsax.people,
+                      'Possible Matches Near You',
+                    ),
                   ),
 
                   SizedBox(height: TSizes.spaceBtwSections),
@@ -526,7 +438,10 @@ class _MapPageState extends State<MapPage>
                   searchFilters(context),
 
                   /// Previous Connections Sections
-                  sectionTitle(Iconsax.personalcard, TTexts.previousConnections),
+                  sectionTitle(
+                    Iconsax.personalcard,
+                    TTexts.previousConnections,
+                  ),
                   SizedBox(height: TSizes.spaceBtwItems),
                   PreviousConnection(),
                 ],
@@ -546,93 +461,76 @@ class _MapPageState extends State<MapPage>
     return '${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}';
   }
 
+  Widget TextDetailingChoice() {
+    final UserModel currentUser = UserRepository.instance.currentUser;
+    CurrentMatch current = MatchRepository.instance.currentMatch!;
 
-  void checkForCurrentMatch() async {
-
-    UserModel user = currentUser;
-
-    final profile = ProfileController.instance;
-    profile.updateMods();
-
-    final currentMatchId = user.currentMatch;
-
-
-    print('Reacting to user change in MapPage');
-    print(currentMatchId);
-    print(currentMatchId.isEmpty);
-
-    if (currentMatchId.isEmpty) {
-      setState(() {
-        current = null;
-        remaining = null;
-      });
-      matchTimer?.cancel();
-      return;
+    int user = 1;
+    if (current.userData[0].id == currentUser.id) {
+      user = 0;
     }
 
-    CurrentMatch? currentMatchNow = await loadCurrentMatch(currentMatchId);
+    MatchRepository matchRepo = MatchRepository.instance;
+    String textDisplay = '';
 
-    print('Current Match Now: $currentMatchNow');
-
-    if (!mounted || currentMatchNow == null || currentMatchNow == current) return;
-    setState(() => remaining = Duration(minutes: 10));
-
-    if(matchTimer != null && matchTimer!.isActive){
-      matchTimer!.cancel();
-    }
-    matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-
-      if(context.mounted) {
-        final Duration newRemaining = currentMatchNow.expirationTime.difference(
-          DateTime.now(),
-        );
-
-        setState(() => remaining = newRemaining);
+    if (user == 1) {
+      if (matchRepo.currentMatch!.userData[0].response != 'not_selected') {
+        textDisplay = 'The other user wants to connect!';
+      } else {
+        textDisplay =
+            'Spark the Connection before time runs out!';
       }
-    });
-
-    String matchHeaderUpdate;
-    if (currentMatchNow.status == 'new') {
-      matchHeaderUpdate = 'New Connection!';
-    } else if (currentMatchNow.status == 'now') {
-      matchHeaderUpdate = 'Meet Up Now!';
     } else {
-      matchHeaderUpdate = '';
+      if (matchRepo.currentMatch!.userData[1].response != 'not_selected') {
+        textDisplay = 'The other user wants to connect!';
+      } else {
+        textDisplay =
+            'Spark the Connection before time runs out!';
+      }
     }
 
-    setState(() {
-      current = currentMatchNow;
-      userNum = (currentMatchNow.userData[0].id == currentUser.id) ? 0 : 1;
-      matchHeader.value = matchHeaderUpdate;
-    });
+    if (textDisplay.isEmpty) return SizedBox.shrink();
+
+    return Text(
+      textDisplay,
+      style: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600),
+    );
   }
 
-
   Widget TimeToConnect() {
+    final repo = MatchRepository.instance;
+    final current = repo.currentMatch;
+    final remaining = repo.remainingTimeRx.value;
 
-    if (current!.status != 'new') {
+    if (current == null) {
+      return const SizedBox.shrink();
+    }
+
+    if (current.status != 'new') {
       return Text(
         'Ready to meet up!',
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: Colors.grey.shade600,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600),
       );
     }
 
-    if(remaining!.inSeconds < 120) {
+    if (remaining.inSeconds < 120) {
       return Text(
-        'Time left to connect: ' + _formatDuration(remaining!),
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: Colors.red,
-        ),
+        'Time left to connect: ${_formatDuration(remaining)}',
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: Colors.red),
       );
     }
 
     return Text(
-      'Time left to connect: ' + _formatDuration(remaining!),
-      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-        color: Colors.grey.shade600,
-      ),
+      'Time left to connect: ${_formatDuration(remaining)}',
+      style: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600),
     );
   }
 }

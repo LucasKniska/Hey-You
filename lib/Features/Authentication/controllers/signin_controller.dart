@@ -56,6 +56,7 @@ class SignInController extends GetxController {
       print('Login with email and password');
       await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
 
+      print('Putting user repo');
       Get.put(UserRepository());
 
       if (rememberMe.value) {
@@ -67,7 +68,7 @@ class SignInController extends GetxController {
       }
 
       print('Going to screen redirect');
-      await AuthenticationRepository.instance.screenRedirect();
+      AuthenticationRepository.instance.screenRedirect();
       print('Completed screen redirect');
 
     } catch (e) {

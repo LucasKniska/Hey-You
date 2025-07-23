@@ -14,7 +14,7 @@ class APIConstants {
   static const String updateLocation = '$base3/update-location';
   static const String completeMatch = '$base3/complete-match';
   static const String cancelCompleteMatch = '$base3/cancel-complete-match';
-  static const String getPreviousConnections = '$base3/get-previous-matching';
+  static const String getPreviousConnections = '$base3/get-previous-connections';
   static const String updateUserData = '$base3/save-user-record';
   static const String updateQuestionAnswers = '$base3/update-question-answers';
 }

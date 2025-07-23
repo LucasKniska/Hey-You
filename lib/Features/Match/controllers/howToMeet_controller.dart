@@ -12,10 +12,12 @@ import '../../../Data/models/CurrentMatch.dart';
 
 class HowToMeetController extends GetxController{
   static HowToMeetController get instance => Get.find();
-  static final userRepo = UserRepository.instance;
 
   static void meetNowControl(CurrentMatch c) {
-    final currentUser = userRepo.currentUser;
+
+    print('Meeting now');
+
+    final currentUser = UserRepository.instance.currentUser;
 
     if(currentUser.id == c.userData[0].id){
       c.userData[0].response = 'meet_now';
@@ -27,21 +29,12 @@ class HowToMeetController extends GetxController{
 
   }
 
-  static void meetLaterControl(CurrentMatch c){
-
-    final currentUser = userRepo.currentUser;
-
-    if(currentUser.id == c.userData[0].id){
-      c.userData[0].response = 'meet_later';
-      MatchRepository.instance.saveCurrentMatchRecord(c);
-    } else {
-      c.userData[1].response = 'meet_later';
-      MatchRepository.instance.saveCurrentMatchRecord(c);
-    }
-  }
-
   static void noDecisionControl(CurrentMatch c){
-    final currentUser = userRepo.currentUser;
+
+    print('no decision');
+
+
+    final currentUser = UserRepository.instance.currentUser;
 
     if(currentUser.id == c.userData[0].id){
       c.userData[0].response = 'not_selected';
@@ -85,6 +78,10 @@ class HowToMeetController extends GetxController{
 
   // Call api to create a new match?
   static Future<void> updateMatchStatus(CurrentMatch c) async {
+
+    print('Updating match status');
+
+
     final url = Uri.parse(APIConstants.updateMatchStatus);
 
     final response = await http.post(

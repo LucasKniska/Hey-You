@@ -18,7 +18,6 @@ class MeetNowToggle extends StatelessWidget {
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
           color: enabled ? Colors.white : Colors.grey.shade50,
           borderRadius: const BorderRadius.only(

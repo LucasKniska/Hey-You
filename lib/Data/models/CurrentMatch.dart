@@ -2,16 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class CurrentMatch {
-  final DateTime createdOn;
-  final DateTime expirationTime;
+  DateTime createdOn;
+  DateTime expirationTime;
   final String id;
   final List<String> possiblePlaces;
   final List<DateTime> possibleTimes;
   final List<String> related;
   final List<UserData> userData;
   final String? currentProposedPlace;
-  final String status;
-  final double distance;
+  String status;
+  double distance;
 
   CurrentMatch({
     required this.createdOn,
@@ -41,7 +41,7 @@ class CurrentMatch {
           .map((u) => UserData.fromJson(u))
           .toList(),
       status: json['status'],
-      distance: json['distance'] ?? 0.0
+      distance: json['distance'].toDouble() ?? 0.0
     );
   }
 
