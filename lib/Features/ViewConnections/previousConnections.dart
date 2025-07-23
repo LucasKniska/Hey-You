@@ -57,7 +57,7 @@ class _PreviousConnection extends State<PreviousConnection> {
           )
         else
           EmptyStateWidget(
-            title: 'You currently have no connections',
+            title: 'You currently have no matching',
             description: 'Match with someone to fill out your list of contacts!',
           )
       ],

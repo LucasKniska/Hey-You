@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:hey_you/Data/repositories/connections/match_repository.dart';
+import 'package:hey_you/Data/repositories/matching/match_repository.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/utils/constants/api_constants.dart';
 import 'package:http/http.dart' as http;
@@ -12,11 +12,10 @@ import '../../../Data/models/CurrentMatch.dart';
 
 class HowToMeetController extends GetxController{
   static HowToMeetController get instance => Get.find();
-
+  static final userRepo = UserRepository.instance;
 
   static void meetNowControl(CurrentMatch c) {
-    final currentUser = UserRepository.instance.currentUser;
-    Get.put(MatchRepository());
+    final currentUser = userRepo.currentUser;
 
     if(currentUser.id == c.userData[0].id){
       c.userData[0].response = 'meet_now';
@@ -30,8 +29,7 @@ class HowToMeetController extends GetxController{
 
   static void meetLaterControl(CurrentMatch c){
 
-    Get.put(MatchRepository());
-    final currentUser = UserRepository.instance.currentUser;
+    final currentUser = userRepo.currentUser;
 
     if(currentUser.id == c.userData[0].id){
       c.userData[0].response = 'meet_later';
@@ -43,8 +41,7 @@ class HowToMeetController extends GetxController{
   }
 
   static void noDecisionControl(CurrentMatch c){
-    Get.put(MatchRepository());
-    final currentUser = UserRepository.instance.currentUser;
+    final currentUser = userRepo.currentUser;
 
     if(currentUser.id == c.userData[0].id){
       c.userData[0].response = 'not_selected';
@@ -84,9 +81,6 @@ class HowToMeetController extends GetxController{
         'id': c.id
       })
     );
-
-    print(response);
-
   }
 
   // Call api to create a new match?

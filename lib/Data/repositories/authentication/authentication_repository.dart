@@ -13,6 +13,7 @@ import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
 import '../../../Features/EditProfile/profile_controller.dart';
 import '../../../utils/theme/snackbars.dart';
+import '../matching/match_repository.dart';
 import '../user/user_repository.dart';
 
 class AuthenticationRepository extends GetxController{
@@ -20,11 +21,13 @@ class AuthenticationRepository extends GetxController{
   final _auth = FirebaseAuth.instance;
 
   final deviceStorage = GetStorage();
+  bool firstTryLogin = true;
 
   @override
-  void onReady() {
+  void onReady() async {
     FlutterNativeSplash.remove();
-    screenRedirect();
+    await screenRedirect();
+    firstTryLogin = false;
   }
 
 
@@ -39,9 +42,14 @@ class AuthenticationRepository extends GetxController{
         /// User is signed in
         try {
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
-            Get.put(UserRepository());
+
+            if(firstTryLogin){
+              Get.put(UserRepository());
+            }
+
             Get.put(LocationController());
-            Get.lazyPut(()=> ProfileController());
+            Get.put(MatchRepository());
+            Get.put(ProfileController());
             setupNotification();
 
             Get.offAll(() => const NavigationMenu());
@@ -50,10 +58,12 @@ class AuthenticationRepository extends GetxController{
           }
 
         } catch (e) {
+          print(e);
           Get.offAll(() => const LoginScreen());
         }
 
       } else {
+        print('Firebase Auth isntance empty ${FirebaseAuth.instance.currentUser}');
         Get.offAll(() => const LoginScreen());
       }
     } else {
@@ -74,9 +84,7 @@ class AuthenticationRepository extends GetxController{
 
   Future<void> loginWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(email: email, password: password).then((UserCredential result) {
-        UserRepository.instance.startListeningToUser(result.user!.uid);
-      });
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
     } catch (e) {
       throw 'Something went wrong. Please try again';
     }
@@ -86,6 +94,7 @@ class AuthenticationRepository extends GetxController{
     try{
 
       UserRepository.instance.stopListeningToUser();
+      MatchRepository.instance.stopListeningToMatches();
       UserRepository.instance.currentUser.discoverable = false;
       await UserRepository.instance.saveUserRecord();
       await FirebaseAuth.instance.signOut();

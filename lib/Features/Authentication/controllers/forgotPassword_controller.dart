@@ -14,7 +14,7 @@ class ForgotPasswordController extends GetxController {
   void sendResetEmail() {
     if (!forgotPasswordFormKey.currentState!.validate()) return;
 
-    var _auth = Get.put(AuthenticationRepository());
+    var _auth = AuthenticationRepository.instance;
 
     _auth.sendPasswordResetLink(email.text);
 

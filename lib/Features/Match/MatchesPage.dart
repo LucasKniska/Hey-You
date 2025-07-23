@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
+import 'package:hey_you/Data/repositories/matching/match_repository.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:hey_you/Features/Match/MeetNowPage.dart';
 import 'package:hey_you/Features/Match/subwidgets/MeetNowToggle.dart';
@@ -39,6 +40,7 @@ class _MapPageState extends State<MapPage>
 
   final userRepo = UserRepository.instance;
   final currentUser = UserRepository.instance.currentUser;
+  final currentMatch = MatchRepository.instance.currentMatch;
 
   // Enhanced animation controllers
   late AnimationController _glowController;
@@ -58,8 +60,6 @@ class _MapPageState extends State<MapPage>
   @override
   void initState() {
     super.initState();
-    Get.put(ProfileController());
-
     remaining = null;
 
     checkForCurrentMatch();

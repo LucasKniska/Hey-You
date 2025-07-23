@@ -38,7 +38,6 @@ Widget searchFilters(var context) {
               backgroundColor: Colors.transparent,
               builder: (context) => const ModificationFullSheet(),
             );
-            Get.find<UserRepository>();
             UserRepository.instance.saveUserRecord();
           },
         )

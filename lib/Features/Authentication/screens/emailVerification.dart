@@ -20,7 +20,7 @@ class EmailVerificationScreen extends StatefulWidget {
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
-  final _auth = AuthenticationRepository();
+  final _auth = AuthenticationRepository.instance;
   late Timer timer;
 
   @override

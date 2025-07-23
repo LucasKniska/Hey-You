@@ -9,7 +9,7 @@ class TTexts {
   /// OnBoarding texts
   static const String onBoardingTitle0 = 'Welcome to Hey You!';
   static const String onBoardingTitle1 = 'Connect With Real People In The Real World';
-  static const String onBoardingUnder1 = 'Hey You helps you create genuine connections with people nearby, transforming online '
+  static const String onBoardingUnder1 = 'Hey You helps you create genuine matching with people nearby, transforming online '
       'interactions into real-world friendships.';
   static const String onBoardingTitle2 = 'How Hey You Works:';
 
@@ -63,8 +63,8 @@ class TTexts {
 
 
   /// Connections Page Texts
-  static const String connectionsTitleCard = 'This shows your scheduled meet ups and previous connections:';
-  static const String connectionsDescriptionCard = 'Here you can reach out to previous connections and see your scheduled connections.';
+  static const String connectionsTitleCard = 'This shows your scheduled meet ups and previous matching:';
+  static const String connectionsDescriptionCard = 'Here you can reach out to previous matching and see your scheduled matching.';
   static const String scheduledMeetUps = 'Scheduled Meet Ups';
   static const String previousConnections = 'Previous Connections';
 

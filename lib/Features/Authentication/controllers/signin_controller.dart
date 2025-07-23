@@ -55,6 +55,7 @@ class SignInController extends GetxController {
 
       print('Login with email and password');
       await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
+
       Get.put(UserRepository());
 
       if (rememberMe.value) {

@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:hey_you/Data/repositories/matching/match_repository.dart';
 import 'package:hey_you/utils/constants/api_constants.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,29 +14,23 @@ import '../../models/UserModel.dart';
 
 class UserRepository extends GetxController {
   static UserRepository get instance => Get.find();
-
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  StreamSubscription<DocumentSnapshot>? _userListener;
 
-  // Make currentUser a reactive field of the repository
+  StreamSubscription<DocumentSnapshot>? _userListener;
   final Rx<UserModel> _currentUser = UserModel.initial().obs;
 
   // Getter for accessing current user
   UserModel get currentUser => _currentUser.value;
-
-  // Reactive getter for widgets
   Rx<UserModel> get currentUserRx => _currentUser;
 
   @override
   void onInit() {
     super.onInit();
-    // Start listening when the controller is initialized
     _startUserListener();
   }
 
   @override
   void onClose() {
-    // Cancel the listener when the controller is disposed
     _userListener?.cancel();
     super.onClose();
   }
@@ -82,7 +77,18 @@ class UserRepository extends GetxController {
           (DocumentSnapshot snapshot) {
         if (snapshot.exists && snapshot.data() != null) {
           try {
-            _currentUser.value = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+
+
+            UserModel nextUser = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+
+            if(nextUser.currentMatch.isEmpty){
+              MatchRepository.instance.stopListeningToMatches();
+            } else if (nextUser.currentMatch != _currentUser.value.currentMatch) {
+              MatchRepository.instance.stopListeningToMatches();
+              MatchRepository.instance.startCurrentMatchListener();
+            }
+
+            _currentUser.value = nextUser;
             _currentUser.value.id = FirebaseAuth.instance.currentUser!.uid;
 
             print('Current user updated: ${_currentUser.value.id}');
