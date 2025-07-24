@@ -26,7 +26,7 @@ class UserRepository extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _startUserListener();
+    startListeningToUser();
   }
 
   @override
@@ -35,66 +35,27 @@ class UserRepository extends GetxController {
     super.onClose();
   }
 
-  /// Sets up a real-time listener for the current user
-  void _startUserListener() {
-    final String? userId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (userId != null) {
-      _userListener = _db
-          .collection('Users')
-          .doc(userId)
-          .snapshots()
-          .listen(
-            (DocumentSnapshot snapshot) {
-          if (snapshot.exists && snapshot.data() != null) {
-            try {
-              // Update the current user
-              _currentUser.value = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
-              MatchRepository.instance.startCurrentMatchListener();
-              print('Current user updated: ${_currentUser.value.id}');
-            } catch (e) {
-              print('Error updating current user: $e');
-            }
-          }
-        },
-        onError: (error) {
-          print('Error listening to user changes: $error');
-        },
-      );
-    }
-  }
-
   /// Call this method when user logs in to start listening to their data
-  void startListeningToUser(String userId) {
+  void startListeningToUser() {
     // Cancel existing listener
     _userListener?.cancel();
 
     _userListener = _db
         .collection('Users')
-        .doc(userId)
+        .doc(FirebaseAuth.instance.currentUser!.uid)
         .snapshots()
         .listen(
           (DocumentSnapshot snapshot) {
         if (snapshot.exists && snapshot.data() != null) {
           try {
-
-
-            UserModel nextUser = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
-
-            if(nextUser.currentMatch.isEmpty){
-              MatchRepository.instance.stopListeningToMatches();
-            } else if (nextUser.currentMatch != _currentUser.value.currentMatch) {
-              MatchRepository.instance.stopListeningToMatches();
-              MatchRepository.instance.startCurrentMatchListener();
-            }
-
-            _currentUser.value = nextUser;
-            _currentUser.value.id = FirebaseAuth.instance.currentUser!.uid;
-
+            // Update the current user
+            _currentUser.value = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+            MatchRepository.instance.startCurrentMatchListener();
             print('Current user updated: ${_currentUser.value.id}');
           } catch (e) {
             print('Error updating current user: $e');
           }
+
         }
       },
       onError: (error) {

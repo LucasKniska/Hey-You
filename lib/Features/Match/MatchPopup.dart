@@ -26,7 +26,6 @@ class MatchPopup extends StatefulWidget {
 }
 
 class _MatchPopupState extends State<MatchPopup> {
-
   MatchRepository matchRepo = MatchRepository.instance;
 
   late int user;
@@ -36,7 +35,6 @@ class _MatchPopupState extends State<MatchPopup> {
 
   @override
   void initState() {
-
     final UserModel currentUser = UserRepository.instance.currentUser;
     CurrentMatch current = MatchRepository.instance.currentMatch!;
 
@@ -52,31 +50,80 @@ class _MatchPopupState extends State<MatchPopup> {
     super.initState();
   }
 
-
   String _formatDuration(Duration? d) {
     if (d == null) return '';
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     return '${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}';
   }
 
+  Widget distanceText() {
+    return Obx(() {
+      if (matchRepo.currentMatchRx.value == null) return Text('');
+
+      return Text(
+        '${(matchRepo.currentMatchRx.value!.distance * kmToMilesFactor).toStringAsFixed(2)} miles',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    });
+  }
+
+  Widget relatedInfo() {
+    return Obx(() {
+      if (matchRepo.currentMatchRx.value == null) return Text('');
+
+      return Column(
+        children:
+            matchRepo.currentMatchRx.value!.related
+                .map(
+                  (t) => Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 14,
+                    ),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      border: Border.all(color: Colors.blue[100]!),
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.07),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.blue[300],
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            t,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              color: Colors.blue[900],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-
-    // /// Checks if the match has been confirmed
-    // if (other.response == 'meet_now' && current.userData[user].response == 'meet_now') {
-    //   // Change the data to create a new match
-    //   HowToMeetController.updateMatchStatus(current);
-    //
-    //   // Loading screen type
-    //   return ConnectedSplashScreen(
-    //     onFinish: () => {
-    //       Get.back(),
-    //     },
-    //   );
-    // }
-
-
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       shadowColor: Colors.black,
@@ -84,7 +131,12 @@ class _MatchPopupState extends State<MatchPopup> {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 32, 20, 20), // More top space
+            padding: const EdgeInsets.fromLTRB(
+              20,
+              32,
+              20,
+              20,
+            ), // More top space
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -96,13 +148,16 @@ class _MatchPopupState extends State<MatchPopup> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [BoxShadow(blurRadius: 6, color: Colors.black12)],
+                        boxShadow: [
+                          BoxShadow(blurRadius: 6, color: Colors.black12),
+                        ],
                       ),
                       child: CircleAvatar(
                         radius: 30,
                         backgroundColor: TColors.primary.withAlpha(180),
                         child: Text(
-                          other.userName[0] + other.userName[other.userName.length-2],
+                          other.userName[0] +
+                              other.userName[other.userName.length - 2],
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -116,53 +171,69 @@ class _MatchPopupState extends State<MatchPopup> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(other.userName,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold, fontSize: 22),
+                          Text(
+                            other.userName,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
                           ),
                           const SizedBox(height: 2),
-                          Text('${other.connections} Connection${other.connections == 1 ? '' : 's'}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(color: Colors.grey[600], fontSize: 15),
+                          Text(
+                            '${other.connections} Connection${other.connections == 1 ? '' : 's'}',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey[600],
+                              fontSize: 15,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(Icons.place, size: 16, color: Colors.blue[200]),
+                              Icon(
+                                Icons.place,
+                                size: 16,
+                                color: Colors.blue[200],
+                              ),
                               SizedBox(width: 4),
 
-                              Obx(() =>
+                              distanceText(),
 
-                              Text(
-                                '${(matchRepo.currentMatchRx.value!.distance * kmToMilesFactor).toStringAsFixed(2)} miles',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              )),
                               SizedBox(width: 12),
-                              Icon(Icons.timer, size: 16, color: Colors.blue[200]),
-
-
-                      SizedBox(width: 4),
-
-
-                      Obx(() =>
-                            Text(
-                            _formatDuration(MatchRepository.instance.remainingTimeRx.value),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                            color: (MatchRepository.instance.remainingTimeRx.value.inSeconds < 120)
-                            ? Colors.red
-                                : Colors.grey[700],
-                            ),
-                            )
+                              Icon(
+                                Icons.timer,
+                                size: 16,
+                                color: Colors.blue[200],
                               ),
 
+                              SizedBox(width: 4),
 
+                              Obx(
+                                () => Text(
+                                  _formatDuration(
+                                    MatchRepository
+                                        .instance
+                                        .remainingTimeRx
+                                        .value,
+                                  ),
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodySmall?.copyWith(
+                                    color:
+                                        (MatchRepository
+                                                    .instance
+                                                    .remainingTimeRx
+                                                    .value
+                                                    .inSeconds <
+                                                120)
+                                            ? Colors.red
+                                            : Colors.grey[700],
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -180,13 +251,25 @@ class _MatchPopupState extends State<MatchPopup> {
                       children: [
                         TextSpan(
                           text: 'Biography: ',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         TextSpan(
-                          text: other.userBio.isEmpty ? 'No User Bio' : other.userBio,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: other.userBio.isEmpty ? Colors.grey : Colors.black,
-                            fontStyle: other.userBio.isEmpty ? FontStyle.italic : FontStyle.normal,
+                          text:
+                              other.userBio.isEmpty
+                                  ? 'No User Bio'
+                                  : other.userBio,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(
+                            color:
+                                other.userBio.isEmpty
+                                    ? Colors.grey
+                                    : Colors.black,
+                            fontStyle:
+                                other.userBio.isEmpty
+                                    ? FontStyle.italic
+                                    : FontStyle.normal,
                           ),
                         ),
                       ],
@@ -198,46 +281,17 @@ class _MatchPopupState extends State<MatchPopup> {
                 // Why matched chips
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Why we matched you:',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'Why we matched you:',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 10),
-                Column(
-                  children: matchRepo.currentMatch!.related.map((t) =>
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          border: Border.all(color: Colors.blue[100]!),
-                          borderRadius: BorderRadius.circular(22),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.07),
-                              blurRadius: 2,
-                              offset: Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.blue[300], size: 20),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                t,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(color: Colors.blue[900], fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                  ).toList(),
-                ),
+
+                relatedInfo(),
+
                 const SizedBox(height: 18),
 
                 // Meet Now button
@@ -260,6 +314,5 @@ class _MatchPopupState extends State<MatchPopup> {
         ],
       ),
     );
-
   }
 }

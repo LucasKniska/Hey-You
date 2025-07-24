@@ -18,8 +18,6 @@ import '../../utils/constants/sizes.dart';
 import '../../utils/constants/text_string.dart';
 import '../ViewConnections/previousConnections.dart';
 import 'MatchPopup.dart';
-import 'SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
-import 'controllers/howToMeet_controller.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -125,18 +123,6 @@ class _MapPageState extends State<MapPage>
     _colorController.dispose();
     _borderController.dispose();
     super.dispose();
-  }
-
-  Future<CurrentMatch?> loadCurrentMatch(String matchId) async {
-    final doc =
-        await FirebaseFirestore.instance
-            .collection('Matches')
-            .doc(matchId)
-            .get();
-    if (doc.exists) {
-      return CurrentMatch.fromJson(doc.data()!);
-    }
-    return null;
   }
 
   Widget _buildNewConnectionCard() {
@@ -476,16 +462,21 @@ class _MapPageState extends State<MapPage>
     if (user == 1) {
       if (matchRepo.currentMatch!.userData[0].response != 'not_selected') {
         textDisplay = 'The other user wants to connect!';
-      } else {
+      } else if (matchRepo.currentMatch!.userData[1].response == 'not_selected'){
         textDisplay =
             'Spark the Connection before time runs out!';
+      }
+      else {
+        textDisplay = 'Waiting on other user to respond...';
       }
     } else {
       if (matchRepo.currentMatch!.userData[1].response != 'not_selected') {
         textDisplay = 'The other user wants to connect!';
-      } else {
+      } else if (matchRepo.currentMatch!.userData[0].response == 'not_selected'){
         textDisplay =
             'Spark the Connection before time runs out!';
+      } else {
+        textDisplay = 'Waiting on other user to respond...';
       }
     }
 

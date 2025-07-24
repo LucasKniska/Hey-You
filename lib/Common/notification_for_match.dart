@@ -48,6 +48,7 @@ Future<CurrentMatch?> setupNotification() async {
           duration: const Duration(seconds: 8),
           isDismissible: true,
           onTap: (snack) {
+            Get.closeCurrentSnackbar();
             try {
               if (currentMatchNow.id != '') {
                 Get.dialog(MatchPopup());

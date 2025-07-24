@@ -43,12 +43,12 @@ class AuthenticationRepository extends GetxController{
         try {
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
 
-            Get.lazyPut(() => MatchRepository());
+            Get.put(MatchRepository(), permanent: true);
             if(firstTryLogin){
               Get.put(UserRepository());
             }
-            Get.put(LocationController());
-            Get.put(ProfileController());
+            Get.put(LocationController(), permanent: true);
+            Get.put(ProfileController(), permanent: true);
             setupNotification();
 
             Get.offAll(() => const NavigationMenu());
@@ -84,7 +84,7 @@ class AuthenticationRepository extends GetxController{
   Future<void> loginWithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(email: email, password: password).then((UserCredential result) {
-        UserRepository.instance.startListeningToUser(result.user!.uid);
+        UserRepository.instance.startListeningToUser();
       });    } catch (e) {
       throw 'Something went wrong. Please try again';
     }
