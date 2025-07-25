@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hey_you/Data/repositories/user/user_repository.dart';
 
 import '../../../Data/models/UserModel.dart';
 import '../../../utils/constants/colors.dart';
 
 class ProfileHeaderAndStats extends StatefulWidget {
-  final UserModel currentUser;
 
-  const ProfileHeaderAndStats({Key? key, required this.currentUser}) : super(key: key);
+  const ProfileHeaderAndStats({Key? key}) : super(key: key);
 
   @override
   State<ProfileHeaderAndStats> createState() => _ProfileHeaderAndStatsState();
@@ -16,10 +16,12 @@ class ProfileHeaderAndStats extends StatefulWidget {
 class _ProfileHeaderAndStatsState extends State<ProfileHeaderAndStats> {
   @override
   Widget build(BuildContext context) {
-    final firstName = widget.currentUser.firstName.isNotEmpty ? widget.currentUser.firstName : "User";
-    final lastInitial = widget.currentUser.lastName.isNotEmpty ? widget.currentUser.lastName : "";
+    final currentUser = UserRepository.instance.currentUser;
+
+    final firstName = currentUser.firstName.isNotEmpty ? currentUser.firstName : "User";
+    final lastInitial = currentUser.lastName.isNotEmpty ? currentUser.lastName : "";
     final initials =
-        "${firstName.isNotEmpty ? firstName[0] : ''}${widget.currentUser.lastName.isNotEmpty ? widget.currentUser.lastName[0] : ''}";
+        "${firstName.isNotEmpty ? firstName[0] : ''}${currentUser.lastName.isNotEmpty ? currentUser.lastName[0] : ''}";
 
     return Column(
       children: [
@@ -88,8 +90,8 @@ class _ProfileHeaderAndStatsState extends State<ProfileHeaderAndStats> {
               Expanded(
                 child: AnimatedStatCard(
                   icon: Icons.people,
-                  label: (widget.currentUser.totalConnections == 1) ? 'Connection' : 'Connections',
-                  value: widget.currentUser.totalConnections.toString(),
+                  label: (currentUser.totalConnections == 1) ? 'Connection' : 'Connections',
+                  value: currentUser.totalConnections.toString(),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(22),
                     bottomLeft: Radius.circular(22),
@@ -101,7 +103,7 @@ class _ProfileHeaderAndStatsState extends State<ProfileHeaderAndStats> {
                 child: AnimatedStatCard(
                   icon: Icons.flash_on,
                   label: 'Current Streak',
-                  value: widget.currentUser.currentStreak.toString(),
+                  value: currentUser.currentStreak.toString(),
                   borderRadius: BorderRadius.zero,
                 ),
               ),
@@ -110,7 +112,7 @@ class _ProfileHeaderAndStatsState extends State<ProfileHeaderAndStats> {
                 child: AnimatedStatCard(
                   icon: Icons.star,
                   label: 'Longest Streak',
-                  value: widget.currentUser.longestStreak.toString(),
+                  value: currentUser.longestStreak.toString(),
                   borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(22),
                     bottomRight: Radius.circular(22),

@@ -6,7 +6,6 @@ import '../../Data/repositories/user/user_repository.dart';
 class ProfileController extends GetxController {
   static ProfileController get instance => Get.find();
 
-  final currentUser = UserRepository.instance.currentUser;
   final biography = TextEditingController();
   final editBiography = false.obs;
 
@@ -17,19 +16,22 @@ class ProfileController extends GetxController {
   void onInit() {
     super.onInit();
 
-    biography.text = currentUser.biography;
+    final currentUser = UserRepository.instance.currentUser;
 
+    biography.text = currentUser.biography;
     permanentMods.assignAll(currentUser.permanentModifications);
     temporaryMods.assignAll(currentUser.temporaryModifications.map((e) => e.modification));
   }
 
   void updateMods() {
+    final currentUser = UserRepository.instance.currentUser;
     biography.text = currentUser.biography;
     permanentMods.assignAll(currentUser.permanentModifications);
     temporaryMods.assignAll(currentUser.temporaryModifications.map((e) => e.modification));
   }
 
   void saveBiography() {
+    final currentUser = UserRepository.instance.currentUser;
     if (!editBiography.value) {
       currentUser.biography = biography.text;
       UserRepository.instance.updateUserField('Biography', currentUser.biography);
@@ -37,6 +39,7 @@ class ProfileController extends GetxController {
   }
 
   void deleteModification({required String description, required bool permanent}) {
+    final currentUser = UserRepository.instance.currentUser;
     if (permanent) {
       permanentMods.remove(description);
       currentUser.permanentModifications.remove(description);

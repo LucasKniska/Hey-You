@@ -19,14 +19,14 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStateMixin {
-  final currentUser = UserRepository.instance.currentUser;
-  final controller = Get.put(ProfileController());
-  final signOutController = Get.put(AuthenticationRepository());
+  final controller = ProfileController.instance;
+  final signOutController = AuthenticationRepository.instance;
 
   late AnimationController _gradientController;
 
   @override
   void initState() {
+    controller.biography.text = UserRepository.instance.currentUser.biography;
     super.initState();
     _gradientController = AnimationController(
       vsync: this,
@@ -59,7 +59,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
 
-                        ProfileHeaderAndStats(currentUser: currentUser),
+                        ProfileHeaderAndStats(),
 
                         const SizedBox(height: TSizes.spaceBtwSections),
 
