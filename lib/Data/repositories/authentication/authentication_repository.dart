@@ -12,7 +12,6 @@ import '../../../Common/navigation_menu.dart';
 import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
 import '../../../Features/EditProfile/profile_controller.dart';
-import '../../../utils/theme/snackbars.dart';
 import '../matching/match_repository.dart';
 import '../user/user_repository.dart';
 
@@ -32,21 +31,17 @@ class AuthenticationRepository extends GetxController{
 
 
   void screenRedirect() {
-    // Local Storage
-    deviceStorage.writeIfNull('isFirstTime', true);
 
-    if (!deviceStorage.read('isFirstTime')) {
+    if (deviceStorage.read('isFirstTime') == null || deviceStorage.read('isFirstTime') == false) {
 
       if(FirebaseAuth.instance.currentUser != null) {
 
         /// User is signed in
         try {
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
-
             Get.put(MatchRepository(), permanent: true);
-            if(firstTryLogin){
-              Get.put(UserRepository());
-            }
+            Get.put(UserRepository());
+            UserRepository.instance.startListeningToUser();
             Get.put(LocationController(), permanent: true);
             Get.put(ProfileController(), permanent: true);
             setupNotification();
@@ -67,6 +62,8 @@ class AuthenticationRepository extends GetxController{
       }
     } else {
       Get.offAll(const OnboardingPage());
+      // Local Storage
+      deviceStorage.write('isFirstTime', false);
     }
   }
 
@@ -84,8 +81,10 @@ class AuthenticationRepository extends GetxController{
   Future<void> loginWithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(email: email, password: password).then((UserCredential result) {
+        print('Result of signin: ${result.user}');
         UserRepository.instance.startListeningToUser();
       });    } catch (e) {
+      print(e);
       throw 'Something went wrong. Please try again';
     }
   }

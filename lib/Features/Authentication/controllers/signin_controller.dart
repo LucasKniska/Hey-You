@@ -53,11 +53,11 @@ class SignInController extends GetxController {
 
       // TODO Do internet check
 
-      print('Login with email and password');
-      await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
-
       print('Putting user repo');
       Get.put(UserRepository());
+
+      print('Login with email and password');
+      await AuthenticationRepository.instance.loginWithEmailAndPassword(email.text.trim(), password.text.trim());
 
       if (rememberMe.value) {
         localStorage.write('REMEMBER_EMAIL', email.text.trim());
