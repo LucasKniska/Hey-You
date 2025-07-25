@@ -8,6 +8,7 @@ import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Features/Match/SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../Features/Match/SplashScreens/ConnectedSplashScreen/ConnectedSplashScreen.dart';
 import '../../../utils/constants/api_constants.dart';
 import '../../models/CurrentMatch.dart';
 import '../user/user_repository.dart';
@@ -84,7 +85,7 @@ class MatchRepository extends GetxController {
     // Start the periodic timer
     _matchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _updateRemainingTime(parsed);
-      _actionsHandler();
+      _creatingMatchActionsHandler();
     });
   }
 
@@ -112,14 +113,24 @@ class MatchRepository extends GetxController {
     _currentMatchListener?.cancel();
   }
 
-  void _actionsHandler(){
+  void _creatingMatchActionsHandler(){
 
     print('Remaining time: ${_remainingTime.value.inSeconds}');
 
     /// Ready to meet
-    if (currentMatch!.userData[0].response == 'meet_now' && currentMatch!.userData[1].response == 'meet_now') {
+    if (currentMatch!.userData[0].response == 'meet_now' && currentMatch!.userData[1].response == 'meet_now' && currentMatch!.status != 'now') {
       _matchTimer?.cancel();
       acceptMatch();
+      _currentMatchListener?.cancel();
+
+      Get.to(() => ConnectedSplashScreen(onFinish: () {
+        print('completed connection screen');
+        currentMatch!.status = 'now';
+        Get.back();
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+      }));
     }
 
     /// Delete the possible connection

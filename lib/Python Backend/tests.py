@@ -36,7 +36,7 @@ def testCreateAcceptMatch():
 
     accept_match(IdRequest(id=match_id))
 
-def testResetDatabase():
+def testResetMatchesDatabase():
     cred = credentials.Certificate("serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()

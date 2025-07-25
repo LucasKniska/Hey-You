@@ -80,7 +80,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
           _pageController.connected = successfulMatch;
         });
         return;
-      };
+      }
 
       final current = CurrentMatch.fromJson(snapshot.data()!);
 

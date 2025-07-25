@@ -42,7 +42,7 @@ def get_match_object(user1, user2):
         userBio=user1.biography,
         response=UserResponse.NOT_SELECTED,
         location=user1.location,
-        connections=len(user1.previousConnections)
+        connections=user1.totalConnections
     )
 
     userMatch2 = UserMatchData(
@@ -51,7 +51,7 @@ def get_match_object(user1, user2):
         userBio=user2.biography,
         response=UserResponse.NOT_SELECTED,
         location=user2.location,
-        connections=len(user2.previousConnections)
+        connections=user2.totalConnections
     )
 
     distance = haversine_distance(user1.location, user2.location)

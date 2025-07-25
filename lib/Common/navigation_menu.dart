@@ -68,7 +68,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
               controller.pageController.jumpToPage(index);
             },
             destinations: const [
-              NavigationDestination(icon: Icon(Iconsax.people), label: 'Contacts'),
+              NavigationDestination(icon: Icon(Icons.leaderboard), label: 'Leaderboard'),
               NavigationDestination(icon: Icon(Iconsax.map), label: 'Match'),
               NavigationDestination(icon: Icon(Iconsax.user), label: 'Profile'),
             ],
@@ -88,8 +88,14 @@ class _NavigationMenuState extends State<NavigationMenu> {
 }
 
 class NavigationController extends GetxController {
-  final Rx<int> selectedIndex = 0.obs;
-  final PageController pageController = PageController();
+  final Rx<int> selectedIndex = 1.obs;
+  late final PageController pageController;
+
+  @override
+  void onInit() {
+    pageController = PageController(initialPage: selectedIndex.value); // <-- Set initialPage
+    super.onInit();
+  }
 
   final List<Widget> screens = <Widget>[
     LeaderboardPage(),
