@@ -23,6 +23,8 @@ class UserRepository extends GetxController {
   UserModel get currentUser => _currentUser.value;
   Rx<UserModel> get currentUserRx => _currentUser;
 
+  Rx<bool> successfulMatch = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -48,8 +50,15 @@ class UserRepository extends GetxController {
           (DocumentSnapshot snapshot) {
         if (snapshot.exists && snapshot.data() != null) {
           try {
+            // Checks if the new user data includes a new connections
+            UserModel nextUser = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+            if (nextUser.totalConnections != _currentUser.value.totalConnections) {
+              successfulMatch.value = true;
+            }
+
             // Update the current user
-            _currentUser.value = UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
+            _currentUser.value = nextUser;
+
             MatchRepository.instance.startCurrentMatchListener();
             print('Current user updated: ${_currentUser.value.id}');
           } catch (e) {

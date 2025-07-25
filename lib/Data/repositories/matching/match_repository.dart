@@ -117,11 +117,13 @@ class MatchRepository extends GetxController {
 
     print('Remaining time: ${_remainingTime.value.inSeconds}');
 
+    /// Match completed
+
+
     /// Ready to meet
     if (currentMatch!.userData[0].response == 'meet_now' && currentMatch!.userData[1].response == 'meet_now' && currentMatch!.status != 'now') {
       _matchTimer?.cancel();
       acceptMatch();
-      _currentMatchListener?.cancel();
 
       Get.to(() => ConnectedSplashScreen(onFinish: () {
         print('completed connection screen');
@@ -134,7 +136,7 @@ class MatchRepository extends GetxController {
     }
 
     /// Delete the possible connection
-    if(_remainingTime.value.inSeconds == 0){
+    if(_remainingTime.value.inSeconds == 0 && currentMatch!.status != 'now'){
 
       //TODO Add check for if it is looking at the correct expiration time
 

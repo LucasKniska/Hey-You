@@ -1,19 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:hey_you/Features/Match/controllers/meetNow_controller.dart';
 
 import '../../../Data/models/CurrentMatch.dart';
+import '../../../Data/repositories/matching/match_repository.dart';
 import '../../../utils/constants/connection_parameters.dart';
 import '../../../utils/constants/sizes.dart';
 
 class ConnectionAchieved extends StatelessWidget {
-  CurrentMatch current;
   MeetNowController pageController;
   int distance;
 
   ConnectionAchieved({
     super.key,
-    required this.current,
     required this.pageController,
     required this.distance,
   });
@@ -44,7 +44,10 @@ class ConnectionAchieved extends StatelessWidget {
         Center(
           child: Text(
             'The other user has completed the match!',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
 
@@ -93,11 +96,11 @@ class ConnectionAchieved extends StatelessWidget {
                     icon: Icon(
                       Icons.close,
                       color: Colors.white,
-                      size: 16, // Optional: reduce size to better fit inside 20x20
+                      size:
+                          16, // Optional: reduce size to better fit inside 20x20
                     ),
                   ),
                 ),
-
 
                 // Centered text
                 Expanded(
@@ -130,28 +133,32 @@ class ConnectionAchieved extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (distance < TConnectionParameters.distanceToConnection) {
-      int other =
-          current.userData[0].id == FirebaseAuth.instance.currentUser!.uid
-              ? 1
-              : 0;
+    return Obx(() {
+      CurrentMatch current = MatchRepository.instance.currentMatchRx.value!;
 
-      // Return waiting on other user to check completed
-      if (pageController.pressedConnectionAchieved &&
-          current.userData[other].response != 'completed') {
-        return waitingOnOtherButton();
+      if (distance < TConnectionParameters.distanceToConnection) {
+        int other =
+            current.userData[0].id == FirebaseAuth.instance.currentUser!.uid
+                ? 1
+                : 0;
+
+        // Return waiting on other user to check completed
+        if (pageController.pressedConnectionAchieved &&
+            current.userData[other].response != 'completed') {
+          return waitingOnOtherButton();
+        }
+        // return waiting on you to check completed
+        else if (current.userData[other].response == 'completed' &&
+            !pageController.pressedConnectionAchieved) {
+          return waitingOnUserButton();
+        }
+        // No one has pressed anything yet
+        else {
+          return basicButton();
+        }
+      } else {
+        return SizedBox.shrink();
       }
-      // return waiting on you to check completed
-      else if (current.userData[other].response == 'completed' &&
-          !pageController.pressedConnectionAchieved) {
-        return waitingOnUserButton();
-      }
-      // No one has pressed anything yet
-      else {
-        return basicButton();
-      }
-    } else {
-      return SizedBox.shrink();
-    }
+    });
   }
 }

@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,6 +9,7 @@ import 'package:geocoding/geocoding.dart';
 
 import '../../Common/topbar.dart';
 import '../../Data/models/CurrentMatch.dart';
+import '../../Data/repositories/matching/match_repository.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import 'SplashScreens/MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
 import 'controllers/meetNow_controller.dart';
@@ -33,6 +32,8 @@ class MeetNowPage extends StatefulWidget {
 
 class _MeetNowPageState extends State<MeetNowPage> {
   final currentUser = UserRepository.instance.currentUser;
+  final userRepo = UserRepository.instance;
+  final matchRepo = MatchRepository.instance;
 
   final MeetNowController _pageController = MeetNowController();
 
@@ -59,90 +60,66 @@ class _MeetNowPageState extends State<MeetNowPage> {
     widget.otherUserLocation['long'],
   );
 
-  late final StreamSubscription<DocumentSnapshot<Map<String, dynamic>>> _matchSubscription;
+  late Worker _matchListener;
 
   @override
   void initState() {
     super.initState();
 
-    _matchSubscription = FirebaseFirestore.instance
-        .collection('Matches')
-        .doc(widget.current.id)
-        .snapshots()
-        .listen((snapshot) async {
-      if (!snapshot.exists || !mounted) {
+    _matchListener = ever<CurrentMatch?>(
+        MatchRepository.instance.currentMatchRx,
+        (match) async {
 
-        var userSnapshot = await FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).get();
+          if (match == null) {
+            setState(() {
+              _closePage = true;
+            });
+            return;
+          }
 
-        bool successfulMatch = userSnapshot['PreviousConnections'] != currentUser.previousConnections.length;
-        setState(() {
-          _closePage = true;
-          _pageController.connected = successfulMatch;
-        });
-        return;
-      }
+          final i = currentUser.id == match.userData[0].id ? 0 : 1;
+          final newUserLatLng = LatLng(
+            match.userData[i].location['lat']!,
+            match.userData[i].location['long']!,
+          );
+          final newOtherUserLatLng = LatLng(
+            match.userData[1 - i].location['lat']!,
+            match.userData[1 - i].location['long']!,
+          );
 
-      final current = CurrentMatch.fromJson(snapshot.data()!);
+          if (userLatLng != newUserLatLng || otherUserLatLng != newOtherUserLatLng) {
+            setState(() {
+              userLatLng = newUserLatLng;
+              otherUserLatLng = newOtherUserLatLng;
+            });
 
-
-      setState(() {
-        currentMatch = current;
-      });
-
-      final LatLng newUserLatLng;
-      final LatLng newOtherUserLatLng;
-
-      if (currentUser.id == current.userData[0].id) {
-        newUserLatLng = LatLng(
-          current.userData[0].location['lat']!,
-          current.userData[0].location['long']!,
-        );
-        newOtherUserLatLng = LatLng(
-          current.userData[1].location['lat']!,
-          current.userData[1].location['long']!,
-        );
-      } else {
-        newUserLatLng = LatLng(
-          current.userData[1].location['lat']!,
-          current.userData[1].location['long']!,
-        );
-        newOtherUserLatLng = LatLng(
-          current.userData[0].location['lat']!,
-          current.userData[0].location['long']!,
-        );
-      }
-
-      if (userLatLng != newUserLatLng || otherUserLatLng != newOtherUserLatLng) {
-        setState(() {
-          userLatLng = newUserLatLng;
-          otherUserLatLng = newOtherUserLatLng;
-        });
-
-        await _loadEverything();
-      }
+            await _loadEverything();
+          }
     });
   }
 
   @override
   void dispose() {
-    _matchSubscription.cancel();
+    _matchListener.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
 
+    // TODO: Be sure that the user updates before match turns null
     if(_closePage){
-
-      if(_pageController.connected){
+      if(userRepo.successfulMatch.value){
         print('Showing connected circle splash screen.');
         return ConnectedCircleSplashScreen(
           onFinish: () {
+            Get.back();
             Get.back();
           },
         );
       } else {
         Get.back();
+        return SizedBox.shrink();
       }
     }
 
@@ -182,7 +159,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
                       Text('To: $otherUserAddress'),
                       Text('Distance: ${(_distanceMeters / 1000).toStringAsFixed(2)} km'),
 
-                      ConnectionAchieved(current: currentMatch, pageController: _pageController, distance: _distanceMeters)
+                      ConnectionAchieved(pageController: _pageController, distance: _distanceMeters)
                     ],
                   ),
                 ),
@@ -192,6 +169,8 @@ class _MeetNowPageState extends State<MeetNowPage> {
         ],
       ),
     );
+
+
   }
 
   Future<void> _loadEverything() async {
@@ -270,7 +249,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
       }),
     );
 
-    print("Router API Response: ${response.body}");
+    print('Router API Response: ${response.body}');
 
     if (response.statusCode != 200) {
       throw Exception('Directions failed: ${response.body}');
