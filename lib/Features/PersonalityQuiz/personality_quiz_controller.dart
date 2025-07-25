@@ -59,9 +59,10 @@ class PersonalityQuizController {
 
       try {
         await userRepository.updateQuestionAnswers();
+        Get.back();
+        Get.back();
         TSnackBars.successSnackBar(title: 'You have successfully updated your personality quiz answers!', message: '');
         textControllers.values.forEach((controller) => controller.dispose());
-        Get.offAll(() => NavigationMenu());
       } catch (e) {
         Get.back();
         TSnackBars.errorSnackBar(title: 'Could not update your personality quiz answers!', message: 'Please try again.');

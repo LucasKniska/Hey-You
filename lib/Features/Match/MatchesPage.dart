@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/styles/spacing_styles.dart';
@@ -28,7 +25,6 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
-  int userNum = -1;
   RxString matchHeader = ''.obs;
 
   final userRepo = UserRepository.instance;
@@ -220,13 +216,17 @@ class _MapPageState extends State<MapPage>
                             current.status == 'new') {
                           Get.dialog(MatchPopup());
                         } else {
-                          Get.to(
-                            () => MeetNowPage(
-                              current: current,
-                              userLocation: current.userData[0].location,
-                              otherUserLocation: current.userData[1].location,
-                            ),
-                          );
+
+                          if(MatchRepository.instance.beenToMeetNowPage){
+                            Get.back();
+                          } else {
+                            Get.to(
+                                  () => MeetNowPage(
+                                current: current,
+                              ),
+                            );
+                          }
+
                         }
                       },
                       borderRadius: BorderRadius.circular(18),
@@ -327,15 +327,15 @@ class _MapPageState extends State<MapPage>
                                       current.status == 'new') {
                                     Get.dialog(MatchPopup());
                                   } else {
-                                    Get.to(
-                                      () => MeetNowPage(
-                                        current: current,
-                                        userLocation:
-                                            current.userData[0].location,
-                                        otherUserLocation:
-                                            current.userData[1].location,
-                                      ),
-                                    );
+                                    if(MatchRepository.instance.beenToMeetNowPage){
+                                      Get.back();
+                                    } else {
+                                      Get.to(
+                                            () => MeetNowPage(
+                                          current: current,
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(

@@ -5,14 +5,13 @@ import 'dart:math' as math;
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 
 class MeetNowToggle extends StatelessWidget {
-  final RxBool isMeetNowEnabled = UserRepository.instance.currentUser.discoverable.obs;
-
   MeetNowToggle({super.key});
+
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final enabled = isMeetNowEnabled.value;
+      final enabled = UserRepository.instance.currentUserRx.value.discoverable;
 
       return AnimatedContainer(
         duration: const Duration(milliseconds: 500),
@@ -80,7 +79,7 @@ class MeetNowToggle extends StatelessWidget {
                   ),
                   // Toggle switch - now tappable
                   GestureDetector(
-                    onTap: () => {isMeetNowEnabled.value = !enabled, UserRepository.instance.currentUser.discoverable = isMeetNowEnabled.value, UserRepository.instance.saveUserRecord()},
+                    onTap: () => {UserRepository.instance.currentUserRx.value.discoverable = !enabled, UserRepository.instance.saveUserRecord()},
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 50,
@@ -118,7 +117,7 @@ class MeetNowToggle extends StatelessWidget {
 
             // Animated button section
             GestureDetector(
-              onTap: () => {isMeetNowEnabled.value = !enabled, UserRepository.instance.currentUser.discoverable = isMeetNowEnabled.value, UserRepository.instance.saveUserRecord()},
+              onTap: () => {UserRepository.instance.currentUserRx.value.discoverable, UserRepository.instance.saveUserRecord()},
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 1000),
                 curve: Curves.easeInOut,

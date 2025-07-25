@@ -11,7 +11,7 @@ from main import *
 
 def testCreateMatch():
     user1 = 'gmwlBqTibHhob4nD5LwYuHJKq8p2'
-    user2 = 'E1BkpJHUUldUVwON21ucPr4hFJ13'
+    user2 = 'nA1zXRlK0tQjkHVwJnv2d3myUON2'
 
     user1 = get_user_by_id(user1, db)
     user2 = get_user_by_id(user2, db)

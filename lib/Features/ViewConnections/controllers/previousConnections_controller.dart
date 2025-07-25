@@ -10,8 +10,6 @@ import '../../../utils/constants/api_constants.dart';
 
 class PreviousConnectionController {
 
-  final currentUser = UserRepository.instance.currentUser;
-
   Future<List<PreviousMatch>> getPreviousMatches() async {
 
     final url = Uri.parse('${APIConstants.getPreviousConnections}?user_id=${FirebaseAuth.instance.currentUser!.uid}');
@@ -29,7 +27,6 @@ class PreviousConnectionController {
       // Pull the list under 'previous_connections'
       final List<dynamic> connections = jsonResponse['previous_connections'] ?? [];
 
-      currentUser.totalConnections = connections.length;
       // Convert each entry into a PreviousMatch
       return connections.map((json) => PreviousMatch.fromJson(json)).toList();
     } else {

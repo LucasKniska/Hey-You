@@ -13,7 +13,6 @@ class UserModel {
   Map<String, double> location;
 
   String currentMatch;
-  List<String> previousConnections;
 
   int totalConnections;
   bool discoverable;
@@ -32,7 +31,6 @@ class UserModel {
     required this.permanentModifications,
     required this.location,
     required this.currentMatch,
-    required this.previousConnections,
     required this.totalConnections,
     required this.discoverable,
     required this.longestStreak,
@@ -51,7 +49,6 @@ class UserModel {
         permanentModifications = [],
         location = {},
         currentMatch = '',
-        previousConnections = [],
         totalConnections = 0,
         discoverable = false,
         longestStreak = 0,
@@ -79,10 +76,6 @@ class UserModel {
             ? Map<String, double>.from(json['Location'] as Map)
             : {},
         currentMatch = json['CurrentMatch'] as String? ?? '',
-        previousConnections = (json['PreviousConnections'] as List<dynamic>?)
-            ?.map((e) => e as String)
-            .toList() ??
-            [],
         totalConnections = json['TotalConnections'] as int? ?? 0,
         discoverable = json['Discoverable'] as bool? ?? false,
         longestStreak = json['LongestStreak'] as int? ?? 0,
@@ -104,7 +97,6 @@ class UserModel {
       'PermanentModifications': permanentModifications,
       'Location': location,
       'CurrentMatch': currentMatch,
-      'PreviousConnections': previousConnections,
       'TotalConnections': totalConnections,
       'Discoverable': discoverable,
       'LongestStreak': longestStreak,
@@ -126,7 +118,6 @@ class UserModel {
         permanentModifications: $permanentModifications,
         location: $location,
         currentMatch: $currentMatch,
-        previousConnections: $previousConnections,
         totalConnections: $totalConnections
       )''';
   }

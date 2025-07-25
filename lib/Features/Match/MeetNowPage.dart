@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Features/Match/subwidgets/ConnectionAchievedButton.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
@@ -15,14 +16,10 @@ import 'SplashScreens/MatchCompleteSpashScreen/ConnectedLineSplashScreen.dart';
 import 'controllers/meetNow_controller.dart';
 
 class MeetNowPage extends StatefulWidget {
-  final Map<String, dynamic> userLocation;
-  final Map<String, dynamic> otherUserLocation;
   final CurrentMatch current;
 
   const MeetNowPage({
     Key? key,
-    required this.userLocation,
-    required this.otherUserLocation,
     required this.current,
   }) : super(key: key);
 
@@ -42,7 +39,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
   GoogleMapController? _controller;
   Set<Polyline> _polylines = {};
   Set<Marker> _markers = {};
-  int _distanceMeters = 0;
+  int _distanceFeet = 0;
   bool _loading = true;
 
   bool _closePage = false;
@@ -50,21 +47,26 @@ class _MeetNowPageState extends State<MeetNowPage> {
   String userAddress = '';
   String otherUserAddress = '';
 
-  late LatLng userLatLng = LatLng(
-    widget.userLocation['lat'],
-    widget.userLocation['long'],
-  );
-
-  late LatLng otherUserLatLng = LatLng(
-    widget.otherUserLocation['lat'],
-    widget.otherUserLocation['long'],
-  );
+  late LatLng userLatLng;
+  late LatLng otherUserLatLng;
 
   late Worker _matchListener;
 
   @override
   void initState() {
     super.initState();
+
+    matchRepo.beenToMeetNowPage = true;
+
+    final i = currentUser.id == widget.current.userData[0].id ? 0 : 1;
+    userLatLng = LatLng(
+      widget.current.userData[i].location['lat']!,
+      widget.current.userData[i].location['long']!,
+    );
+    otherUserLatLng = LatLng(
+      widget.current.userData[1 - i].location['lat']!,
+      widget.current.userData[1 - i].location['long']!,
+    );
 
     _matchListener = ever<CurrentMatch?>(
         MatchRepository.instance.currentMatchRx,
@@ -87,6 +89,8 @@ class _MeetNowPageState extends State<MeetNowPage> {
             match.userData[1 - i].location['long']!,
           );
 
+          print('This user reference is $i');
+
           if (userLatLng != newUserLatLng || otherUserLatLng != newOtherUserLatLng) {
             setState(() {
               userLatLng = newUserLatLng;
@@ -107,8 +111,8 @@ class _MeetNowPageState extends State<MeetNowPage> {
   @override
   Widget build(BuildContext context) {
 
-    // TODO: Be sure that the user updates before match turns null
     if(_closePage){
+      matchRepo.beenToMeetNowPage = false;
       if(userRepo.successfulMatch.value){
         print('Showing connected circle splash screen.');
         return ConnectedCircleSplashScreen(
@@ -157,9 +161,9 @@ class _MeetNowPageState extends State<MeetNowPage> {
                       // ignore: prefer_single_quotes
                       Text("From: $userAddress"),
                       Text('To: $otherUserAddress'),
-                      Text('Distance: ${(_distanceMeters / 1000).toStringAsFixed(2)} km'),
+                      Text('Distance: ${(_distanceFeet)} ft'),
 
-                      ConnectionAchieved(pageController: _pageController, distance: _distanceMeters)
+                      ConnectionAchieved(pageController: _pageController, distance: _distanceFeet)
                     ],
                   ),
                 ),
@@ -191,7 +195,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
     if (!mounted) return;
 
     setState(() {
-      _distanceMeters = distance;
+      _distanceFeet = distance;
       userAddress = address1;
       otherUserAddress = address2;
 
@@ -266,11 +270,13 @@ class _MeetNowPageState extends State<MeetNowPage> {
     final coords = geometry['coordinates'] as List;
 
     final polyline = coords.map<LatLng>((c) => LatLng(c[1], c[0])).toList();
-    final distance = features[0]['properties']['segments'][0]['distance'];
+
+    final distanceMeters = features[0]['properties']['segments'][0]['distance'];
+    final distanceFeet = distanceMeters * 3.28084;
 
     return {
       'polyline': polyline,
-      'distance': distance.toInt(),
+      'distance': distanceFeet.toInt(),
     };
   }
 }

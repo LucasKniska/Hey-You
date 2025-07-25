@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import '../utils/constants/colors.dart';
 
 import 'package:get/get.dart'; // Import GetX
-import '../Data/repositories/user/user_repository.dart'; // Import your UserRepository
+import '../Data/repositories/user/user_repository.dart';
+import 'navigation_menu.dart'; // Import your UserRepository
 
 class TopBar extends StatefulWidget implements PreferredSizeWidget {
   final bool backArrow;
@@ -76,12 +77,6 @@ class _TopBarState extends State<TopBar>
         });
   }
 
-  Widget _buildSolidGrayContainer() {
-    return Container(
-      color: Colors.grey.shade800, // Example solid gray
-    );
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +121,7 @@ class _TopBarState extends State<TopBar>
         leading: widget.backArrow
             ? IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Get.to(() => NavigationMenu()),
         )
             : null,
         title: Text(

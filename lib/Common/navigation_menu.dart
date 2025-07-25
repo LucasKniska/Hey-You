@@ -88,6 +88,9 @@ class _NavigationMenuState extends State<NavigationMenu> {
 }
 
 class NavigationController extends GetxController {
+  static NavigationController get instance => Get.find();
+
+
   final Rx<int> selectedIndex = 1.obs;
   late final PageController pageController;
 

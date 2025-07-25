@@ -129,13 +129,12 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
               TextButton(
                 onPressed: () => {
                   _exit(),
-                  Get.offAll(() => NavigationMenu())
+                  Get.back()
                 }, child: const Text('Exit', style: TextStyle(color: Colors.red)),
               ),
               TextButton(
                 onPressed:
                     () => {
-                      Get.offAll(() => NavigationMenu()),
                       controller.submitQuiz(),
                     },
                 child: const Text('Exit and Save', style: TextStyle(color: Colors.red)),

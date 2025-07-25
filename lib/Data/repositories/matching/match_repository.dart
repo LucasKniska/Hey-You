@@ -29,6 +29,8 @@ class MatchRepository extends GetxController {
   Duration get remainingTime => _remainingTime.value;
   Rx<Duration> get remainingTimeRx => _remainingTime;
 
+  bool beenToMeetNowPage = false;
+
   @override
   void onInit() {
     super.onInit();

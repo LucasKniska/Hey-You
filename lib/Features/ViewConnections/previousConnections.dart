@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_rx/src/rx_workers/rx_workers.dart';
 import 'package:hey_you/Common/widgets/emptyFieldWidget.dart';
 import 'package:hey_you/Features/ViewConnections/controllers/previousConnections_controller.dart';
 
 import '../../Data/models/PreviousMatch.dart';
+import '../../Data/models/UserModel.dart';
+import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/sizes.dart';
 
 class PreviousConnection extends StatefulWidget {
@@ -17,15 +20,28 @@ class _PreviousConnection extends State<PreviousConnection> {
   final PreviousConnectionController controller = PreviousConnectionController();
   List<PreviousMatch> previousMatches = [];
   bool loading = true;
+  final userRepo = UserRepository.instance;
+  int totalConnections = UserRepository.instance.currentUser.totalConnections;
 
   @override
   void initState() {
     super.initState();
     fetchPreviousMatches(); // Call async function
+
+    // Shows the popup if necessary
+    ever<UserModel?>(userRepo.currentUserRx, (user) async {
+      if (user == null) return;
+      if (totalConnections != user.totalConnections){
+        totalConnections = user.totalConnections;
+        fetchPreviousMatches();
+      }
+
+    });
   }
 
   Future<void> fetchPreviousMatches() async {
     try {
+      loading = true;
       final matches = await controller.getPreviousMatches();
       setState(() {
         previousMatches = matches;
