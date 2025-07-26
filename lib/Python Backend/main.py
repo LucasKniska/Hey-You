@@ -259,3 +259,67 @@ def get_previous_connections(user_id: str):
             matches.append(match_data.to_json())
 
     return {"previous_connections": matches}
+
+@app.post("/update-user-match-data")
+def update_user_match_data(request: UpdateUserMatchDataRequest):
+    # Reference to the match document
+    match_ref = db.collection(const.NEW_MATCHES).document(request.matchId)
+    match_doc = match_ref.get()
+    if not match_doc.exists:
+        return {"error": "Match not found"}
+
+    match_data = Match.from_json(match_doc.to_dict())
+
+    userNumber = 0 if match_data.userData[0].id == request.userId else 1
+
+    match_data.userData[userNumber].response = request.decision
+
+    # Update the match document in Firestore
+    match_ref.update({
+        'userData': [user.to_json() for user in match_data.userData]
+    })
+
+    return {"status": "User match data updated", "match_id": request.matchId}
+
+@app.post("/update-search-filters")
+def update_search_filters(request: UpdateSearchFiltersRequest):
+    user_ref = db.collection(const.USERS).document(request.user_id)
+    if not user_ref.get().exists:
+        return {"error": "User not found"}
+
+    try:
+        user_ref.update({
+            'TemporaryModifications': request.temporary_modifications,
+            'PermanentModifications': request.permanent_modifications
+        })
+        return {"status": "Search filters updated", "user_id": request.user_id}
+    except Exception as e:
+        return {"error": str(e)}
+    
+@app.post("/create-new-user")
+def create_new_user(request: CreateNewUserRequest):
+    user_id = request.id
+    user_ref = db.collection(const.USERS).document(user_id)
+    if user_ref.get().exists:
+        return {"error": "User already exists"}
+
+    try:
+        # Convert the request to a dict for Firestore
+        user_data = request.model_dump()
+        user_ref.set(user_data)
+        return {"status": "User created", "user_id": user_id}
+    except Exception as e:
+        return {"error": str(e)}
+    
+
+@app.post("/update-user-field")
+def update_user_field(request: UpdateUserFieldRequest):
+    user_ref = db.collection(const.USERS).document(request.user_id)
+    if not user_ref.get().exists:
+        return {"error": "User not found"}
+
+    try:
+        user_ref.update({request.field: request.value})
+        return {"status": "User field updated", "user_id": request.user_id, "field": request.field}
+    except Exception as e:
+        return {"error": str(e)}

@@ -1,22 +1,12 @@
-import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hey_you/Common/styles/spacing_styles.dart';
 import 'package:hey_you/Data/models/CurrentMatch.dart';
 import 'package:hey_you/Data/repositories/matching/match_repository.dart';
-import 'package:hey_you/Features/Match/controllers/howToMeet_controller.dart';
 import 'package:hey_you/Features/Match/subwidgets/MeetNowLater.dart';
-
-import '../../Data/models/QuizQuestions.dart';
 import '../../Data/models/UserModel.dart';
 import '../../Data/repositories/user/user_repository.dart';
 import '../../utils/constants/colors.dart';
-import '../../utils/constants/sizes.dart';
-import 'MatchesPage.dart';
-import 'SplashScreens/ConnectedSplashScreen/ConnectedSplashScreen.dart';
-import 'SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
 
 class MatchPopup extends StatefulWidget {
   const MatchPopup({super.key});

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:hey_you/Data/repositories/matching/match_repository.dart';
-import 'package:hey_you/Features/Match/controllers/howToMeet_controller.dart';
 import '../../../Data/models/CurrentMatch.dart';
-import '../../../utils/constants/colors.dart';
+import '../../../utils/constants/api_constants.dart';
 
 class MeetNowLater extends StatefulWidget {
   const MeetNowLater({super.key, required this.user});
@@ -59,7 +58,7 @@ class _MeetNowLaterState extends State<MeetNowLater> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               elevation: 3,
             ),
-            onPressed: () => {HowToMeetController.meetNowControl(current), setState((){})},
+            onPressed: () => {matchRepo.updateCurrentMatchDecision(Decisions.meetNow), setState((){})},
             child: Text(
               'Meet Now',
               style: Theme.of(context)
@@ -118,7 +117,7 @@ class _MeetNowLaterState extends State<MeetNowLater> {
                 left: 10,
                 child: IconButton(
                   onPressed: () =>
-                      {HowToMeetController.noDecisionControl(current), setState((){})},
+                      {matchRepo.updateCurrentMatchDecision(Decisions.notSelected), setState((){})},
                   icon: Icon(
                     Icons.close,
                     color: Colors.white,

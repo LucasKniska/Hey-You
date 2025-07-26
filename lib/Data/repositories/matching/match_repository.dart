@@ -3,11 +3,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Features/Match/SplashScreens/RejectedSplashScreen/RejectedSplashScreen.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../Features/Match/MatchPopup.dart';
 import '../../../Features/Match/SplashScreens/ConnectedSplashScreen/ConnectedSplashScreen.dart';
 import '../../../utils/constants/api_constants.dart';
 import '../../models/CurrentMatch.dart';
@@ -30,6 +33,7 @@ class MatchRepository extends GetxController {
   Rx<Duration> get remainingTimeRx => _remainingTime;
 
   bool beenToMeetNowPage = false;
+  bool newMatchSeen = false;
 
   @override
   void onInit() {
@@ -68,6 +72,32 @@ class MatchRepository extends GetxController {
           _currentMatch.value = parsed;
           _startMatchTimer(parsed);
 
+
+          if(newMatchSeen && currentMatch != null && currentMatch!.status == 'new') {
+
+            int userNum = 0;
+            if (currentMatch!.userData[userNum].id == FirebaseAuth.instance.currentUser!.uid) {
+              userNum = 1;
+            }
+
+            if(!Get.isSnackbarOpen){
+              Get.snackbar(
+                'New Match!',
+                'You matched with ${currentMatch!.userData[userNum].userName} Tap to view.',
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.blue,
+                colorText: Colors.white,
+                duration: const Duration(seconds: 8),
+                isDismissible: true,
+                onTap: (snack) {
+                  Get.closeCurrentSnackbar();
+                  Get.dialog(MatchPopup());
+                },
+              );
+            }
+            newMatchSeen = false;
+          }
+
         } catch (e) {
           _currentMatch.value = null;
           _matchTimer?.cancel();
@@ -103,14 +133,6 @@ class MatchRepository extends GetxController {
     _remainingTime.value = diff;
   }
 
-  Future<void> saveCurrentMatchRecord(CurrentMatch current) async {
-    try{
-      await _db.collection('Matches').doc(current.id).set(current.toJson());
-    } catch (e) {
-      throw 'Something went wrong saving current match.';
-    }
-  }
-
   void stopListeningToMatches() {
     _currentMatchListener?.cancel();
   }
@@ -118,9 +140,6 @@ class MatchRepository extends GetxController {
   void _creatingMatchActionsHandler(){
 
     print('Remaining time: ${_remainingTime.value.inSeconds}');
-
-    /// Match completed
-
 
     /// Ready to meet
     if (currentMatch!.userData[0].response == 'meet_now' && currentMatch!.userData[1].response == 'meet_now' && currentMatch!.status != 'now') {
@@ -158,6 +177,26 @@ class MatchRepository extends GetxController {
     }
   }
 
+  Future<void> updateCurrentMatchDecision(String decision) async {
+
+    final url = Uri.parse(APIConstants.updateUserMatchData);
+
+    final currentMatchId = MatchRepository.instance.currentMatch!.id;
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+    await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'matchId': currentMatchId,
+          'userId': currentUserId,
+          'decision': decision
+        })
+    );
+  }
+
   Future<void> deleteCurrentMatch() async {
     final url = Uri.parse(APIConstants.deleteMatch);
 
@@ -174,7 +213,7 @@ class MatchRepository extends GetxController {
 
   Future<void> acceptMatch() async {
 
-    final url = Uri.parse(APIConstants.updateMatchStatus);
+    final url = Uri.parse(APIConstants.acceptMatch);
 
     await http.post(
         url,

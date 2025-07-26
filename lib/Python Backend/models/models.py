@@ -3,6 +3,38 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 # === Models ===
+class UpdateUserFieldRequest(BaseModel):
+    user_id: str
+    field: str
+    value: Any
+
+class CreateNewUserRequest(BaseModel):
+    id: str
+    FirstName: str
+    LastName: str
+    Email: str
+    Biography: str
+    QuestionAnswers: Dict[str, Any]
+    TemporaryModifications: List[dict]
+    PermanentModifications: List[str]
+    Location: dict
+    CurrentMatch: str
+    TotalConnections: int
+    Discoverable: bool
+    LongestStreak: int
+    CurrentStreak: int
+    LastMatch: datetime
+
+class UpdateSearchFiltersRequest(BaseModel):
+    user_id: str
+    temporary_modifications: List[dict]
+    permanent_modifications: List[str]
+
+class UpdateUserMatchDataRequest(BaseModel):
+    matchId: str
+    userId: str
+    decision: str
+
 class QuestionAnswersRequest(BaseModel):
     user_id: str
     question_answers: Dict[str, Any]

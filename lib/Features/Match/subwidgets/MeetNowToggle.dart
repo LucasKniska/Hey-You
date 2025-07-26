@@ -8,10 +8,19 @@ class MeetNowToggle extends StatelessWidget {
   MeetNowToggle({super.key});
 
 
+  bool get enabled => UserRepository.instance.currentUserRx.value.discoverable;
+
+
+  void toggleDiscoverable() {
+    UserRepository.instance.currentUserRx.value.discoverable = !enabled;
+    UserRepository.instance.updateUserField('Discoverable', UserRepository.instance.currentUserRx.value.discoverable);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final enabled = UserRepository.instance.currentUserRx.value.discoverable;
+
+      bool enabled = UserRepository.instance.currentUserRx.value.discoverable;
 
       return AnimatedContainer(
         duration: const Duration(milliseconds: 500),
@@ -79,7 +88,7 @@ class MeetNowToggle extends StatelessWidget {
                   ),
                   // Toggle switch - now tappable
                   GestureDetector(
-                    onTap: () => {UserRepository.instance.currentUserRx.value.discoverable = !enabled, UserRepository.instance.saveUserRecord()},
+                    onTap: () => {toggleDiscoverable()},
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: 50,
@@ -117,7 +126,7 @@ class MeetNowToggle extends StatelessWidget {
 
             // Animated button section
             GestureDetector(
-              onTap: () => {UserRepository.instance.currentUserRx.value.discoverable, UserRepository.instance.saveUserRecord()},
+              onTap: () => {toggleDiscoverable()},
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 1000),
                 curve: Curves.easeInOut,
@@ -149,6 +158,8 @@ class MeetNowToggle extends StatelessWidget {
     });
   }
 }
+
+
 
 class _AvailableButton extends StatelessWidget {
   const _AvailableButton({super.key});

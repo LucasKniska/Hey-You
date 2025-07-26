@@ -19,7 +19,7 @@ class UserMatchData(BaseModel):
             "id": self.id,
             "userName": self.userName,
             "userBio": self.userBio,
-            "response": self.response.to_json(),
+            "response": self.response,
             "location": self.location.to_json(),
             "connections": self.connections  # Added field
         }

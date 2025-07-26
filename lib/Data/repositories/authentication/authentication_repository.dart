@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:hey_you/Common/notification_for_match.dart';
 import 'package:hey_you/Features/Authentication/screens/emailVerification.dart';
 
 import '../../../Common/location_services.dart';
@@ -44,7 +43,6 @@ class AuthenticationRepository extends GetxController{
             UserRepository.instance.startListeningToUser();
             Get.put(LocationController(), permanent: true);
             Get.put(ProfileController(), permanent: true);
-            setupNotification();
 
             Get.offAll(() => const NavigationMenu());
           }else{
@@ -61,7 +59,7 @@ class AuthenticationRepository extends GetxController{
         Get.offAll(() => const LoginScreen());
       }
     } else {
-      Get.offAll(const OnboardingPage());
+      Get.offAll(() => const OnboardingPage());
       // Local Storage
       deviceStorage.write('isFirstTime', false);
     }
@@ -91,11 +89,11 @@ class AuthenticationRepository extends GetxController{
 
   Future<void> signOut() async {
     try{
-
+      firstTryLogin = true;
       UserRepository.instance.stopListeningToUser();
       MatchRepository.instance.stopListeningToMatches();
       UserRepository.instance.currentUser.discoverable = false;
-      await UserRepository.instance.saveUserRecord();
+      await UserRepository.instance.updateUserField('discoverable', false);
       await FirebaseAuth.instance.signOut();
       Get.offAll(() => LoginScreen());
     } catch (e) {

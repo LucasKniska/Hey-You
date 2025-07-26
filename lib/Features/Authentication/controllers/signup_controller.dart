@@ -54,7 +54,9 @@ class SignupController extends GetxController {
       newUser.id = FirebaseAuth.instance.currentUser!.uid;
 
       final userRepository = Get.put(UserRepository());
-      userRepository.saveUserRecord(user2: newUser);
+      userRepository.createNewUser(newUser);
+
+      Get.offAll(() => SignUpScreen());
 
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many matching as possible!');
 

@@ -54,7 +54,9 @@ class UserRepository extends GetxController {
             if (nextUser.totalConnections != _currentUser.value.totalConnections) {
               successfulMatch.value = true;
             }
-
+            if (nextUser.currentMatch.isNotEmpty && nextUser.currentMatch != _currentUser.value.currentMatch) {
+              MatchRepository.instance.newMatchSeen = true;
+            }
             // Update the current user
             _currentUser.value = nextUser;
 
@@ -79,20 +81,16 @@ class UserRepository extends GetxController {
     _currentUser.value = UserModel.initial(); // Reset to initial state
   }
 
-  Future<void> saveUserRecord({user2 = null}) async {
-    UserModel user = (user2 == null) ? currentUser : user2;
+  Future<void> createNewUser(UserModel user) async {
+    final url = Uri.parse(APIConstants.createNewUser);
 
-
-    print('Printing user: $user');
-    try {
-      await _db.collection('Users').doc(user.id).set(user.toJson());
-      // Optionally update current user if it's the same user
-      if (user.id == currentUser.id) {
-        _currentUser.value = user;
-      }
-    } catch (e) {
-      throw Exception('Something went wrong: $e');
-    }
+    var payload = user.toJson();
+    
+    await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
   }
 
   Future<void> updateQuestionAnswers() async {
@@ -127,30 +125,39 @@ class UserRepository extends GetxController {
     }
   }
 
-  Future<UserModel> getUserById(String id) async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> user =
-      await _db.collection('Users').doc(id).get();
-      return UserModel.fromJson(user.data()!);
-    } catch (e) {
-      print(e);
-      throw 'Please try again.';
-    }
-  }
-
   Future<void> updateUserField(String field, dynamic value) async {
 
-    try {
-      await _db.collection('Users').doc(currentUser.id).update({
-        field: value
-      });
-      // Note: The listener will automatically update currentUser when this change occurs
-    } catch (e) {
-      print('Could not update: $field');
-    }
+    final url = Uri.parse(APIConstants.updateUserField);
+
+    var payload = {
+      'user_id': currentUser.id,
+      'field': field,
+      'value': value
+    };
+
+    await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(payload),
+    );
   }
 
-  /// Sends API Call to update the current location of the user
+  Future<void> updateUserSearchFilters() async {
+    final url = Uri.parse(APIConstants.updateSearchFilters);
+
+    final payload = {
+      'user_id': currentUser.id,
+      'temporary_modifications': currentUser.temporaryModifications,
+      'permanent_modifications': currentUser.permanentModifications
+    };
+
+    await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(payload),
+    );
+  }
+
   Future<void> updateLocation(Position pos) async {
     final url = Uri.parse(APIConstants.updateLocation);
     final response = await http.post(
