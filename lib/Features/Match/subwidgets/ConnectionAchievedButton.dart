@@ -11,11 +11,13 @@ import '../../../utils/constants/sizes.dart';
 class ConnectionAchieved extends StatelessWidget {
   MeetNowController pageController;
   int distance;
+  String userAddress;
 
   ConnectionAchieved({
     super.key,
     required this.pageController,
     required this.distance,
+    required this.userAddress
   });
 
   Widget basicButton() {
@@ -27,7 +29,7 @@ class ConnectionAchieved extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              pageController.confirmMeeting();
+              pageController.confirmMeeting(userAddress);
             },
             child: const Text('Connection Achieved?'),
           ),
@@ -55,7 +57,7 @@ class ConnectionAchieved extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              pageController.confirmMeeting();
+              pageController.confirmMeeting(userAddress);
             },
             child: const Text('Connection Achieved?'),
           ),

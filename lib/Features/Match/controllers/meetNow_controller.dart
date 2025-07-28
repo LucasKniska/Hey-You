@@ -16,7 +16,7 @@ class MeetNowController {
   bool pressedConnectionAchieved = false;
   final currentUser = UserRepository.instance.currentUser;
 
-  Future<void> confirmMeeting () async {
+  Future<void> confirmMeeting (String address) async {
 
     pressedConnectionAchieved = true;
     String c = currentUser.currentMatch;
@@ -29,8 +29,9 @@ class MeetNowController {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'id': c,
-          'user_id': FirebaseAuth.instance.currentUser!.uid
+          'match_id': c,
+          'user_id': FirebaseAuth.instance.currentUser!.uid,
+          'address': address.toString()
         })
     );
 

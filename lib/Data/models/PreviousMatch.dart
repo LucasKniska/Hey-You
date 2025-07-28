@@ -14,7 +14,7 @@ class PreviousMatch {
   final String status;
   final List<String> possiblePlaces;
   final List<DateTime> possibleTimes;
-  final Map<String, double> meetingPlace;
+  final Map<String, dynamic> meetingPlace;
 
   PreviousMatch({
     required this.id,
@@ -44,8 +44,7 @@ class PreviousMatch {
       possibleTimes: (json['possibleTimes'] as List? ?? [])
           .map((t) => DateTime.parse(t))
           .toList(),
-      meetingPlace: Map<String, double>.from(json['meetingPlace']
-          .map((k, v) => MapEntry(k, (v as num).toDouble()))),
+      meetingPlace: Map<String, dynamic>.from(json['meetingPlace']),
     );
   }
 

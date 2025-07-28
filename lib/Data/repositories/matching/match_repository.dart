@@ -98,10 +98,11 @@ class MatchRepository extends GetxController {
             newMatchSeen = false;
           }
 
-        } catch (e) {
+        } catch (e, stackTrace) {
           _currentMatch.value = null;
           _matchTimer?.cancel();
           print('Error updating current match: $e');
+          print(stackTrace);
         }
       }
     });

@@ -53,8 +53,9 @@ class IdRequest(BaseModel):
     id: str
 
 class UserMatchRequest(BaseModel):
-    id: str
+    match_id: str
     user_id: str
+    address: str
 
 class LocationUpdateRequest(BaseModel):
     user_id: str

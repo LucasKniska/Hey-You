@@ -1,82 +1,93 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hey_you/Data/models/UserModel.dart';
-
 import '../Data/repositories/user/user_repository.dart';
 
 class LocationController extends GetxController {
-  Rx<Position?> currentPosition = Rx<Position?>(null);
+  final Rx<Position?> currentPosition = Rx<Position?>(null);
   late StreamSubscription<Position> _subscription;
+  Position? _lastBackendUpdatePosition;
+
+  // Settings
+  final double minDistance = 3; // meters
+  final Duration locationUpdateInterval = const Duration(seconds: 3);
 
   @override
   Future<void> onInit() async {
     super.onInit();
 
-    bool _ = await requestLocationPermission();
+    final hasPermission = await requestLocationPermission();
+    if (!hasPermission) return;
 
-    _subscription = Geolocator.getPositionStream().listen((Position pos) {
+    final locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 1, // OS won't send updates if <10m change
+    );
+
+    _subscription = Geolocator.getPositionStream(
+      locationSettings: locationSettings,
+    ).listen((Position pos) {
       currentPosition.value = pos;
     });
 
-    ever(currentPosition, (Position? pos) {
-      if (pos != null) {
-        _updateBackend(pos);
-      }
-    });
+    ever(
+      currentPosition,
+          (Position? pos) {
+        if (pos != null) {
+          _maybeUpdateBackend(pos);
+        }
+      },
+    );
   }
 
+  Future<void> _maybeUpdateBackend(Position pos) async {
+    if (_lastBackendUpdatePosition == null ||
+        Geolocator.distanceBetween(
+          _lastBackendUpdatePosition!.latitude,
+          _lastBackendUpdatePosition!.longitude,
+          pos.latitude,
+          pos.longitude,
+        ) >= minDistance) {
+      await _updateBackend(pos);
+      _lastBackendUpdatePosition = pos;
+    }
+  }
 
-  @override
-  void onClose() {
-    _subscription.cancel();
-    super.onClose();
+  Future<void> _updateBackend(Position pos) async {
+    final UserModel currentUser = UserRepository.instance.currentUser;
+
+    currentUser.location = {
+      'lat': pos.latitude,
+      'long': pos.longitude,
+    };
+
+    await UserRepository.instance.updateLocation(pos);
   }
 
   Future<bool> requestLocationPermission() async {
-    // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are off — you may want to show a dialog here
-      return false;
-    }
+    if (!serviceEnabled) return false;
 
-    // Check current permission status
     LocationPermission permission = await Geolocator.checkPermission();
-
-    // Ask if denied
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return false;
-      }
+      if (permission == LocationPermission.denied) return false;
     }
 
-    // If permanently denied, navigate user to settings
     if (permission == LocationPermission.deniedForever) {
       await Geolocator.openAppSettings();
       return false;
     }
 
-    // All good
     return true;
   }
 
-
-  Future<void> _updateBackend(Position pos) async {
-
-    final UserModel currentUser = UserRepository.instance.currentUser;
-
-    // TODO: If location did not change enough
-    if(currentUser.location['lat'] == pos.latitude && currentUser.location['long'] == pos.longitude) return;
-
-    currentUser.location = <String, double>{
-      'lat': pos.latitude,
-      'long': pos.longitude
-    };
-
-    UserRepository.instance.updateLocation(pos);
-
+  @override
+  void onClose() {
+    _subscription.cancel();
+    super.onClose();
   }
 }

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hey_you/Common/navigation_menu.dart';
 import 'package:hey_you/Features/Match/subwidgets/ConnectionAchievedButton.dart';
 import 'package:http/http.dart' as http;
 import 'package:geocoding/geocoding.dart';
@@ -163,7 +162,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
                       Text('To: $otherUserAddress'),
                       Text('Distance: ${(_distanceFeet)} ft'),
 
-                      ConnectionAchieved(pageController: _pageController, distance: _distanceFeet)
+                      ConnectionAchieved(pageController: _pageController, distance: _distanceFeet, userAddress: userAddress)
                     ],
                   ),
                 ),
@@ -215,23 +214,26 @@ class _MeetNowPageState extends State<MeetNowPage> {
           infoWindow: InfoWindow(title: 'Other', snippet: address2),
         )
       };
-
-      _loading = false;
     });
 
-    final bounds = LatLngBounds(
-      southwest: LatLng(
-        userLatLng.latitude < otherUserLatLng.latitude ? userLatLng.latitude : otherUserLatLng.latitude,
-        userLatLng.longitude < otherUserLatLng.longitude ? userLatLng.longitude : otherUserLatLng.longitude,
-      ),
-      northeast: LatLng(
-        userLatLng.latitude > otherUserLatLng.latitude ? userLatLng.latitude : otherUserLatLng.latitude,
-        userLatLng.longitude > otherUserLatLng.longitude ? userLatLng.longitude : otherUserLatLng.longitude,
-      ),
-    );
+    if (_loading) {
+      final bounds = LatLngBounds(
+        southwest: LatLng(
+          userLatLng.latitude < otherUserLatLng.latitude ? userLatLng.latitude : otherUserLatLng.latitude,
+          userLatLng.longitude < otherUserLatLng.longitude ? userLatLng.longitude : otherUserLatLng.longitude,
+        ),
+        northeast: LatLng(
+          userLatLng.latitude > otherUserLatLng.latitude ? userLatLng.latitude : otherUserLatLng.latitude,
+          userLatLng.longitude > otherUserLatLng.longitude ? userLatLng.longitude : otherUserLatLng.longitude,
+        ),
+      );
 
-    await Future.delayed(const Duration(milliseconds: 300));
-    _controller?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+      await Future.delayed(const Duration(milliseconds: 300));
+      _controller?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+    }
+    setState(() {
+      _loading = false;
+    });
   }
 
   String _formatPlacemark(Placemark p) {

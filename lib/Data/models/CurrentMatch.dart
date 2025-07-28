@@ -9,7 +9,6 @@ class CurrentMatch {
   final List<DateTime> possibleTimes;
   final List<String> related;
   final List<UserData> userData;
-  final String? currentProposedPlace;
   String status;
   double distance;
 
@@ -22,7 +21,6 @@ class CurrentMatch {
     required this.related,
     required this.userData,
     required this.status,
-    this.currentProposedPlace,
     required this.distance
   });
 
@@ -31,7 +29,6 @@ class CurrentMatch {
       createdOn: DateTime.parse(json['createdOn']),
       expirationTime: DateTime.parse(json['expirationTime']),
       id: json['id'],
-      currentProposedPlace: json['currentProposedPlace'],
       possiblePlaces: List<String>.from(json['possiblePlaces'] ?? []),
       possibleTimes: (json['possibleTimes'] as List? ?? [])
           .map((t) => (t as Timestamp).toDate())
@@ -57,7 +54,6 @@ class CurrentMatch {
       'createdOn': createdOn.toString(),
       'expirationTime': expirationTime.toString(),
       'id': id,
-      'currentProposedPlace': currentProposedPlace,
       'possiblePlaces': possiblePlaces,
       'possibleTimes': possibleTimes.map((d) => Timestamp.fromDate(d)).toList(),
       'related': related,
@@ -77,7 +73,7 @@ class CurrentMatch {
     final CurrentMatch other = o as CurrentMatch;
 
     return (id == other.id && distance == other.distance&& listEquals(possiblePlaces, other.possiblePlaces) && status == other.status
-        && listEquals(possibleTimes, other.possibleTimes) && userData[0] == other.userData[0] && userData[1] == other.userData[1] && currentProposedPlace == other.currentProposedPlace);
+        && listEquals(possibleTimes, other.possibleTimes) && userData[0] == other.userData[0] && userData[1] == other.userData[1]);
   }
 }
 

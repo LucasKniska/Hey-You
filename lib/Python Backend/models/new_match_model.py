@@ -42,10 +42,11 @@ class Match(BaseModel):
     createdOn: datetime
     possibleTimes: List[datetime]
     possiblePlaces: List[Geolocation]
-    meetingPlace: Optional[Geolocation] = None
+    meetingPlace: Optional[dict] = None
     userData: List[UserMatchData]
     status: MatchStatus
-    distance: Optional[float] = None  # Added field
+    distance: Optional[float] = None
+    meetingTime: Optional[datetime] = None 
 
     def to_json(self) -> dict:
         return {
@@ -55,7 +56,7 @@ class Match(BaseModel):
             "createdOn": self.createdOn.isoformat(),
             "possibleTimes": [dt.isoformat() for dt in self.possibleTimes],
             "possiblePlaces": [place.to_json() for place in self.possiblePlaces],
-            "meetingPlace": self.meetingPlace.to_json() if self.meetingPlace else None,
+            "meetingPlace": self.meetingPlace,
             "userData": [user.to_json() for user in self.userData],
             "status": self.status,
             "distance": self.distance  # Added field
@@ -71,7 +72,7 @@ class Match(BaseModel):
             createdOn=datetime.fromisoformat(data["createdOn"]),
             possibleTimes=[datetime.fromisoformat(dt) for dt in data["possibleTimes"]],
             possiblePlaces=[Geolocation.from_json(p) for p in data["possiblePlaces"]],
-            meetingPlace=Geolocation.from_json(data["meetingPlace"]) if data.get("meetingPlace") else None,
+            meetingPlace=data.get("meetingPlace", None),
             userData=[UserMatchData.from_json(u) for u in data["userData"]],
             status=data.get("status") if data.get("status") else MatchStatus.NEW,
             distance=data.get("distance")  # Added field

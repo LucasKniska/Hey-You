@@ -91,27 +91,27 @@ def accept_match(match_id: IdRequest):
     return {"status": "Match accepted", "match_id": match_id}
 
 @app.post("/complete-match")
-def complete_match(match_id: UserMatchRequest):
+def complete_match(match: UserMatchRequest):
     # Check if other user is already completed
     # If it is, call close match
     
-    user_id_ref = db.collection(const.USERS).document(match_id.user_id)
+    user_id_ref = db.collection(const.USERS).document(match.user_id)
     if user_id_ref.get().exists:
         user_data = User.from_json(user_id_ref.get().to_dict())
-        match_id.id = user_data.currentMatch
+        match.match_id = user_data.currentMatch
     else:
         return {"error": "User not found"}
 
 
     # Keeps a reference of the match document
-    match_ref = db.collection(const.NEW_MATCHES).document(match_id.id)
+    match_ref = db.collection(const.NEW_MATCHES).document(match.match_id)
 
     if match_ref.get().exists:
         match_data = Match.from_json(match_ref.get().to_dict())
     else:
         return {"error": "Match not found"}
 
-    if match_data.userData[0].id == match_id.user_id:
+    if match_data.userData[0].id == match.user_id:
         match_data.userData[0].response = UserResponse.COMPLETED
     else:
         match_data.userData[1].response = UserResponse.COMPLETED
@@ -129,10 +129,16 @@ def complete_match(match_id: UserMatchRequest):
             ]
         })
         
-        return {"status": "Match not completed by both users", "match_id": match_id.id}
+        return {"status": "Match not completed by both users", "match_id": match.match_id}
     
     # Both users have completed the match and have made a connection
-    match_data.meetingPlace = match_data.userData[0].location
+    match_data.meetingTime = datetime.now() 
+
+    match_data.meetingPlace = {
+        "lat": match_data.userData[0].location.lat,
+        "long": match_data.userData[0].location.long,
+        "location": match.address
+    }
 
     match_data.status = MatchStatus.COMPLETED
 
@@ -143,20 +149,20 @@ def complete_match(match_id: UserMatchRequest):
     # Update the user documents to remove the match reference
     db.collection(const.USERS).document(user1).update({
         'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match_id.id]),
+        'PreviousConnections': firestore.ArrayUnion([match.match_id]),
         'TotalConnections': firestore.Increment(1)
     })
     db.collection(const.USERS).document(user2).update({
         'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match_id.id]),
+        'PreviousConnections': firestore.ArrayUnion([match.match_id]),
         'TotalConnections': firestore.Increment(1)
     })
 
     # Move document to closed matches
-    db.collection(const.COMPLETED_MATCHES).document(match_id.id).set(match_data.to_json())
+    db.collection(const.COMPLETED_MATCHES).document(match.match_id).set(match_data.to_json())
     match_ref.delete()
 
-    return {"status": "Match closed", "match_id": match_id}
+    return {"status": "Match closed", "match_id": match}
 
 @app.post("/cancel-complete-match")
 def cancel_complete_match(match_id: UserMatchRequest):
@@ -238,27 +244,30 @@ def update_location(request: LocationUpdateRequest):
 
 @app.get("/get-previous-connections")
 def get_previous_connections(user_id: str):
-    # Keeps a reference of the user document
-    user_ref = db.collection(const.USERS).document(user_id)
-    if user_ref.get().exists:
-        user = User.from_json(user_ref.get().to_dict())
-    else:
+    # Get user document once
+    user_doc = db.collection(const.USERS).document(user_id).get()
+    if not user_doc.exists:
         return {"error": "User not found"}
 
-    # Get previous connections
-    previous_connections = user.previousConnections
+    user = User.from_json(user_doc.to_dict())
 
+    # Get previous connection IDs
+    previous_connections = user.previousConnections
     if not previous_connections:
         return {"status": "No previous connections found"}
 
-    matches = []
-    for match_id in previous_connections:
-        match_ref = db.collection(const.COMPLETED_MATCHES).document(match_id)
-        if match_ref.get().exists:
-            match_data = Match.from_json(match_ref.get().to_dict())
-            matches.append(match_data.to_json())
+    # Batch get all match documents
+    match_refs = [db.collection(const.COMPLETED_MATCHES).document(mid) for mid in previous_connections]
+    match_docs = db.get_all(match_refs)
+
+    # Parse existing matches only
+    matches = [
+        Match.from_json(doc.to_dict()).to_json()
+        for doc in match_docs if doc.exists
+    ]
 
     return {"previous_connections": matches}
+
 
 @app.post("/update-user-match-data")
 def update_user_match_data(request: UpdateUserMatchDataRequest):

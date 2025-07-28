@@ -20,6 +20,7 @@ class _PreviousConnection extends State<PreviousConnection> {
   final PreviousConnectionController controller = PreviousConnectionController();
   List<PreviousMatch> previousMatches = [];
   bool loading = true;
+  bool error = false;
   final userRepo = UserRepository.instance;
   int totalConnections = UserRepository.instance.currentUser.totalConnections;
 
@@ -31,7 +32,7 @@ class _PreviousConnection extends State<PreviousConnection> {
     // Shows the popup if necessary
     ever<UserModel?>(userRepo.currentUserRx, (user) async {
       if (user == null) return;
-      if (totalConnections != user.totalConnections){
+      if (totalConnections != user.totalConnections || previousMatches.length != totalConnections){
         totalConnections = user.totalConnections;
         fetchPreviousMatches();
       }
@@ -41,6 +42,7 @@ class _PreviousConnection extends State<PreviousConnection> {
 
   Future<void> fetchPreviousMatches() async {
     try {
+      error = false;
       loading = true;
       final matches = await controller.getPreviousMatches();
       setState(() {
@@ -49,6 +51,11 @@ class _PreviousConnection extends State<PreviousConnection> {
       });
     } catch (e) {
       print("Error fetching previous matches: $e");
+
+      setState(() {
+        loading = false;
+        error = true;
+      });
     }
   }
 
@@ -71,11 +78,16 @@ class _PreviousConnection extends State<PreviousConnection> {
               return _ConnectionRow(match: previousMatches[index]);
             },
           )
-        else
+        else if (!error)
           EmptyStateWidget(
             title: 'You currently have no matching',
             description: 'Match with someone to fill out your list of contacts!',
           )
+        else
+            EmptyStateWidget(
+              title: 'We are having errors finding your previous connections',
+              description: 'Reload app to try again',
+            )
       ],
     );
   }

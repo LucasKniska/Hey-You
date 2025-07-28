@@ -53,10 +53,57 @@ def testResetMatchesDatabase():
         db.collection(const.COMPLETED_MATCHES).document(each.id).delete()
 
 
+def createCompletedMatchWithMeetingPlace():
+    data = {
+        "createdOn": "2025-07-25T17:11:53.530158",
+        "distance": 0.009221490349558211,
+        "expirationTime": "2025-07-25T17:21:53.530141",
+        "id": "1txlCNMqrY5tZX3d8W4l",
+        "meetingPlace": {
+            "lat": 37.421945,
+            "long": -122.08408,
+            "location": "Googleplex"
+        },
+        "possiblePlaces": [],
+        "possibleTimes": [],
+        "related": ["1", "2", "3"],
+        "status": "completed",
+        "userData": [
+            {
+                "connections": 5,
+                "id": "gmwlBqTibHhob4nD5LwYuHJKq8p2",
+                "location": {
+                    "lat": 37.421945,
+                    "long": -122.08408
+                },
+                "response": "completed",
+                "userBio": "A list of traits that I want who I match with to see.",
+                "userName": "Lucas K."
+            },
+            {
+                "connections": 2,
+                "id": "nA1zXRlK0tQjkHVwJnv2d3myUON2",
+                "location": {
+                    "lat": 37.4219983,
+                    "long": -122.084
+                },
+                "response": "completed",
+                "userBio": "This is who carmelo is.",
+                "userName": "Carmelo K."
+            }
+        ]
+    }
+
+    match_data = Match.from_json(data)
+
+    db.collection(const.COMPLETED_MATCHES).document('2').set(match_data.to_json())
+
+
 """
 Tests making a match between two users
 """
 matchId = testCreateMatch()
+# createCompletedMatchWithMeetingPlace()
 # matchId = testCreateAcceptMatch()
 
 """ 
