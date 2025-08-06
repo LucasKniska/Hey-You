@@ -1,9 +1,11 @@
 
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hey_you/Features/Authentication/screens/emailVerification.dart';
 
 import '../../../Common/location_services.dart';
@@ -11,6 +13,10 @@ import '../../../Common/navigation_menu.dart';
 import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
 import '../../../Features/EditProfile/profile_controller.dart';
+import '../../../Features/Onboarding/TermsOfService.dart';
+import '../../../Features/PersonalityQuiz/PersonalityQuiz.dart';
+import '../../../Features/ViewConnections/previousConnections.dart';
+import '../../models/UserModel.dart';
 import '../matching/match_repository.dart';
 import '../user/user_repository.dart';
 
@@ -24,12 +30,12 @@ class AuthenticationRepository extends GetxController{
   @override
   void onReady() {
     FlutterNativeSplash.remove();
-    screenRedirect();
+    screenRedirect(false);
     firstTryLogin = false;
   }
 
 
-  void screenRedirect() {
+  Future<void> screenRedirect(bool newUser) async {
 
     if (deviceStorage.read('isFirstTime') == null || deviceStorage.read('isFirstTime') == false) {
 
@@ -37,14 +43,37 @@ class AuthenticationRepository extends GetxController{
 
         /// User is signed in
         try {
+          print('New User: $newUser');
           if(FirebaseAuth.instance.currentUser!.emailVerified == true){
+
+            if(newUser){
+              // Show terms of service
+              final accepted = await Get.to(() => TermsOfService());
+
+              if (accepted != true) {
+                // User did not accept terms — delete account and sign out
+                await FirebaseAuth.instance.currentUser?.delete();
+                await FirebaseAuth.instance.signOut();
+                await GoogleSignIn().signOut();
+                return;
+              }
+            }
+
+
             Get.put(MatchRepository(), permanent: true);
             Get.put(UserRepository());
-            UserRepository.instance.startListeningToUser();
-            Get.put(LocationController(), permanent: true);
             Get.put(ProfileController(), permanent: true);
+            Get.put(LocationController(), permanent: true);
+            UserRepository.instance.startListeningToUser();
 
-            Get.offAll(() => const NavigationMenu());
+            if(newUser){
+              // Go to onboarding page
+              Get.offAll(() => const NavigationMenu());
+              Get.put(() => const PersonalityQuizPage()); // so get.back is easy from personality quiz page
+            } else {
+              Get.offAll(() => const NavigationMenu());
+            }
+
           }else{
             Get.offAll(EmailVerificationScreen());
           }
@@ -55,7 +84,7 @@ class AuthenticationRepository extends GetxController{
         }
 
       } else {
-        print('Firebase Auth isntance empty ${FirebaseAuth.instance.currentUser}');
+        print('Firebase Auth instance empty ${FirebaseAuth.instance.currentUser}');
         Get.offAll(() => const LoginScreen());
       }
     } else {
@@ -65,6 +94,35 @@ class AuthenticationRepository extends GetxController{
     }
   }
 
+  Future<bool?> loginWithGoogle() async {
+    try{
+      final googleUser = await GoogleSignIn().signIn();
+      final googleAuth = await googleUser?.authentication;
+
+      final cred = GoogleAuthProvider.credential(idToken: googleAuth?.idToken, accessToken: googleAuth?.accessToken);
+
+      final firebaseCred = await _auth.signInWithCredential(cred);
+
+      var userId = firebaseCred.user!.uid; // Replace with the actual user ID
+      var userDocRef = FirebaseFirestore.instance.collection("Users").doc(userId);
+
+      // Identifies as a new user
+      if(await userDocRef.get().then((doc) => !doc.exists)) {
+        UserModel newUser = UserModel.initial();
+        newUser.id = FirebaseAuth.instance.currentUser!.uid;
+
+        final userRepository = UserRepository.instance;
+        userRepository.createNewUser(newUser);
+        return true;
+      }
+      return false;
+
+    } catch(e) {
+      print(e.toString());
+    }
+
+    return null;
+  }
 
   /// Register user
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
@@ -93,8 +151,10 @@ class AuthenticationRepository extends GetxController{
       UserRepository.instance.stopListeningToUser();
       MatchRepository.instance.stopListeningToMatches();
       UserRepository.instance.currentUser.discoverable = false;
-      await UserRepository.instance.updateUserField('discoverable', false);
+      UserRepository.instance.updateUserField('discoverable', false);
       await FirebaseAuth.instance.signOut();
+      await GoogleSignIn().signOut();
+
       Get.offAll(() => LoginScreen());
     } catch (e) {
       Get.offAll(() => LoginScreen());

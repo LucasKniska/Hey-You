@@ -323,6 +323,10 @@ def create_new_user(request: CreateNewUserRequest):
 
 @app.post("/update-user-field")
 def update_user_field(request: UpdateUserFieldRequest):
+
+    if request.user_id is None or request.field is None or request.value is None or request.user_id == '':
+        return {"error": "Invalid request parameters"}
+
     user_ref = db.collection(const.USERS).document(request.user_id)
     if not user_ref.get().exists:
         return {"error": "User not found"}

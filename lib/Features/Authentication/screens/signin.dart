@@ -138,7 +138,19 @@ class LoginScreen extends StatelessWidget {
                                 child: const Text(TTexts.login),
                               ),
                             ),
+
                             const SizedBox(height: TSizes.spaceBtwItems),
+
+                            /// Sign In Button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () { controller.signinGoogle(); },
+                                child: const Text('Sign In With Google'),
+                              ),
+                            ),
+                            const SizedBox(height: TSizes.spaceBtwItems),
+
 
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,

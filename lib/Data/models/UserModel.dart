@@ -81,7 +81,7 @@ class UserModel {
         longestStreak = json['LongestStreak'] as int? ?? 0,
         currentStreak = json['CurrentStreak'] as int? ?? 0,
         lastMatch = (json['LastMatch'] != null)
-            ? DateTime.tryParse(json['LastMatch']) ?? DateTime.now()
+            ? json['LastMatch'].toDate() ?? DateTime.now()
             : DateTime.now();
 
 

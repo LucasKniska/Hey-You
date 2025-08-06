@@ -46,7 +46,7 @@ class User(BaseModel):
             discoverable=data.get("Discoverable", False),
             longestStreak=data.get("LongestStreak", 0),
             currentStreak=data.get("CurrentStreak", 0),
-            lastMatch=datetime.fromisoformat(data["LastMatch"]) if "LastMatch" in data else datetime.now()
+            lastMatch=data["LastMatch"] if "LastMatch" in data else datetime.now()
         )
 
     def to_json(self):

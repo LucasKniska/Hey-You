@@ -41,6 +41,9 @@ class UserRepository extends GetxController {
     // Cancel existing listener
     _userListener?.cancel();
 
+    print('Starting user listener');
+    print('Looking for: ${FirebaseAuth.instance.currentUser!.uid}');
+
     _userListener = _db
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -128,6 +131,9 @@ class UserRepository extends GetxController {
   Future<void> updateUserField(String field, dynamic value) async {
 
     final url = Uri.parse(APIConstants.updateUserField);
+
+    print('Current User: ');
+    print(currentUser.id);
 
     var payload = {
       'user_id': currentUser.id,
