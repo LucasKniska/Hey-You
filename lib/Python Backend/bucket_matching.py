@@ -84,6 +84,7 @@ def update_new_bucket_rankings(user, bucket_ref):
     cS = update_bucket_ranking_field(data.get('currentStreak', []), user, user.currentStreak)
     tC = update_bucket_ranking_field(data.get('totalConnections', []), user, user.totalConnections)
 
+    print('Updating: ', bucket_ref)
     bucket_ref.update({
         'longestStreak': lS,
         'currentStreak': cS,

@@ -1,3 +1,5 @@
+from datetime import datetime, timezone, timedelta, time
+from zoneinfo import ZoneInfo
 from fastapi import FastAPI
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -5,9 +7,8 @@ from enums import UserResponse
 from models.models import *
 from helpers import *
 import constants as const
-from fastapi import Body
 from bucket_matching import *
-from models.partition_model import PartitionModel
+from bucket_matching import update_new_bucket_rankings
 
 app = FastAPI()
 
@@ -133,8 +134,8 @@ def complete_match(match: UserMatchRequest):
         return {"status": "Match not completed by both users", "match_id": match.match_id}
     
     # Both users have completed the match and have made a connection
-    match_data.meetingTime = datetime.now() 
-
+    match_data.meetingTime = datetime.now(timezone.utc)
+    
     match_data.meetingPlace = {
         "lat": match_data.userData[0].location.lat,
         "long": match_data.userData[0].location.long,
@@ -147,17 +148,70 @@ def complete_match(match: UserMatchRequest):
     user1 = match_data.userData[0].id
     user2 = match_data.userData[1].id
 
-    # Update the user documents to remove the match reference
-    db.collection(const.USERS).document(user1).update({
-        'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match.match_id]),
-        'TotalConnections': firestore.Increment(1)
-    })
-    db.collection(const.USERS).document(user2).update({
-        'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match.match_id]),
-        'TotalConnections': firestore.Increment(1)
-    })
+    # Update the user documents to remove the match reference and update connections and stats
+    user1_ref = db.collection(const.USERS).document(user1)
+    user2_ref = db.collection(const.USERS).document(user2)
+
+    def update_user_stats(user_ref):
+        u = User.from_json(user_ref.get().to_dict())
+
+        u.totalConnections += 1
+
+        EASTERN = ZoneInfo("America/New_York")
+
+        meeting_day = match_data.meetingTime.astimezone(EASTERN).date()
+        last_match_day = u.lastMatch.astimezone(EASTERN).date() if u.lastMatch else None
+        window_end = u.currentStreakTimer.astimezone(EASTERN).date() if u.currentStreakTimer else last_match_day
+
+        # Roll the timer forward in fixed X-day blocks until it covers the meeting day
+        missed_blocks = 0
+        while meeting_day > window_end:
+            window_end += timedelta(days=const.STREAK_WINDOW_DAYS)
+            missed_blocks += 1
+
+        window_start = window_end - timedelta(days=const.STREAK_WINDOW_DAYS - 1)
+
+        # Check if we've already counted a match in this same window
+        already_counted_this_window = (
+            last_match_day is not None and
+            window_start <= last_match_day <= window_end and
+            window_start <= meeting_day   <= window_end
+        )
+
+        if missed_blocks == 0:
+            # Match fell inside the current window
+            if not already_counted_this_window:
+                u.currentStreak += 1
+        else:
+            # At least one full window passed since the timer
+            if missed_blocks == 1:
+                u.currentStreak += 1              # next window continued → streak alive
+            else:
+                u.currentStreak = 1               # missed ≥2 windows → reset
+
+        # Update longest, timer (to the new window end), and lastMatch
+        u.longestStreak = max(u.longestStreak, u.currentStreak)
+        u.currentStreakTimer = datetime.combine(window_end, time.min, tzinfo=EASTERN)
+        u.lastMatch = match_data.meetingTime
+        u.longestStreak = max(u.longestStreak, u.currentStreak)
+
+        # updates the user reference to match with current match
+        user_ref.update({
+            'CurrentMatch': None,
+            'PreviousConnections': firestore.ArrayUnion([match.match_id]),
+            'TotalConnections': u.totalConnections,
+            'LongestStreak': u.longestStreak,
+            'CurrentStreak': u.currentStreak,
+            'CurrentStreakTimer': u.currentStreakTimer,
+            'LastMatch': u.lastMatch
+        })
+
+        # Check if the bucket metadata needs updated
+        bucket_ref = db.collection(const.BUCKET_REF).document(u.nearestBucket)
+        update_new_bucket_rankings(u, bucket_ref)
+
+    update_user_stats(user1_ref)
+    update_user_stats(user2_ref)
 
     # Move document to closed matches
     db.collection(const.COMPLETED_MATCHES).document(match.match_id).set(match_data.to_json())

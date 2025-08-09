@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any
-from datetime import datetime
+from typing import List, Dict, Any, Optional
+from datetime import datetime, time, timezone
 from models.models import Geolocation, TemporaryModification
 
 
@@ -23,6 +23,7 @@ class User(BaseModel):
     lastMatch: datetime = datetime.now()
     nearestBucket: str
     partition: str
+    currentStreakTimer: Optional[datetime]
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]):
@@ -47,6 +48,7 @@ class User(BaseModel):
             totalConnections=data.get("TotalConnections", 0),
             discoverable=data.get("Discoverable", False),
             longestStreak=data.get("LongestStreak", 0),
+            currentStreakTimer=data.get("CurrentStreakTimer", None),
             currentStreak=data.get("CurrentStreak", 0),
             lastMatch=data["LastMatch"] if "LastMatch" in data else datetime.now(),
             nearestBucket=data.get("NearestBucket", ""),
@@ -69,6 +71,7 @@ class User(BaseModel):
             "TotalConnections": self.totalConnections,
             "Discoverable": self.discoverable,
             "LongestStreak": self.longestStreak,
+            "CurrentStreakTimer": self.currentStreakTimer.isoformat(),
             "CurrentStreak": self.currentStreak,
             "LastMatch": self.lastMatch.isoformat(),
             "NearestBucket": self.nearestBucket,
