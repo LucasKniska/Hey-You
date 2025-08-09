@@ -6,7 +6,8 @@ from models.models import *
 from helpers import *
 import constants as const
 from fastapi import Body
-
+from bucket_matching import *
+from models.partition_model import PartitionModel
 
 app = FastAPI()
 
@@ -211,36 +212,47 @@ def update_location(request: LocationUpdateRequest):
     else:
         return {"error": "User not found"}
 
+    # check if the user has changed buckets
+    nearest_bucket = get_nearest_bucket_name(request.geolocation.lat, request.geolocation.long)
+    print('Bucket recommendation:', nearest_bucket, flush=True)
+    if user.nearestBucket != nearest_bucket:
+        user.nearestBucket, user.partition = change_user_bucket(db, user, request, nearest_bucket, user_ref)
+
     # updates the user location
     user_ref.update({
         'Location': request.geolocation.to_json()
     })
 
-    # Checks if the user has a current match
+    # Updates either the match object or partition object
     if not user.currentMatch:
-        return {"status": "No current match to update location"}
+        # update the partition location
+        bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(user.partition).document(user.id)
+        bucket_ref.update({
+            'location': request.geolocation.to_json()
+        })
+        return {"status": "updated partition location"}
+    else: 
+        # Keeps a reference of the match document
+        match_ref = db.collection(const.NEW_MATCHES).document(user.currentMatch)
 
-    # Keeps a reference of the match document
-    match_ref = db.collection(const.NEW_MATCHES).document(user.currentMatch)
+        match_data = Match.from_json(match_ref.get().to_dict())
+        if not match_data:
+            return {"status": "No match found"}
 
-    match_data = Match.from_json(match_ref.get().to_dict())
-    if not match_data:
-        return {"error": "No match found"}
+        # Update the user's location in the match if it exists    
+        if(match_data.userData[0].id == request.user_id):
+            match_data.userData[0].location = request.geolocation
+        else:
+            match_data.userData[1].location = request.geolocation
 
-    # Update the user's location in the match if it exists    
-    if(match_data.userData[0].id == request.user_id):
-        match_data.userData[0].location = request.geolocation
-    else:
-        match_data.userData[1].location = request.geolocation
+        match_ref.update({
+            'userData': [
+                match_data.userData[0].to_json(),
+                match_data.userData[1].to_json()
+            ]
+        })
 
-    match_ref.update({
-        'userData': [
-            match_data.userData[0].to_json(),
-            match_data.userData[1].to_json()
-        ]
-    })
-
-    return {"status": "Location updated", "user_id": request.user_id}
+        return {"status": "Updated match location", "user_id": request.user_id}
 
 @app.get("/get-previous-connections")
 def get_previous_connections(user_id: str):
@@ -267,7 +279,6 @@ def get_previous_connections(user_id: str):
     ]
 
     return {"previous_connections": matches}
-
 
 @app.post("/update-user-match-data")
 def update_user_match_data(request: UpdateUserMatchDataRequest):
@@ -320,7 +331,6 @@ def create_new_user(request: CreateNewUserRequest):
     except Exception as e:
         return {"error": str(e)}
     
-
 @app.post("/update-user-field")
 def update_user_field(request: UpdateUserFieldRequest):
     user_ref = db.collection(const.USERS).document(request.user_id)

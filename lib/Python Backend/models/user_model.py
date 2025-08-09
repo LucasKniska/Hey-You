@@ -21,6 +21,8 @@ class User(BaseModel):
     longestStreak: int = 0
     currentStreak: int = 0
     lastMatch: datetime = datetime.now()
+    nearestBucket: str
+    partition: str
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]):
@@ -46,7 +48,9 @@ class User(BaseModel):
             discoverable=data.get("Discoverable", False),
             longestStreak=data.get("LongestStreak", 0),
             currentStreak=data.get("CurrentStreak", 0),
-            lastMatch=datetime.fromisoformat(data["LastMatch"]) if "LastMatch" in data else datetime.now()
+            lastMatch=data["LastMatch"] if "LastMatch" in data else datetime.now(),
+            nearestBucket=data.get("NearestBucket", ""),
+            partition=data.get("Partition", "default")
         )
 
     def to_json(self):
@@ -66,5 +70,7 @@ class User(BaseModel):
             "Discoverable": self.discoverable,
             "LongestStreak": self.longestStreak,
             "CurrentStreak": self.currentStreak,
-            "LastMatch": self.lastMatch.isoformat()
+            "LastMatch": self.lastMatch.isoformat(),
+            "NearestBucket": self.nearestBucket,
+            "Partition": self.partition
         }
