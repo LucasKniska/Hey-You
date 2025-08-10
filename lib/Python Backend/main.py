@@ -396,3 +396,26 @@ def update_user_field(request: UpdateUserFieldRequest):
         return {"status": "User field updated", "user_id": request.user_id, "field": request.field}
     except Exception as e:
         return {"error": str(e)}
+
+@app.post("/end-current-streak")
+def end_current_streak(request: SingleUserRequest):
+    user_ref = db.collection(const.USERS).document(request.user_id)
+    if not user_ref.get().exists:
+        return {"error": "User not found"}
+
+    user = User.from_json(user_ref.get().to_dict())
+    bucket_ref = db.collection(const.BUCKET_REF).document(user.nearestBucket)
+    data = bucket_ref.get().to_dict()
+
+    # remove current streak from bucket if needed
+    cS = update_bucket_ranking_field(data.get('currentStreak', []), user, user.currentStreak)
+
+    bucket_ref.update({
+        'currentStreak': cS
+    })
+
+    user_ref.update({
+        'CurrentStreak': 0,
+        'CurrentStreakTimer': None
+    })
+    return {"status": "Current streak ended", "user_id": request.user_id}

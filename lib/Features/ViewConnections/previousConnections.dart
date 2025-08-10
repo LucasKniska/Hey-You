@@ -28,15 +28,16 @@ class _PreviousConnection extends State<PreviousConnection> {
   void initState() {
     super.initState();
     fetchPreviousMatches(); // Call async function
+    controller.checkCurrentStreak(userRepo.currentUser);
 
     // Shows the popup if necessary
     ever<UserModel?>(userRepo.currentUserRx, (user) async {
       if (user == null) return;
+      controller.checkCurrentStreak(userRepo.currentUser);
       if (totalConnections != user.totalConnections || previousMatches.length != totalConnections){
         totalConnections = user.totalConnections;
         fetchPreviousMatches();
       }
-
     });
   }
 
@@ -44,7 +45,9 @@ class _PreviousConnection extends State<PreviousConnection> {
     try {
       error = false;
       loading = true;
+
       final matches = await controller.getPreviousMatches();
+
       setState(() {
         previousMatches = matches;
         loading = false;
