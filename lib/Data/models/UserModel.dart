@@ -23,6 +23,8 @@ class UserModel {
   DateTime lastMatch;
   DateTime? currentStreakTimer;
 
+  String bucketName;
+
   UserModel({
     required this.email,
     required this.firstName,
@@ -39,7 +41,8 @@ class UserModel {
     required this.longestStreak,
     required this.currentStreak,
     required this.lastMatch,
-    required this.currentStreakTimer
+    required this.currentStreakTimer,
+    required this.bucketName
   });
 
   UserModel.initial()
@@ -58,7 +61,8 @@ class UserModel {
         longestStreak = 0,
         currentStreak = 0,
         lastMatch = DateTime.now(),
-        currentStreakTimer = DateTime.now();
+        currentStreakTimer = DateTime.now(),
+        bucketName = '';
 
   UserModel.fromJson(Map<String, dynamic> json)
       : id = json['id'] as String? ?? '',
@@ -90,7 +94,8 @@ class UserModel {
             : DateTime.now(),
         currentStreakTimer = (json['CurrentStreakTimer'] != null)
           ? (json['CurrentStreakTimer'] as Timestamp?)!.toDate()
-          : DateTime.now();
+          : DateTime.now(),
+        bucketName = json['NearestBucket'] as String? ?? '';
 
 
   Map<String, dynamic> toJson() {

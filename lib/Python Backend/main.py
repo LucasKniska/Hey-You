@@ -419,3 +419,14 @@ def end_current_streak(request: SingleUserRequest):
         'CurrentStreakTimer': None
     })
     return {"status": "Current streak ended", "user_id": request.user_id}
+
+@app.get("/get-bucket-rankings")
+def get_bucket_rankings(bucket_id: str):
+    bucket_ref = db.collection(const.BUCKET_REF).document(bucket_id)
+    data = bucket_ref.get().to_dict()
+
+    return {
+        "longestStreak": data.get('longestStreak', []),
+        "currentStreak": data.get('currentStreak', []),
+        "totalConnections": data.get('totalConnections', [])
+    }

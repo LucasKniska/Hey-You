@@ -10,6 +10,7 @@ import 'package:hey_you/Data/repositories/matching/match_repository.dart';
 import 'package:hey_you/utils/constants/api_constants.dart';
 import 'package:http/http.dart' as http;
 
+import '../../models/LeaderboardData.dart';
 import '../../models/UserModel.dart';
 
 class UserRepository extends GetxController {
@@ -172,8 +173,17 @@ class UserRepository extends GetxController {
             'long': pos.longitude
           }
         }));
+  }
 
-    print("update location response");
-    print(response.body);
+  Future<LBRankings> fetchRankings() async {
+    final uri = Uri.parse('${APIConstants.getBucketRankings}?bucket_id=${currentUser.bucketName}');
+
+    final res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to load leaderboard: ${res.statusCode}');
+    }
+    final Map<String, dynamic> data = json.decode(res.body);
+    if (data['error'] != null) throw Exception(data['error']);
+    return LBRankings.fromJson(data);
   }
 }
