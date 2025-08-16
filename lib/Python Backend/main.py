@@ -1,3 +1,5 @@
+from datetime import datetime, timezone, timedelta, time
+from zoneinfo import ZoneInfo
 from fastapi import FastAPI
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -5,8 +7,8 @@ from enums import UserResponse
 from models.models import *
 from helpers import *
 import constants as const
-from fastapi import Body
-
+from bucket_matching import *
+from bucket_matching import update_new_bucket_rankings
 
 app = FastAPI()
 
@@ -132,8 +134,8 @@ def complete_match(match: UserMatchRequest):
         return {"status": "Match not completed by both users", "match_id": match.match_id}
     
     # Both users have completed the match and have made a connection
-    match_data.meetingTime = datetime.now() 
-
+    match_data.meetingTime = datetime.now(timezone.utc)
+    
     match_data.meetingPlace = {
         "lat": match_data.userData[0].location.lat,
         "long": match_data.userData[0].location.long,
@@ -146,17 +148,70 @@ def complete_match(match: UserMatchRequest):
     user1 = match_data.userData[0].id
     user2 = match_data.userData[1].id
 
-    # Update the user documents to remove the match reference
-    db.collection(const.USERS).document(user1).update({
-        'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match.match_id]),
-        'TotalConnections': firestore.Increment(1)
-    })
-    db.collection(const.USERS).document(user2).update({
-        'CurrentMatch': None,
-        'PreviousConnections': firestore.ArrayUnion([match.match_id]),
-        'TotalConnections': firestore.Increment(1)
-    })
+    # Update the user documents to remove the match reference and update connections and stats
+    user1_ref = db.collection(const.USERS).document(user1)
+    user2_ref = db.collection(const.USERS).document(user2)
+
+    def update_user_stats(user_ref):
+        u = User.from_json(user_ref.get().to_dict())
+
+        u.totalConnections += 1
+
+        EASTERN = ZoneInfo("America/New_York")
+
+        meeting_day = match_data.meetingTime.astimezone(EASTERN).date()
+        last_match_day = u.lastMatch.astimezone(EASTERN).date() if u.lastMatch else None
+        window_end = u.currentStreakTimer.astimezone(EASTERN).date() if u.currentStreakTimer else last_match_day
+
+        # Roll the timer forward in fixed X-day blocks until it covers the meeting day
+        missed_blocks = 0
+        while meeting_day > window_end:
+            window_end += timedelta(days=const.STREAK_WINDOW_DAYS)
+            missed_blocks += 1
+
+        window_start = window_end - timedelta(days=const.STREAK_WINDOW_DAYS - 1)
+
+        # Check if we've already counted a match in this same window
+        already_counted_this_window = (
+            last_match_day is not None and
+            window_start <= last_match_day <= window_end and
+            window_start <= meeting_day   <= window_end
+        )
+
+        if missed_blocks == 0:
+            # Match fell inside the current window
+            if not already_counted_this_window:
+                u.currentStreak += 1
+        else:
+            # At least one full window passed since the timer
+            if missed_blocks == 1:
+                u.currentStreak += 1              # next window continued → streak alive
+            else:
+                u.currentStreak = 1               # missed ≥2 windows → reset
+
+        # Update longest, timer (to the new window end), and lastMatch
+        u.longestStreak = max(u.longestStreak, u.currentStreak)
+        u.currentStreakTimer = datetime.combine(window_end, time.min, tzinfo=EASTERN)
+        u.lastMatch = match_data.meetingTime
+        u.longestStreak = max(u.longestStreak, u.currentStreak)
+
+        # updates the user reference to match with current match
+        user_ref.update({
+            'CurrentMatch': None,
+            'PreviousConnections': firestore.ArrayUnion([match.match_id]),
+            'TotalConnections': u.totalConnections,
+            'LongestStreak': u.longestStreak,
+            'CurrentStreak': u.currentStreak,
+            'CurrentStreakTimer': u.currentStreakTimer,
+            'LastMatch': u.lastMatch
+        })
+
+        # Check if the bucket metadata needs updated
+        bucket_ref = db.collection(const.BUCKET_REF).document(u.nearestBucket)
+        update_new_bucket_rankings(u, bucket_ref)
+
+    update_user_stats(user1_ref)
+    update_user_stats(user2_ref)
 
     # Move document to closed matches
     db.collection(const.COMPLETED_MATCHES).document(match.match_id).set(match_data.to_json())
@@ -211,36 +266,47 @@ def update_location(request: LocationUpdateRequest):
     else:
         return {"error": "User not found"}
 
+    # check if the user has changed buckets
+    nearest_bucket = get_nearest_bucket_name(request.geolocation.lat, request.geolocation.long)
+    print('Bucket recommendation:', nearest_bucket, flush=True)
+    if user.nearestBucket != nearest_bucket:
+        user.nearestBucket, user.partition = change_user_bucket(db, user, request, nearest_bucket, user_ref)
+
     # updates the user location
     user_ref.update({
         'Location': request.geolocation.to_json()
     })
 
-    # Checks if the user has a current match
+    # Updates either the match object or partition object
     if not user.currentMatch:
-        return {"status": "No current match to update location"}
+        # update the partition location
+        bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(user.partition).document(user.id)
+        bucket_ref.update({
+            'location': request.geolocation.to_json()
+        })
+        return {"status": "updated partition location"}
+    else: 
+        # Keeps a reference of the match document
+        match_ref = db.collection(const.NEW_MATCHES).document(user.currentMatch)
 
-    # Keeps a reference of the match document
-    match_ref = db.collection(const.NEW_MATCHES).document(user.currentMatch)
+        match_data = Match.from_json(match_ref.get().to_dict())
+        if not match_data:
+            return {"status": "No match found"}
 
-    match_data = Match.from_json(match_ref.get().to_dict())
-    if not match_data:
-        return {"error": "No match found"}
+        # Update the user's location in the match if it exists    
+        if(match_data.userData[0].id == request.user_id):
+            match_data.userData[0].location = request.geolocation
+        else:
+            match_data.userData[1].location = request.geolocation
 
-    # Update the user's location in the match if it exists    
-    if(match_data.userData[0].id == request.user_id):
-        match_data.userData[0].location = request.geolocation
-    else:
-        match_data.userData[1].location = request.geolocation
+        match_ref.update({
+            'userData': [
+                match_data.userData[0].to_json(),
+                match_data.userData[1].to_json()
+            ]
+        })
 
-    match_ref.update({
-        'userData': [
-            match_data.userData[0].to_json(),
-            match_data.userData[1].to_json()
-        ]
-    })
-
-    return {"status": "Location updated", "user_id": request.user_id}
+        return {"status": "Updated match location", "user_id": request.user_id}
 
 @app.get("/get-previous-connections")
 def get_previous_connections(user_id: str):
@@ -267,7 +333,6 @@ def get_previous_connections(user_id: str):
     ]
 
     return {"previous_connections": matches}
-
 
 @app.post("/update-user-match-data")
 def update_user_match_data(request: UpdateUserMatchDataRequest):
@@ -320,7 +385,6 @@ def create_new_user(request: CreateNewUserRequest):
     except Exception as e:
         return {"error": str(e)}
     
-
 @app.post("/update-user-field")
 def update_user_field(request: UpdateUserFieldRequest):
 
@@ -336,3 +400,37 @@ def update_user_field(request: UpdateUserFieldRequest):
         return {"status": "User field updated", "user_id": request.user_id, "field": request.field}
     except Exception as e:
         return {"error": str(e)}
+
+@app.post("/end-current-streak")
+def end_current_streak(request: SingleUserRequest):
+    user_ref = db.collection(const.USERS).document(request.user_id)
+    if not user_ref.get().exists:
+        return {"error": "User not found"}
+
+    user = User.from_json(user_ref.get().to_dict())
+    bucket_ref = db.collection(const.BUCKET_REF).document(user.nearestBucket)
+    data = bucket_ref.get().to_dict()
+
+    # remove current streak from bucket if needed
+    cS = update_bucket_ranking_field(data.get('currentStreak', []), user, user.currentStreak)
+
+    bucket_ref.update({
+        'currentStreak': cS
+    })
+
+    user_ref.update({
+        'CurrentStreak': 0,
+        'CurrentStreakTimer': None
+    })
+    return {"status": "Current streak ended", "user_id": request.user_id}
+
+@app.get("/get-bucket-rankings")
+def get_bucket_rankings(bucket_id: str):
+    bucket_ref = db.collection(const.BUCKET_REF).document(bucket_id)
+    data = bucket_ref.get().to_dict()
+
+    return {
+        "longestStreak": data.get('longestStreak', []),
+        "currentStreak": data.get('currentStreak', []),
+        "totalConnections": data.get('totalConnections', [])
+    }

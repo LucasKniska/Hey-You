@@ -45,6 +45,9 @@ class UserIDRequest(BaseModel):
 class SingleUserRequest(BaseModel):
     user_id: str
 
+class SingleBucketRequest(BaseModel):
+    bucket_id: str
+
 class MatchMoveRequest(BaseModel):
     match_id: str
     destination: str  # "rejected", "scheduled", "connections"

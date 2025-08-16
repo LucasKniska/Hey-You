@@ -1,4 +1,6 @@
 import 'package:hey_you/Data/TemporaryModifications.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class UserModel {
   String id;
@@ -19,6 +21,9 @@ class UserModel {
   int longestStreak;
   int currentStreak;
   DateTime lastMatch;
+  DateTime? currentStreakTimer;
+
+  String bucketName;
 
   UserModel({
     required this.email,
@@ -36,6 +41,8 @@ class UserModel {
     required this.longestStreak,
     required this.currentStreak,
     required this.lastMatch,
+    required this.currentStreakTimer,
+    required this.bucketName
   });
 
   UserModel.initial()
@@ -53,7 +60,9 @@ class UserModel {
         discoverable = false,
         longestStreak = 0,
         currentStreak = 0,
-        lastMatch = DateTime.now();
+        lastMatch = DateTime.now(),
+        currentStreakTimer = DateTime.now(),
+        bucketName = '';
 
   UserModel.fromJson(Map<String, dynamic> json)
       : id = json['id'] as String? ?? '',
@@ -83,6 +92,10 @@ class UserModel {
         lastMatch = (json['LastMatch'] != null)
             ? json['LastMatch'].toDate() ?? DateTime.now()
             : DateTime.now();
+        currentStreakTimer = (json['CurrentStreakTimer'] != null)
+          ? (json['CurrentStreakTimer'] as Timestamp?)!.toDate()
+          : DateTime.now(),
+        bucketName = json['NearestBucket'] as String? ?? '';
 
 
   Map<String, dynamic> toJson() {
@@ -101,7 +114,8 @@ class UserModel {
       'Discoverable': discoverable,
       'LongestStreak': longestStreak,
       'CurrentStreak': currentStreak,
-      'LastMatch': lastMatch.toIso8601String()
+      'LastMatch': lastMatch.toIso8601String(),
+      'CurrentStreakTimer': (currentStreakTimer == null) ? null : currentStreakTimer!.toIso8601String(),
     };
   }
 

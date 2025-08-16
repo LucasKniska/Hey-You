@@ -18,6 +18,8 @@ class APIConstants {
   static const String updateSearchFilters = '$localDev/update-search-filters';
   static const String createNewUser = '$localDev/create-new-user';
   static const String updateUserField = '$localDev/update-user-field';
+  static const String endCurrentStreak = '$localDev/end-current-streak';
+  static const String getBucketRankings = '$localDev/get-bucket-rankings';
 }
 
 class Decisions {
