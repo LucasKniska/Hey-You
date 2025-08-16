@@ -51,9 +51,11 @@ class SignInController extends GetxController {
       Get.put(UserRepository());
 
       final newUser = await AuthenticationRepository.instance.loginWithGoogle();
+      print('Sign In Controller New User: $newUser');
       AuthenticationRepository.instance.screenRedirect(newUser!);
     } catch (e) {
       Get.offAll(() => LoginScreen());
+      print('Sign In Controller Error: $e');
       TSnackBars.errorSnackBar(title: 'There has been an error signing into your account');
     }
   }

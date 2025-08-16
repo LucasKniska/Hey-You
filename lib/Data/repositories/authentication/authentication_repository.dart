@@ -6,12 +6,14 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hey_you/Data/models/QuizQuestions.dart';
 import 'package:hey_you/Features/Authentication/screens/emailVerification.dart';
 
 import '../../../Common/location_services.dart';
 import '../../../Common/navigation_menu.dart';
 import '../../../Features/Authentication/screens/signin.dart';
 import '../../../Features/Authentication/screens/onboarding.dart';
+import '../../../Features/Authentication/screens/usernameAndBio.dart';
 import '../../../Features/EditProfile/profile_controller.dart';
 import '../../../Features/Onboarding/TermsOfService.dart';
 import '../../../Features/PersonalityQuiz/PersonalityQuiz.dart';
@@ -55,6 +57,7 @@ class AuthenticationRepository extends GetxController{
                 await FirebaseAuth.instance.currentUser?.delete();
                 await FirebaseAuth.instance.signOut();
                 await GoogleSignIn().signOut();
+                // Show create user name and biography screen
                 return;
               }
             }
@@ -67,12 +70,14 @@ class AuthenticationRepository extends GetxController{
             UserRepository.instance.startListeningToUser();
 
             if(newUser){
-              // Go to onboarding page
+              await Get.to(() => UserNameAndBio());
+              print('Putting personality quiz page');
+              await Get.to(() => const PersonalityQuizPage());
               Get.offAll(() => const NavigationMenu());
-              Get.put(() => const PersonalityQuizPage()); // so get.back is easy from personality quiz page
             } else {
               Get.offAll(() => const NavigationMenu());
             }
+
 
           }else{
             Get.offAll(EmailVerificationScreen());
@@ -118,7 +123,8 @@ class AuthenticationRepository extends GetxController{
       return false;
 
     } catch(e) {
-      print(e.toString());
+
+      print('Authentication Repository Error: ${e.toString()}');
     }
 
     return null;
@@ -152,6 +158,11 @@ class AuthenticationRepository extends GetxController{
       MatchRepository.instance.stopListeningToMatches();
       UserRepository.instance.currentUser.discoverable = false;
       UserRepository.instance.updateUserField('discoverable', false);
+
+      questionList.forEach((element) {
+        element.answer = element.type == 2 ? 0 : '';
+      });
+
       await FirebaseAuth.instance.signOut();
       await GoogleSignIn().signOut();
 

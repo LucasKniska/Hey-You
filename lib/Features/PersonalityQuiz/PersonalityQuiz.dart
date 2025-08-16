@@ -5,7 +5,6 @@ import 'package:hey_you/Features/PersonalityQuiz/personality_quiz_controller.dar
 import 'package:hey_you/Features/PersonalityQuiz/subwidgets/infoBanner.dart';
 import 'package:hey_you/Features/PersonalityQuiz/subwidgets/rightCenteredIconButton.dart';
 
-import '../../Common/navigation_menu.dart';
 import '../../Data/models/QuizQuestions.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/text_string.dart';
@@ -33,9 +32,9 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
   }
 
   bool get batchComplete =>
-      batchIndices.every((i) => questionList[i].type == 0 || (questionList[i].answer ?? 0) >= 1);
+      batchIndices.every((i) => (questionList[i].type == 0 && questionList[i].answer != '') || (questionList[i].type != 0 && questionList[i].answer >= 1));
   double get progress =>
-      questionList.where((q) => q.type == 0 || (q.answer ?? 0) >= 1).length /
+      questionList.where((q) => (q.type == 0 && q.answer != '') || (q.type != 0 && q.answer >= 1)).length /
       questionList.length;
 
   // ── controllers ────────────────────────────────────────────────────
@@ -127,17 +126,19 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                 child: const Text('Cancel'),
               ),
               TextButton(
-                onPressed: () => {
-                  _exit(),
-                  Get.back()
-                }, child: const Text('Exit', style: TextStyle(color: Colors.red)),
-              ),
-              TextButton(
                 onPressed:
                     () => {
-                      controller.submitQuiz(),
+                      controller.submitQuiz(false),
                     },
-                child: const Text('Exit and Save', style: TextStyle(color: Colors.red)),
+                child: const Text('Save'),
+              ),
+              TextButton(
+                onPressed: () => {
+                  _exit(),
+                  print('Going to navigation menu'),
+                  Get.back(),
+                  Get.back()
+                }, child: const Text('Exit', style: TextStyle(color: Colors.red)),
               ),
             ],
           ),
@@ -155,11 +156,12 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
       _shakeCtrl.forward(from: 0);
       return;
     }
-    controller.submitQuiz();
+    controller.submitQuiz(true);
   }
 
   void _exit() {
     controller.initAnswers();
+    controller.deleteTextControllers();
   }
 
   // ── build ─────────────────────────────────────────────────────────

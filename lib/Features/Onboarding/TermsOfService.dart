@@ -15,7 +15,7 @@ class _TermsOfServiceState extends State<TermsOfService> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Terms of Service"),
+        title: const Text('Terms of Service'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -24,10 +24,10 @@ class _TermsOfServiceState extends State<TermsOfService> {
             Expanded(
               child: SingleChildScrollView(
                 child: const Text(
-                  "By using this app, you agree to our Terms of Service and Privacy Policy.\n\n"
-                      "These terms govern your use of our app and services. Please read them carefully. "
-                      "If you do not agree, you may not use this application.\n\n"
-                      "[Insert your actual terms and privacy policy here.]",
+                  'By using this app, you agree to our Terms of Service and Privacy Policy.\n\n'
+                      'These terms govern your use of our app and services. Please read them carefully. '
+                      'If you do not agree, you may not use this application.\n\n'
+                      '[Insert your actual terms and privacy policy here.]',
                   style: TextStyle(fontSize: 16),
                 ),
               ),
@@ -43,7 +43,7 @@ class _TermsOfServiceState extends State<TermsOfService> {
                   },
                 ),
                 const Expanded(
-                  child: Text("I agree to the Terms of Service and Privacy Policy"),
+                  child: Text('I agree to the Terms of Service and Privacy Policy'),
                 ),
               ],
             ),
@@ -52,11 +52,11 @@ class _TermsOfServiceState extends State<TermsOfService> {
               onPressed: accepted
                   ? () => Get.back(result: true)
                   : () => Get.snackbar(
-                "Agreement Required",
-                "You must agree to continue.",
+                'Agreement Required',
+                'You must agree to continue.',
                 snackPosition: SnackPosition.BOTTOM,
               ),
-              child: const Text("Continue"),
+              child: const Text('Continue'),
             ),
           ],
         ),

@@ -115,7 +115,7 @@ class UserRepository extends GetxController {
           throw TimeoutException('Request timed out after 10 seconds');
         },
       );
-
+      print(response.statusCode);
       if (response.statusCode != 200) {
         throw Exception('Failed to update: ${response.body}');
       }
@@ -133,10 +133,10 @@ class UserRepository extends GetxController {
     final url = Uri.parse(APIConstants.updateUserField);
 
     print('Current User: ');
-    print(currentUser.id);
+    print(FirebaseAuth.instance.currentUser!.uid);
 
     var payload = {
-      'user_id': currentUser.id,
+      'user_id': FirebaseAuth.instance.currentUser!.uid,
       'field': field,
       'value': value
     };
