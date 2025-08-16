@@ -91,7 +91,7 @@ class UserModel {
         currentStreak = json['CurrentStreak'] as int? ?? 0,
         lastMatch = (json['LastMatch'] != null)
             ? json['LastMatch'].toDate() ?? DateTime.now()
-            : DateTime.now();
+            : DateTime.now(),
         currentStreakTimer = (json['CurrentStreakTimer'] != null)
           ? (json['CurrentStreakTimer'] as Timestamp?)!.toDate()
           : DateTime.now(),
