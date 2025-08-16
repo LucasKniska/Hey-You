@@ -42,6 +42,24 @@ class SignInController extends GetxController {
 
   }
 
+  Future<void> signinGoogle() async {
+
+    try {
+
+      Get.to(() => const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
+
+      Get.put(UserRepository());
+
+      final newUser = await AuthenticationRepository.instance.loginWithGoogle();
+      print('Sign In Controller New User: $newUser');
+      AuthenticationRepository.instance.screenRedirect(newUser!);
+    } catch (e) {
+      Get.offAll(() => LoginScreen());
+      print('Sign In Controller Error: $e');
+      TSnackBars.errorSnackBar(title: 'There has been an error signing into your account');
+    }
+  }
+
   /// Sign Up Function
   Future<void> signin() async {
     try {
@@ -68,7 +86,7 @@ class SignInController extends GetxController {
       }
 
       print('Going to screen redirect');
-      AuthenticationRepository.instance.screenRedirect();
+      AuthenticationRepository.instance.screenRedirect(false);
       print('Completed screen redirect');
 
     } catch (e) {

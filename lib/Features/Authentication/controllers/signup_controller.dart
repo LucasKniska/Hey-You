@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hey_you/Data/repositories/authentication/authentication_repository.dart';
+import 'package:hey_you/Features/Authentication/controllers/signin_controller.dart';
 import 'package:hey_you/Features/Authentication/screens/signup.dart';
 
 import '../../../Data/models/UserModel.dart';
@@ -25,12 +26,14 @@ class SignupController extends GetxController {
 
   GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
 
+  Future<void> googleSignUp() async {
+    var controller = SignInController();
+    await controller.signinGoogle();
+  }
 
   /// Sign Up Function
   Future<void> signup() async {
     try {
-
-
       // Validate form
       if(!signupFormKey.currentState!.validate()) return;
 
@@ -60,7 +63,7 @@ class SignupController extends GetxController {
 
       TSnackBars.successSnackBar(title: 'You have successfully create your account!', message: 'Create as many matching as possible!');
 
-      AuthenticationRepository.instance.screenRedirect();
+      AuthenticationRepository.instance.screenRedirect(true);
 
     } on FirebaseAuthException catch (e) {
       Get.offAll(() => SignUpScreen());

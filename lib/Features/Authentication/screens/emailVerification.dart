@@ -32,7 +32,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       FirebaseAuth.instance.currentUser?.reload();
       if(FirebaseAuth.instance.currentUser!.emailVerified){
         timer.cancel();
-        _auth.screenRedirect();
+        _auth.screenRedirect(true);
       }
     });
   }

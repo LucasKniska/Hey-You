@@ -48,6 +48,8 @@ class _PreviousConnection extends State<PreviousConnection> {
 
       final matches = await controller.getPreviousMatches();
 
+      if(!mounted) return;
+
       setState(() {
         previousMatches = matches;
         loading = false;
@@ -59,6 +61,8 @@ class _PreviousConnection extends State<PreviousConnection> {
         loading = false;
         error = true;
       });
+
+      if(!mounted) return;
     }
   }
 
@@ -83,7 +87,7 @@ class _PreviousConnection extends State<PreviousConnection> {
           )
         else if (!error)
           EmptyStateWidget(
-            title: 'You currently have no matching',
+            title: 'You currently have no matches',
             description: 'Match with someone to fill out your list of contacts!',
           )
         else

@@ -42,6 +42,9 @@ class UserRepository extends GetxController {
     // Cancel existing listener
     _userListener?.cancel();
 
+    print('Starting user listener');
+    print('Looking for: ${FirebaseAuth.instance.currentUser!.uid}');
+
     _userListener = _db
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -113,7 +116,7 @@ class UserRepository extends GetxController {
           throw TimeoutException('Request timed out after 10 seconds');
         },
       );
-
+      print(response.statusCode);
       if (response.statusCode != 200) {
         throw Exception('Failed to update: ${response.body}');
       }
@@ -130,8 +133,11 @@ class UserRepository extends GetxController {
 
     final url = Uri.parse(APIConstants.updateUserField);
 
+    print('Current User: ');
+    print(FirebaseAuth.instance.currentUser!.uid);
+
     var payload = {
-      'user_id': currentUser.id,
+      'user_id': FirebaseAuth.instance.currentUser!.uid,
       'field': field,
       'value': value
     };

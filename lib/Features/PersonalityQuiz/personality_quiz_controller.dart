@@ -20,6 +20,9 @@ class PersonalityQuizController {
 
   void initAnswers() {
 
+    print(currentUser.quizAnswers);
+    print(questionList);
+
     if (currentUser.quizAnswers.isNotEmpty){
       for(int i = 0; i < questionList.length; i++){
         if(currentUser.quizAnswers[questionList[i].key] != null){
@@ -41,7 +44,7 @@ class PersonalityQuizController {
 
   }
 
-  Future<void> submitQuiz() async {
+  Future<void> submitQuiz(bool ending) async {
     // Update currentUser
     // Update online database
 
@@ -56,14 +59,15 @@ class PersonalityQuizController {
           q.key: q.type == 0 ? q.answer.toString() : (q.answer ?? 0) + q.type * 10,
       };
 
+      print('Current answers');
+      print(currentUser.quizAnswers);
 
       try {
         await userRepository.updateQuestionAnswers();
         Get.back();
         Get.back();
         TSnackBars.successSnackBar(title: 'You have successfully updated your personality quiz answers!', message: '');
-        textControllers.values.forEach((controller) => controller.dispose());
-      } catch (e) {
+     } catch (e) {
         Get.back();
         TSnackBars.errorSnackBar(title: 'Could not update your personality quiz answers!', message: 'Please try again.');
       }
@@ -71,6 +75,16 @@ class PersonalityQuizController {
       Get.back();
       TSnackBars.errorSnackBar(title: 'Could not update your personality quiz answers!', message: 'Please try again.');
     }
+
+    if (ending) {
+      print('Destroying controllers');
+      textControllers.values.forEach((controller) => controller.dispose());
+    }
+  }
+
+  void deleteTextControllers(){
+    print('Destroying controllers');
+    textControllers.values.forEach((controller) => controller.dispose());
 
   }
 
