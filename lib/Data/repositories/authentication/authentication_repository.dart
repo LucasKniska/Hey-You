@@ -73,6 +73,7 @@ class AuthenticationRepository extends GetxController{
               await Get.to(() => UserNameAndBio());
               print('Putting personality quiz page');
               await Get.to(() => const PersonalityQuizPage());
+              LocationController.instance.singleUpdate();
               Get.offAll(() => const NavigationMenu());
             } else {
               Get.offAll(() => const NavigationMenu());

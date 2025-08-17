@@ -7,6 +7,8 @@ import 'package:hey_you/Data/models/UserModel.dart';
 import '../Data/repositories/user/user_repository.dart';
 
 class LocationController extends GetxController {
+  static LocationController get instance => Get.find();
+
   final Rx<Position?> currentPosition = Rx<Position?>(null);
   late StreamSubscription<Position> _subscription;
   Position? _lastBackendUpdatePosition;
@@ -65,6 +67,13 @@ class LocationController extends GetxController {
     };
 
     await UserRepository.instance.updateLocation(pos);
+  }
+
+  Future<void> singleUpdate() async {
+    print('Creating single update');
+    currentPosition.value = await Geolocator.getCurrentPosition();
+    print('Calling backend with: ${currentPosition.value}');
+    _updateBackend(currentPosition.value!);
   }
 
   Future<bool> requestLocationPermission() async {

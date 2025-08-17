@@ -92,6 +92,7 @@ class _UserNameAndBioState extends State<UserNameAndBio> {
               TextFormField(
                 controller: bioController,
                 maxLines: 4,
+                maxLength: 128,
                 decoration: const InputDecoration(
                   labelText: 'Biography',
                   alignLabelWithHint: true,
