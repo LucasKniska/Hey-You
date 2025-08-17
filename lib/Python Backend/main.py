@@ -9,6 +9,7 @@ from helpers import *
 import constants as const
 from bucket_matching import *
 from bucket_matching import update_new_bucket_rankings
+import random
 
 app = FastAPI()
 
@@ -434,3 +435,21 @@ def get_bucket_rankings(bucket_id: str):
         "currentStreak": data.get('currentStreak', []),
         "totalConnections": data.get('totalConnections', [])
     }
+
+@app.get("/get-users-near-me")
+def get_users_near_me(request: SingleUserRequest):
+    user_ref = db.collection(const.USERS).document(request.user_id)
+    if not user_ref.get().exists:
+        return {"error": "User not found"}
+
+    user = User.from_json(user_ref.get().to_dict())
+
+    # Get all users in the nearest bucket
+    partition_ref = db.collection(const.BUCKET_REF).document(user.nearestBucket).collection(user.partition)
+    docs = list(partition_ref.stream())
+
+    # Randomly picks 3 users from the partition
+    res = random.sample(docs, min(3, len(docs)))
+
+    user_data = [doc.to_dict()['id'] for doc in res]
+    return {"users": user_data}

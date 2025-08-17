@@ -26,6 +26,8 @@ class UserRepository extends GetxController {
 
   Rx<bool> successfulMatch = false.obs;
 
+  List<String> usersNearMe = [];
+
   @override
   void onInit() {
     super.onInit();
@@ -191,5 +193,20 @@ class UserRepository extends GetxController {
     final Map<String, dynamic> data = json.decode(res.body);
     if (data['error'] != null) throw Exception(data['error']);
     return LBRankings.fromJson(data);
+  }
+
+  Future<void> updateUsersNearMe() async {
+    final uri = Uri.parse('${APIConstants.getUserNearMe}?user_id=${currentUser.id}');
+
+    final res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to load leaderboard: ${res.statusCode}');
+    }
+
+    final Map<String, dynamic> data = json.decode(res.body);
+    usersNearMe = data['users'];
+
+    print(usersNearMe);
+
   }
 }

@@ -21,7 +21,6 @@ class SignupController extends GetxController {
   final lastName = TextEditingController();
 
   final hidePassword = true.obs;
-  final agreeToTerms = false.obs;
   final rememberMe = false.obs;
 
   GlobalKey<FormState> signupFormKey = GlobalKey<FormState>();
@@ -37,11 +36,6 @@ class SignupController extends GetxController {
       // Validate form
       if(!signupFormKey.currentState!.validate()) return;
 
-      if (!agreeToTerms.value) {
-        Get.snackbar('Agree to terms of service', 'Agree to the service to sign up');
-        return;
-      }
-
       // Loading screen
       Get.to(const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
@@ -49,6 +43,9 @@ class SignupController extends GetxController {
 
       // Storing user data
       await AuthenticationRepository.instance.registerWithEmailAndPassword(email.text.trim(), password.text.trim());
+
+
+      // Before creating a new user make the user verify their email
 
       UserModel newUser = UserModel.initial();
       newUser.email = email.text.trim();

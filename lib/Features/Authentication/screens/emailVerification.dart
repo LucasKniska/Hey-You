@@ -31,6 +31,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     timer = Timer.periodic(Duration(seconds:5), (timer) {
       FirebaseAuth.instance.currentUser?.reload();
       if(FirebaseAuth.instance.currentUser!.emailVerified){
+        print('Email is verified');
         timer.cancel();
         _auth.screenRedirect(true);
       }
