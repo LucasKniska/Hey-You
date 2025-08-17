@@ -437,8 +437,8 @@ def get_bucket_rankings(bucket_id: str):
     }
 
 @app.get("/get-users-near-me")
-def get_users_near_me(request: SingleUserRequest):
-    user_ref = db.collection(const.USERS).document(request.user_id)
+def get_users_near_me(user_id: str):
+    user_ref = db.collection(const.USERS).document(user_id)
     if not user_ref.get().exists:
         return {"error": "User not found"}
 
@@ -449,7 +449,18 @@ def get_users_near_me(request: SingleUserRequest):
     docs = list(partition_ref.stream())
 
     # Randomly picks 3 users from the partition
-    res = random.sample(docs, min(3, len(docs)))
+    sampled_docs = random.sample(docs, min(10, len(docs)))
 
-    user_data = [doc.to_dict()['id'] for doc in res]
-    return {"users": user_data}
+    user_data = []
+    distances = []
+    for doc in sampled_docs: 
+        data = doc.to_dict()
+        username = data.get('username', None)
+        location = data.get('location', None)
+
+        if username and location:
+            user_data.append(username)
+            distance = haversine(user.location.lat, user.location.long, location['lat'], location['long'])
+            distances.append(str(distance))
+
+    return {"users": user_data[0:3], "distances": distances[0:3]}

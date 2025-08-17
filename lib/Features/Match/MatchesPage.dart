@@ -8,6 +8,7 @@ import 'package:hey_you/Features/Match/MeetNowPage.dart';
 import 'package:hey_you/Features/Match/subwidgets/MeetNowToggle.dart';
 import 'package:hey_you/Features/Match/subwidgets/SearchFilters.dart';
 import 'package:hey_you/Features/Match/subwidgets/SectionTitle.dart';
+import 'package:hey_you/Features/Match/subwidgets/UsersNearMe.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import '../../Data/models/UserModel.dart';
@@ -109,6 +110,8 @@ class _MapPageState extends State<MapPage>
     _borderAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _borderController, curve: Curves.easeInOut),
     );
+
+    userRepo.updateUsersNearMe();
   }
 
   @override
@@ -416,6 +419,8 @@ class _MapPageState extends State<MapPage>
                       'Possible Matches Near You',
                     ),
                   ),
+
+                  Obx(() => UsersNearMe(users: userRepo.nearbyUsers.toList())),
 
                   SizedBox(height: TSizes.spaceBtwSections),
 

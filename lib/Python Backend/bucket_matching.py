@@ -35,7 +35,8 @@ def change_user_bucket(db, user, request, nearest_bucket, user_ref):
     # set user into partition
     user_partition = PartitionModel(
         id=user.id,
-        location=request.geolocation
+        location=request.geolocation,
+        username=f"{user.firstName} {user.lastName[0]}"
     )
 
     # Buckets/<Bucket-Name>/<Partition-Name> => Field: <User-ID>
