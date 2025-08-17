@@ -132,7 +132,46 @@ class _TopBarState extends State<TopBar>
             color: Colors.white,
           ),
         ),
-        centerTitle: true,
+        actions: [
+          if(UserRepository.instance.currentUser.firstName.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                var navController = NavigationController.instance;
+                navController.selectedIndex.value = 2; // index of ProfilePage
+                navController.pageController.animateToPage(
+                  2,
+                  duration: const Duration(milliseconds: 400), // adjust speed
+                  curve: Curves.easeInOut, // smooth slide
+                );
+              },
+              child: Material(
+                elevation: 1,
+                shape: const CircleBorder(),
+                child: Container(
+                  padding: const EdgeInsets.all(3), // Border thickness
+                  decoration: const BoxDecoration(
+                    color: Colors.white, // Border color
+                    shape: BoxShape.circle,
+                  ),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: TColors.primary.withAlpha(180),
+                    child: Text(
+                      '${UserRepository.instance.currentUser.firstName[0]}${UserRepository.instance.currentUser.lastName[0]}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          SizedBox(width: 15),
+        ],
+        titleSpacing: 15,
+        centerTitle: false,
         flexibleSpace: AnimatedCrossFade(
           duration: const Duration(milliseconds: 2000), // Adjust duration of the morph
           firstChild: isUserDiscoverable
