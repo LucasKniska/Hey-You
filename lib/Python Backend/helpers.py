@@ -1,4 +1,6 @@
 import math
+from math import radians, sin, cos, sqrt, atan2
+
 from enums import *
 from models.models import *
 import constants as const
@@ -29,6 +31,13 @@ def get_user_by_id(user_id, db):
     else:
         return None
     
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # Earth radius in kilometers
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    return 2 * R * atan2(sqrt(a), sqrt(1 - a))
+
 
 """
 Creating a new match object once two users are matched

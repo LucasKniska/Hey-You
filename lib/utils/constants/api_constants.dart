@@ -20,6 +20,7 @@ class APIConstants {
   static const String updateUserField = '$localDev/update-user-field';
   static const String endCurrentStreak = '$localDev/end-current-streak';
   static const String getBucketRankings = '$localDev/get-bucket-rankings';
+  static const String getUserNearMe = '$localDev/get-users-near-me';
 }
 
 class Decisions {

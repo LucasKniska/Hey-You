@@ -47,16 +47,15 @@ class _TermsOfServiceState extends State<TermsOfService> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: accepted
-                  ? () => Get.back(result: true)
-                  : () => Get.snackbar(
-                'Agreement Required',
-                'You must agree to continue.',
-                snackPosition: SnackPosition.BOTTOM,
+
+            SizedBox(width: double.infinity, child:
+              ElevatedButton(
+                onPressed: () => {
+                  if(accepted) Get.back(result: true)
+                },
+                style: !accepted ? ElevatedButton.styleFrom(backgroundColor: Colors.grey) : null,
+                child: const Text('Continue'),
               ),
-              child: const Text('Continue'),
             ),
           ],
         ),

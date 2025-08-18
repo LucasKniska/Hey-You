@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:hey_you/Data/models/NearbyUser.dart';
 import 'package:hey_you/Data/repositories/matching/match_repository.dart';
 import 'package:hey_you/utils/constants/api_constants.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +26,8 @@ class UserRepository extends GetxController {
   Rx<UserModel> get currentUserRx => _currentUser;
 
   Rx<bool> successfulMatch = false.obs;
+
+  RxList<NearbyUser> nearbyUsers = <NearbyUser>[].obs;
 
   @override
   void onInit() {
@@ -191,5 +194,31 @@ class UserRepository extends GetxController {
     final Map<String, dynamic> data = json.decode(res.body);
     if (data['error'] != null) throw Exception(data['error']);
     return LBRankings.fromJson(data);
+  }
+
+  Future<void> updateUsersNearMe() async {
+    final uri = Uri.parse('${APIConstants.getUserNearMe}?user_id=${FirebaseAuth.instance.currentUser!.uid}');
+
+    final res = await http.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to load names: ${res.statusCode}');
+    }
+
+    final data = json.decode(res.body);
+
+    final List<String> users = List<String>.from(data['users']);
+    final List<String> distances = List<String>.from(data['distances']);
+
+    final List<NearbyUser> userList = [];
+
+    for (int i = 0; i < users.length; i++) {
+      userList.add(NearbyUser(
+        username: users[i],
+        distance: distances[i],
+      ));
+    }
+
+    nearbyUsers.value = userList;
+
   }
 }

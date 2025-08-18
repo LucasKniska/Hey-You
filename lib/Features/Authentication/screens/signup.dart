@@ -146,36 +146,6 @@ class SignUpScreen extends StatelessWidget {
                                   ],
                                 ),
 
-                                Row(
-                                  children: [
-                                    Obx(
-                                      () => Checkbox(
-                                        onChanged: (value) {
-                                          controller.agreeToTerms.value =
-                                              value!;
-                                        },
-                                        value: controller.agreeToTerms.value,
-                                      ),
-                                    ),
-                                    Text(
-                                      TTexts.termsOfService1,
-                                      style:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium,
-                                    ),
-
-                                    GestureDetector(
-                                      onTap: () {},
-                                      child: Text(
-                                        TTexts.termsOfService2,
-                                        style: TextStyle(
-                                          color: TColors.primary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
                               ],
                             ),
 
@@ -184,57 +154,33 @@ class SignUpScreen extends StatelessWidget {
                               height: TSizes.spaceBtwInputFields / 2,
                             ),
 
-                            Obx(() =>
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                    onPressed: () {
-                                      controller.signup();
-                                    },
-                                    child: const Text(TTexts.signUp),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                      controller.agreeToTerms.value
-                                          ? TColors.primary
-                                          : Colors.grey,
-                                    )
-                                ),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    controller.signup();
+                                  },
+                                  child: const Text(TTexts.signUp),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: TColors.primary
+                                  )
                               ),
                             ),
 
                             const SizedBox(height: TSizes.spaceBtwItems/2),
 
                             /// Sign In Button
-                            Obx(
-                              () => SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    if (controller.agreeToTerms.value) {
-                                      controller.googleSignUp();
-                                    }
-                                  },
-                                  child: const Text('Sign Up With Google'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        controller.agreeToTerms.value
-                                            ? TColors.primary
-                                            : Colors.grey,
-                                  ),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () => controller.googleSignUp(),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: TColors.primary
                                 ),
+                                child: const Text('Sign Up With Google'),
                               ),
                             ),
 
-                            Obx(
-                              () => Text(
-                                controller.agreeToTerms.value
-                                    ? ""
-                                    : "Agree to terms of service before sign in posssible",
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.bodySmall,
-                              ),
-                            ),
                             const SizedBox(height: TSizes.spaceBtwItems),
 
                             Row(

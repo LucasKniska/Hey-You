@@ -59,7 +59,7 @@ class _InfoBannerState extends State<InfoBanner> {
               child: Icon(
                 Icons.info_outline,
                 size: 20,
-                color: TColors.primary,
+                color: TColors.black,
               ),
             ),
             const SizedBox(width: 12),
@@ -72,7 +72,7 @@ class _InfoBannerState extends State<InfoBanner> {
                     widget.title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: TColors.primary,
+                      color: TColors.black,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -84,7 +84,7 @@ class _InfoBannerState extends State<InfoBanner> {
                       color: Colors.black54,
                       fontWeight: FontWeight.w400,
                     ),
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],

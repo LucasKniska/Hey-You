@@ -128,9 +128,12 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
               TextButton(
                 onPressed:
                     () => {
-                      controller.submitQuiz(false),
+                      controller.submitQuiz(true),
+                      _exit(),
+                      Get.back(),
+                      Get.back(),
                     },
-                child: const Text('Save'),
+                child: const Text('Save and Exit'),
               ),
               TextButton(
                 onPressed: () => {
@@ -179,6 +182,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
 
           // ── progress bar & divider ──
           Material(
+            color: Colors.white,
             elevation: 2,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -253,6 +257,7 @@ class _PersonalityQuizPageState extends State<PersonalityQuizPage>
                     final answered = (q.answer != null && q.answer != '' && q.answer != 0);
 
                     return Card(
+                      color: Colors.white,
                       elevation: 2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),

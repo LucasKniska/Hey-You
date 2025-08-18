@@ -18,7 +18,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   int _segment = 0; // 0: Total, 1: Current, 2: Longest
 
   Future<LBRankings> _fetchRankings() async {
-    return UserRepository.instance.fetchRankings();
+    return await UserRepository.instance.fetchRankings();
   }
 
   String prettyBucketName(String raw) => raw
@@ -63,8 +63,8 @@ class _LeaderboardPageState extends State<LeaderboardPage>
               if (snap.hasError) {
                 return _ErrorCard(
                   message: 'Could not load leaderboard.\n${snap.error}',
-                  onRetry: () {
-                    final f = _fetchRankings();
+                  onRetry: () async {
+                    final f =  _fetchRankings();
                     setState(() => _future = f);
                   },
                 );

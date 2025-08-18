@@ -444,10 +444,10 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 36),
+      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       alignment: Alignment.center,
       child: Text(
-        'No results yet',
+        'Make more matches with people near you to show up on the leaderboard!',
         style: TextStyle(
           color: Colors.black.withOpacity(0.5),
           fontWeight: FontWeight.w600,

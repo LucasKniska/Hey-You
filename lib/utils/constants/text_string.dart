@@ -57,7 +57,7 @@ class TTexts {
   /// Quiz Page Texts
   static const String HeyYou = 'Hey You';
   static const String quizTitle = 'Please Tell Us A Little Bit About Yourself:';
-  static const String quizUnder = 'This information is necessary to connect you to others with similar interests.';
+  static const String quizUnder = 'This information is necessary to connect you to others with similar interests and will not be public.';
 
   static const String submitQuiz = 'Submit Quiz';
 

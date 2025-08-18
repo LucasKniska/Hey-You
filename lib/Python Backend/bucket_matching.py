@@ -35,7 +35,8 @@ def change_user_bucket(db, user, request, nearest_bucket, user_ref):
     # set user into partition
     user_partition = PartitionModel(
         id=user.id,
-        location=request.geolocation
+        location=request.geolocation,
+        username=f"{user.firstName} {user.lastName[0]}"
     )
 
     # Buckets/<Bucket-Name>/<Partition-Name> => Field: <User-ID>
@@ -110,15 +111,18 @@ def update_bucket_ranking_field(rankings, user, value):
     return rankings
 
 def update_old_bucket_rankings(user, db, old_bucket_name):
-    old_bucket_ref = db.collection(const.BUCKET_REF).document(old_bucket_name)
-    data = old_bucket_ref.get().to_dict()
+    try: 
+        old_bucket_ref = db.collection(const.BUCKET_REF).document(old_bucket_name)
+        data = old_bucket_ref.get().to_dict()
 
-    lS = [entry for entry in data.get('longestStreak', []) if entry.get("id") != user.id]
-    cS = [entry for entry in data.get('currentStreak', []) if entry.get("id") != user.id]
-    tC = [entry for entry in data.get('totalConnections', []) if entry.get("id") != user.id]
+        lS = [entry for entry in data.get('longestStreak', []) if entry.get("id") != user.id]
+        cS = [entry for entry in data.get('currentStreak', []) if entry.get("id") != user.id]
+        tC = [entry for entry in data.get('totalConnections', []) if entry.get("id") != user.id]
 
-    old_bucket_ref.update({
-        'longestStreak': lS,
-        'currentStreak': cS,
-        'totalConnections': tC
-    })
+        old_bucket_ref.update({
+            'longestStreak': lS,
+            'currentStreak': cS,
+            'totalConnections': tC
+        })
+    except Exception as e:
+        print(f"Error updating old bucket rankings: {e}", flush=True)
