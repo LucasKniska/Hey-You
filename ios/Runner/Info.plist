@@ -7,6 +7,15 @@
         <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
         <string>This app uses your location even in the background for real-time updates.</string>
 
+       <key>CFBundleURLTypes</key>
+       <array>
+         <dict>
+           <key>CFBundleURLSchemes</key>
+           <array>
+	            <string>com.googleusercontent.apps.824517917959-gmeda7eilb736n207m36saa1cdn8tsn1</string>
+           </array>
+         </dict>
+       </array>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
