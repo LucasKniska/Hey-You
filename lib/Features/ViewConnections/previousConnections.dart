@@ -76,24 +76,24 @@ class _PreviousConnection extends State<PreviousConnection> {
               color: Colors.grey,
             ),
           )
-        else if (previousMatches.isNotEmpty)
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(), // Prevents scrolling inside a Column
-            itemCount: previousMatches.length,
-            itemBuilder: (context, index) {
-              return _ConnectionRow(match: previousMatches[index]);
-            },
-          )
-        else if (!error)
+        /// else if (previousMatches.isNotEmpty)
+        ///   ListView.builder(
+        ///     shrinkWrap: true,
+        ///     physics: const NeverScrollableScrollPhysics(), // Prevents scrolling inside a Column
+        ///     itemCount: previousMatches.length,
+        ///     itemBuilder: (context, index) {
+        ///       return _ConnectionRow(match: previousMatches[index]);
+        ///     },
+        ///   )
+        else if (error) // Should be (!error)
           EmptyStateWidget(
             title: 'You currently have no matches',
             description: 'Match with someone to fill out your list of contacts!',
           )
         else
             EmptyStateWidget(
-              title: 'We are having errors finding your previous connections',
-              description: 'Reload app to try again',
+              title: 'We are currently building your previous connections display',
+              description: 'Check here in a few days to see previous connections.',
             )
       ],
     );

@@ -2,7 +2,6 @@
 #   include loaction of school and name of bucket
 
 from math import radians, sin, cos, sqrt, atan2
-from constants import BUCKETS  # Make sure BUCKETS is imported from your constants file
 from models.partition_model import PartitionModel
 from models.models import *
 from helpers import *
@@ -21,7 +20,7 @@ def get_nearest_bucket_name(user_lat, user_long):
         a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
         return 2 * R * atan2(sqrt(a), sqrt(1 - a))
 
-    return min(BUCKETS, key=lambda b: haversine(user_lat, user_long, b.lat, b.long)).name
+    return min(const.BUCKETS, key=lambda b: haversine(user_lat, user_long, b.lat, b.long)).name
 
 
 def change_user_bucket(db, user, request, nearest_bucket, user_ref):
