@@ -3,7 +3,7 @@ from math import radians, sin, cos, sqrt, atan2
 
 from enums import *
 from models.models import *
-import constants as const
+import constants.constants as const
 from datetime import datetime
 from datetime import timedelta
 
@@ -119,3 +119,30 @@ def haversine_distance(loc1, loc2):
     a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
+
+def build_paragraph(user: "User") -> str:
+    """
+    Concatenate the public Biography, the 'AdditionalInfo'
+    field (if you decide to add it), and the **last 5** quiz answers.
+    """
+    parts: list[str] = []
+
+    # 1) bio
+    if user.biography:
+        parts.append(user.biography.strip())
+
+    # 2) optional extra free-text field
+    extra = getattr(user, "additionalInfo", "")
+    if extra:
+        parts.append(extra.strip())
+
+    # 3) last five quiz answers
+    if user.quizAnswers:
+        # keys in Firestore are strings: "1", "2", ...
+        keys = sorted(map(int, user.quizAnswers.keys()))
+        last_five = keys[-5:]
+        answers = " ".join(str(user.quizAnswers[str(k)]) for k in last_five)
+        parts.append(answers)
+
+    # combine
+    return " ".join(parts)

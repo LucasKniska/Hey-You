@@ -24,6 +24,10 @@ class User(BaseModel):
     nearestBucket: str
     partition: str
     currentStreakTimer: Optional[datetime]
+    llmScore: float = 0.0
+    OCEANScore: float = 0.0
+    llmCleanedJSON: Dict[str, Any] = {}
+    llmEmbedding: Optional[List[float]] = None     # <-- NEW
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]):
@@ -38,9 +42,12 @@ class User(BaseModel):
                 TemporaryModification(
                     start=datetime.fromisoformat(tm["start"]),
                     modification=tm["modification"]
-                )
-                for tm in data.get("TemporaryModifications", [])
+                ) for tm in data.get("TemporaryModifications", [])
             ],
+            llmScore=float(data.get("LLMScore", data.get("llmScore", 0.0)) or 0.0),
+            OCEANScore=float(data.get("OCEANScore", 0.0) or 0.0),
+            llmCleanedJSON=data.get("llmCleanedJSON", {}),
+            llmEmbedding=data.get("llmEmbedding"),              # <-- NEW
             permanentModifications=data.get("PermanentModifications", []),
             location=Geolocation.from_json(data.get("Location", {})),
             currentMatch=data.get("CurrentMatch") or "",
@@ -63,6 +70,10 @@ class User(BaseModel):
             "Email": self.email,
             "Biography": self.biography,
             "QuestionAnswers": self.quizAnswers,
+            "LLMScore": self.llmScore,
+            "OCEANScore": self.OCEANScore,
+            "llmCleanedJSON": self.llmCleanedJSON,
+            "llmEmbedding": self.llmEmbedding,      # <-- NEW
             "TemporaryModifications": [tm.to_dict() for tm in self.temporaryModifications],
             "PermanentModifications": self.permanentModifications,
             "Location": self.location.to_dict(),
