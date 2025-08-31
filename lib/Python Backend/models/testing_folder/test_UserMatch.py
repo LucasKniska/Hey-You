@@ -1,4 +1,4 @@
-from matching_calculations.matching_algo import get_trait_means, ocean_compatibility
+from matching_calculations.matching_algoOCEAN import get_trait_means, ocean_compatibility
 import pytest
 
 import os
@@ -6,7 +6,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from matching_calculations.matching_algo import get_trait_means, ocean_compatibility
+from matching_calculations.matching_algoOCEAN import get_trait_means, ocean_compatibility
 from models.user_model import User
 import pytest
 

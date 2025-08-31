@@ -26,8 +26,8 @@ if __name__ == "__main__":
             "1": "hiking",
             "2": "camping",
             "3": "nature",
-            "4": "trail mix",
-            "5": "Planet Earth"
+            "4": "this food is awesome -> trail mix",
+            "5": "I love watching Planet Earth"
         }
     )
     
@@ -39,8 +39,8 @@ if __name__ == "__main__":
             "1": "kayaking",
             "2": "surfing",
             "3": "oceans",
-            "4": "fresh fruit",
-            "5": "Blue Planet"
+            "4": "my favorite food is fresh fruit",
+            "5": "My favorite documentery Blue Planet"
         }
     )
     
@@ -51,8 +51,9 @@ if __name__ == "__main__":
         {
             "1": "reading",
             "2": "board games",
-            "3": "tea",
-            "4": "mystery novels",
-            "5": "The Queen's Gambit"
+            "3": "I love drinking tea",
+            "4": "I love reading mystery novels",
+            "5": "My favorite show is The Queen's Gambit",
+            "6": "I am Christian"
         }
     )

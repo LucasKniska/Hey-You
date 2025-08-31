@@ -3,7 +3,7 @@ import numpy as np
 from unittest.mock import patch, MagicMock
 
 import matching_calculations.matching_algoLLM as alg
-import matching_calculations.vector_distance as dist
+import matching_calculations.DistanceCalculator as dist
 
 def test_cosine_sim_basic():
     assert dist.cosine_sim([1, 2, 3], [1, 2, 3]) == pytest.approx(1.0)

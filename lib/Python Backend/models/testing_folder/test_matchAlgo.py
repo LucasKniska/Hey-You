@@ -1,6 +1,6 @@
 
 import pytest
-from matching_calculations.matching_algo import normalize_answer, get_trait_means, ocean_compatibility
+from matching_calculations.matching_algoOCEAN import normalize_answer, get_trait_means, ocean_compatibility
 
 def test_normalize_answer_non_reverse():
     assert normalize_answer(1) == 0.0
