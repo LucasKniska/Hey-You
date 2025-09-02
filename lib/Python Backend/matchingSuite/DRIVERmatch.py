@@ -16,7 +16,7 @@ from matchingSuite.readyWorker import _txn_try_pair
 # Config
 # ─────────────────────────────────────────────────────────────
 # Point this at "TestingUsers" for your test runs; switch to "Users" in prod.
-USER_COLLECTION = "TestingUsers"
+USER_COLLECTION = "Users"
 
 HALF_MILE_M    = 804.672
 ONE_MILE_M     = 1609.344

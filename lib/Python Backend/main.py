@@ -12,6 +12,7 @@ from bucket_matching import update_new_bucket_rankings
 import random
 from helpers.helpers import *
 import constants.constants as const
+from scoreCalcs import DRIVERscoring
 
 app = FastAPI()
 
@@ -33,14 +34,10 @@ def update_question_answers(request: QuestionAnswersRequest):
         user_ref.update({
             'QuestionAnswers': request.question_answers
         })
+        DRIVERscoring.update_user_scores_for_one(request.user_id, db, const.USERS)
         return {"status": "QuestionAnswers updated", "user_id": request.user_id}
     except Exception as e:
         return {"error": str(e)}
-
-@app.post("/match-users")
-def match_users(request: SingleUserRequest):
-    # create_new_match(user1, user2, db)
-    pass
 
 @app.post("/reject-match")
 def reject_match(match_id: IdRequest):

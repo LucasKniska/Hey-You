@@ -1,6 +1,5 @@
 # drivers/driver_single_user_partition.py
 # ---------------------------------------
-# Frontend calls this with a user_id and bucket_id to assign that ONE user.
 
 from __future__ import annotations
 import argparse, os, sys, json

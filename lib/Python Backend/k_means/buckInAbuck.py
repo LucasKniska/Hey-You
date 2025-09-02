@@ -7,7 +7,6 @@ TARGET_LLM_DIM = 1536
 
 def _flatten_llm_score(
     llm_score: Any,
-    expected_fields: Optional[List[str]],
     target_dim: int,
     mode: str = "strict",
 ) -> np.ndarray:
@@ -19,7 +18,7 @@ def _flatten_llm_score(
     if isinstance(llm_score, (list, tuple, np.ndarray)):
         vec = np.asarray(llm_score, dtype=np.float32).ravel()
     elif isinstance(llm_score, dict):
-        fields = expected_fields or sorted(llm_score.keys())
+        fields = sorted(llm_score.keys())
         parts = [np.asarray(llm_score.get(f, []), dtype=np.float32).ravel() for f in fields]
         vec = np.concatenate(parts) if parts else np.zeros(0, dtype=np.float32)
     else:
@@ -48,24 +47,16 @@ def _flatten_llm_score(
 
 def _extract_ocean_5d(data: Dict[str, Any]) -> np.ndarray:
     """Prefer OCEANScoreDict (O,C,E,A,N order); fallback to expanding scalar OCEANScore."""
-    ocean_dict = data.get("OCEANScoreDict")
+    ocean_dict = data.get("OCEANScore")
     if isinstance(ocean_dict, dict):
         keys = ["O", "C", "E", "A", "N"]
-        if all(k in ocean_dict for k in keys):
-            vec = [ocean_dict[k] for k in keys]
-        else:
-            vec = [ocean_dict[k] for k in sorted(ocean_dict.keys())][:5]
+        vec = [ocean_dict[k] for k in keys]
         arr = np.asarray(vec, dtype=np.float32).ravel()
         if arr.shape == (5,):
             return arr
-
-    ocean = data.get("OCEANScore", [0, 0, 0, 0, 0])
-    if isinstance(ocean, (int, float)):
-        ocean = [float(ocean)] * 5
-    arr = np.asarray(ocean, dtype=np.float32).ravel()
-    if arr.shape != (5,):
-        raise ValueError(f"OCEAN 5‑vector not found or wrong shape (got {arr.shape})")
-    return arr
+    else:
+        arr = np.asarray([0, 0, 0, 0, 0], dtype=np.float32).ravel()
+        return arr
 
 def _extract_llm_embedding_container(data: Dict[str, Any]) -> Any:
     """
@@ -85,18 +76,17 @@ def _extract_llm_embedding_container(data: Dict[str, Any]) -> Any:
 # ---------- main ----------
 
 def run_clustering_and_write_partitions(
-    user_collection: str = "TestingUsers",
+    user_collection: str = "Users",
     bucket_name: str = "Stanford_University",
     k_ocean: int = 4,
     k_llm: int = 5,
-    expected_fields: Optional[List[str]] = None,  # used only if LLMScore is a dict
     llm_mode: str = "strict",                     # 'strict' | 'pad' | 'truncate'
     target_llm_dim: int = TARGET_LLM_DIM,
 ) -> List[str]:
     """
     Train K-means on ALL users in the collection:
-      - OCEAN: 5‑D per user
-      - LLM:   1536‑D per user
+      - OCEAN: 5-D per user
+      - LLM:   1536-D per user
     Write centroids under Buckets/{bucket_name}/partitionXY/centroid.
     """
     docs = list(db.collection(user_collection).stream())
@@ -113,7 +103,7 @@ def run_clustering_and_write_partitions(
             raise ValueError(f"OCEANScore must be len=5; got {ocean.shape} for doc {doc.id}")
 
         llm_container = _extract_llm_embedding_container(data)
-        flat_llm = _flatten_llm_score(llm_container, expected_fields, target_llm_dim, mode=llm_mode)
+        flat_llm = _flatten_llm_score(llm_container,target_llm_dim, mode=llm_mode)
 
         ocean_vecs.append(ocean)
         llm_vecs.append(flat_llm)

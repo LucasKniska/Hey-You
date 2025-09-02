@@ -59,7 +59,6 @@ def run_group_driver(
         bucket_name=bucket_name,
         k_ocean=k_ocean,
         k_llm=k_llm,
-        expected_fields=expected_fields,
         llm_mode=llm_mode,
         target_llm_dim=target_llm_dim,
     )
@@ -103,14 +102,10 @@ def _parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 if __name__ == "__main__":
-    args = _parse_args()
-    fields = [s.strip() for s in args.expected_fields.split(",") if s.strip()] or None
     run_group_driver(
-        user_collection=args.user_coll,
-        bucket_name=args.bucket,
-        k_ocean=max(1, args.k_ocean),
-        k_llm=max(1, args.k_llm),
-        llm_mode=args.llm_mode,
-        expected_fields=fields,
-        target_llm_dim=max(1, args.target_dim),
+        user_collection="Users",
+        bucket_name="Columbia_University",
+        k_ocean=3,
+        k_llm=3,
+        llm_mode="pad",
     )
