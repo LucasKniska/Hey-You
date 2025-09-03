@@ -1,4 +1,4 @@
-from main import db
+from auth import db
 import numpy as np
 from sklearn.cluster import KMeans
 from typing import List, Optional, Dict, Any

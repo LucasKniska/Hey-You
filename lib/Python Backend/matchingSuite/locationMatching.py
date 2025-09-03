@@ -3,9 +3,13 @@ import argparse
 from typing import List, Dict, Optional
 
 import numpy as np
-from sklearn.neighbors import BallTree  # ⬅️ use BallTree, not KDTree
+from sklearn.neighbors import BallTree
 
-from main import db
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from auth import db
+
 
 EARTH_RADIUS_M = 6_371_009  # mean Earth radius (meters)
 
@@ -37,7 +41,11 @@ def load_partition_users(bucket_id: str, partition: str) -> List[Dict]:
         if snap.id == "centroid":
             continue
         data = snap.to_dict() or {}
-        lat, lon = data.get("lat"), data.get("lon")
+        pos = data.get("location")
+        if isinstance(pos, dict):
+            lat, lon = pos.get("lat", 0), pos.get("long", 0)
+        else: 
+            lat, lon = 0, 0
         if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
             users.append({"user_id": snap.id, "lat": float(lat), "lon": float(lon)})
     return users
@@ -116,24 +124,14 @@ def _parse_args() -> argparse.Namespace:
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--user", help="Target user_id to rank neighbors for (single user).")
     g.add_argument("--all", action="store_true", help="Rank neighbors for all users in the partition.")
-    p.add_argument("--topk", type=int, default=None, help="Optional: limit to top-K nearest neighbors.")
     return p.parse_args()
 
 def main():
-    args = _parse_args()
+    result = rank_one_user(bucket_id='Columbia_University', partition='partition11', target_user_id='jiBsMOEwoNgAMYgE7Y6OfwhKgdJ3')
+    print("Neighbors for user 'jiBsMOEwoNgAMYgE7Y6OfwhKgdJ3' in {Columbia}/{partition11}:")
+    for row in result:
+        print(f"  • {row['user_id']}: {row['distance_m']:.2f} m")
 
-    if args.user:
-        result = rank_one_user(args.bucket, args.partition, args.user, topk=args.topk)
-        print(f"Neighbors for user '{args.user}' in {args.bucket}/{args.partition}:")
-        for row in result:
-            print(f"  • {row['user_id']}: {row['distance_m']:.2f} m")
-    else:
-        all_results = rank_all_users_by_geo(args.bucket, args.partition, topk=args.topk)
-        print(f"All users ranked by distance in {args.bucket}/{args.partition}:")
-        for uid, rows in all_results.items():
-            print(f"\n{uid}:")
-            for row in rows:
-                print(f"  • {row['user_id']}: {row['distance_m']:.2f} m")
 
 if __name__ == "__main__":
     main()

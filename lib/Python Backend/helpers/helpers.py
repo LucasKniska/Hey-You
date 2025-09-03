@@ -104,6 +104,13 @@ def create_new_match(user1, user2, db):
     match_id = initialize_new_match(user1, user2, match, db)
     return match_id
 
+def createMatch(user1, user2, db):
+    user1 = get_user_by_id(user1, db)
+    user2 = get_user_by_id(user2, db)
+    match = get_match_object(user1, user2)
+    match_id = initialize_new_match(user1, user2, match, db)
+    return match_id
+
 def haversine_distance(loc1, loc2):
     """
     Calculate the great-circle distance between two points 

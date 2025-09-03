@@ -54,16 +54,16 @@ class PersonalityQuizController {
 
       Get.to(() => const Scaffold(backgroundColor: TColors.primary, body: Center(child: CircularProgressIndicator(color: Colors.white))));
 
-      currentUser.quizAnswers = {
+      var quizAnswers = {
         for (final q in questionList)
           q.key: q.type == 0 ? q.answer.toString() : (q.answer ?? 0) + q.type * 10,
       };
 
       print('Current answers');
-      print(currentUser.quizAnswers);
+      print(quizAnswers);
 
       try {
-        await userRepository.updateQuestionAnswers();
+        await userRepository.updateQuestionAnswers(quizAnswers: quizAnswers);
         Get.back();
         Get.back();
         TSnackBars.successSnackBar(title: 'You have successfully updated your personality quiz answers!', message: '');

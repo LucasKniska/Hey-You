@@ -5,7 +5,16 @@ from datetime import datetime, timezone
 import math
 
 from google.cloud import firestore
-from main import db
+import os, sys
+
+# Ensure we can import main.py (Firestore client) and the k-means runner
+THIS_DIR = os.path.dirname(__file__)
+PARENT_DIR = os.path.abspath(os.path.join(THIS_DIR, os.pardir))
+if PARENT_DIR not in sys.path:
+    sys.path.insert(0, PARENT_DIR)
+
+
+from auth import db
 from matchingSuite.partition_switch import (
     parse_partition, format_partition, GRID_I, GRID_J,
     recompute_and_write_centroid_distances,
@@ -105,29 +114,6 @@ def _expansion_partitions(current_partition: str, count: int) -> List[str]:
     return out
 
 # ─────────────────────────────────────────────────────────────
-# Who-want priority
-# ─────────────────────────────────────────────────────────────
-def _read_who_want_ids(uid: str) -> List[str]:
-    """
-    Prefer Users/{uid}.who_want_ids (populated by your separate who_want API).
-    Fallback: derive from who_watchlist if present.
-    """
-    u = _users_doc(uid).get().to_dict() or {}
-    ids = list(u.get("who_want_ids", []) or [])
-    if not ids:
-        wl = u.get("who_watchlist") or []
-        for it in wl:
-            cid = it.get("user_id")
-            if cid:
-                ids.append(cid)
-    seen, out = set(), []
-    for x in ids:
-        if x not in seen:
-            seen.add(x)
-            out.append(x)
-    return out
-
-# ─────────────────────────────────────────────────────────────
 # Atomic move within transaction
 # ─────────────────────────────────────────────────────────────
 def _move_user_in_tx(tx, bucket: str, from_p: str, to_p: str, uid: str) -> None:
@@ -139,12 +125,12 @@ def _move_user_in_tx(tx, bucket: str, from_p: str, to_p: str, uid: str) -> None:
     tx.set(dst, data, merge=True)
     tx.delete(src)
 
-@firestore.transactional
-def _txn_pair_move(tx, *, bucket: str, from_p: str, to_p: str, caller: str, partner: str) -> Optional[str]:
-    if to_p != from_p:
-        _move_user_in_tx(tx, bucket, from_p, to_p, caller)
-    # pair inside target partition
-    return _txn_try_pair(tx, bucket, to_p, caller, partner)
+# @firestore.transactional
+# def _txn_pair_move(tx, *, bucket: str, from_p: str, to_p: str, caller: str, partner: str) -> Optional[str]:
+#     if to_p != from_p:
+#         _move_user_in_tx(tx, bucket, from_p, to_p, caller)
+#     # pair inside target partition
+#     return _txn_try_pair(tx, bucket, to_p, caller, partner)
 
 # ─────────────────────────────────────────────────────────────
 # Ready candidates + distance (pre-filtered query)
@@ -156,7 +142,6 @@ def _ready_candidates_by_distance(
     caller_id: str,
     caller_lat: float,
     caller_lon: float,
-    priority_ids: set,
 ) -> List[Dict[str, Any]]:
     """
     Streams only docs where ready_to_match==True and active_match_id is None,
@@ -168,31 +153,25 @@ def _ready_candidates_by_distance(
     col = _bucket_partition_doc(bucket, partition)
 
     # Pre-filter on server side
-    q = (col.where("ready_to_match", "==", True)
-           .where("active_match_id", "==", None))
+    q = col.where("discoverable", "==", True)
 
-    rows_priority: List[Dict[str, Any]] = []
     rows_regular:  List[Dict[str, Any]] = []
 
     for s in q.stream():
         if s.id in ("centroid", caller_id):
             continue
         d = s.to_dict() or {}
-        lat, lon = d.get("lat"), d.get("lon")
+        pos = d.get('location')
+        lat, lon = pos.get("lat"), pos.get("long")
         if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
             continue
 
         dist = _haversine_m(caller_lat, caller_lon, float(lat), float(lon))
-        if s.id in priority_ids:
-            if dist <= ONE_MILE_M:
-                rows_priority.append({"user_id": s.id, "distance_m": dist})
-        else:
-            if dist <= HALF_MILE_M:
-                rows_regular.append({"user_id": s.id, "distance_m": dist})
+        if dist <= HALF_MILE_M:
+            rows_regular.append({"user_id": s.id, "distance_m": dist})
 
-    rows_priority.sort(key=lambda r: r["distance_m"])
     rows_regular.sort(key=lambda r: r["distance_m"])
-    return rows_priority + rows_regular
+    return rows_regular
 
 # ─────────────────────────────────────────────────────────────
 # Main entrypoint
@@ -215,13 +194,11 @@ def try_match_for_user(*, user_id: str) -> Dict[str, Optional[str]]:
 
     # 3) caller coords from its partition doc
     caller_doc = _partition_user_doc(bucket, partition, user_id).get().to_dict() or {}
-    caller_lat = caller_doc.get("lat")
-    caller_lon = caller_doc.get("lon")
+    caller_pos = caller_doc.get("location")
+    caller_lat = caller_pos.get('lat')
+    caller_lon = caller_pos.get('long')
     if not isinstance(caller_lat, (int, float)) or not isinstance(caller_lon, (int, float)):
         raise ValueError(f"Caller {user_id} missing lat/lon")
-
-    # 4) who-want priority set
-    priority_ids = set(_read_who_want_ids(user_id))
 
     # 5) iterate partitions; only compute distances for ready users
     for p in search_partitions:
@@ -231,7 +208,6 @@ def try_match_for_user(*, user_id: str) -> Dict[str, Optional[str]]:
             caller_id=user_id,
             caller_lat=float(caller_lat),
             caller_lon=float(caller_lon),
-            priority_ids=priority_ids,
         )
         if not candidates:
             continue
@@ -239,20 +215,11 @@ def try_match_for_user(*, user_id: str) -> Dict[str, Optional[str]]:
         # 6) pair with the first viable candidate (atomic). If across partitions, move+pair in one tx.
         for row in candidates:
             partner_id = row["user_id"]
-            mid = _txn_pair_move(
-                db.transaction(),
-                bucket=bucket, from_p=partition, to_p=p,
-                caller=user_id, partner=partner_id
-            )
-            if mid:
-                # optional post-commit: centroid recompute if moved
-                if p != partition:
-                    try:
-                        # keep signature flexible in case your helper only needs (bucket, p)
-                        recompute_and_write_centroid_distances(bucket, p, user_id)
-                    except Exception:
-                        pass
-                return {"user_id": user_id, "matched_user_id": partner_id}
-
+            # mid = _txn_pair_move(
+            #     db.transaction(),
+            #     bucket=bucket, from_p=partition, to_p=p,
+            #     caller=user_id, partner=partner_id
+            # )
+            return partner_id
     # 7) no match
-    return {"user_id": user_id, "matched_user_id": None}
+    return None

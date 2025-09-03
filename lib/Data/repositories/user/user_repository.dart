@@ -100,13 +100,23 @@ class UserRepository extends GetxController {
     );
   }
 
-  Future<void> updateQuestionAnswers() async {
+  Future<void> updateQuestionAnswers({var quizAnswers=null}) async {
     final url = Uri.parse(APIConstants.updateQuestionAnswers);
 
-    final payload = {
-      'user_id': currentUser.id,
-      'question_answers': currentUser.quizAnswers,
-    };
+    Map<String, dynamic> payload;
+    if(quizAnswers == null){
+      payload = {
+        'user_id': currentUser.id,
+        'question_answers': currentUser.quizAnswers,
+      };
+    } else {
+      payload = {
+        'user_id': currentUser.id,
+        'question_answers': quizAnswers
+      };
+    }
+
+    print('Update question answers payload: $payload');
 
     try {
       final response = await http.post(
@@ -114,20 +124,25 @@ class UserRepository extends GetxController {
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       ).timeout(
-        const Duration(seconds: 10),
+        const Duration(seconds: 20),
         onTimeout: () {
-          throw TimeoutException('Request timed out after 10 seconds');
+          throw TimeoutException('Request timed out after 20 seconds');
         },
       );
       print(response.statusCode);
       if (response.statusCode != 200) {
+        print('Error 134 User Repo');
         throw Exception('Failed to update: ${response.body}');
       }
+
+      print('138 User Repo Response Body: ${response.body}');
       final body = json.decode(response.body);
       if (body['error'] != null) {
+        print('Error: ${body['error']}, 139 User Repo');
         throw Exception(body['error']);
       }
     } catch (e) {
+      print('Error: 143 User Repo');
       throw Exception('Something went wrong: $e');
     }
   }

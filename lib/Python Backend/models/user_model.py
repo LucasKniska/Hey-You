@@ -59,7 +59,7 @@ class User(BaseModel):
             currentStreak=data.get("CurrentStreak", 0),
             lastMatch=data["LastMatch"] if "LastMatch" in data else datetime.now(),
             nearestBucket=data.get("NearestBucket", ""),
-            partition=data.get("Partition", "default")
+            partition=data.get("Partition", "")
         )
 
     def to_json(self):

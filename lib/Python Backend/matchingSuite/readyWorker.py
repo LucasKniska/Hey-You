@@ -2,7 +2,7 @@ from __future__ import annotations
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
 
-from main import db
+from auth import db
 from matchingSuite.locationMatching import rank_one_user as neighbors_rank_one
 from matchingSuite.partition_switch import (
     choose_adjacent_partition,

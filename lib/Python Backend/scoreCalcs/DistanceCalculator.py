@@ -3,25 +3,6 @@
 
 import numpy as np
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 PROFILE_FIELDS = [
     "hometown",
     "hometown_description",

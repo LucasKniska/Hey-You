@@ -1,8 +1,6 @@
 from datetime import datetime, timezone, timedelta, time
 from zoneinfo import ZoneInfo
-from fastapi import FastAPI
-import firebase_admin
-from firebase_admin import credentials, firestore
+from fastapi import FastAPI, BackgroundTasks
 from enums import UserResponse
 from models.models import *
 from helpers import *
@@ -13,17 +11,15 @@ import random
 from helpers.helpers import *
 import constants.constants as const
 from scoreCalcs import DRIVERscoring
+from k_means.UsersInBuckets import assign_single_user_to_partition
+from matchingSuite.DRIVERmatch import try_match_for_user
+from auth import db
 
 app = FastAPI()
 
-# Initialize Firebase
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
-db = firestore.client()
-
 # === API Endpoints ===
 @app.post("/update-question-answers")
-def update_question_answers(request: QuestionAnswersRequest):
+def update_question_answers(request: QuestionAnswersRequest, background_tasks: BackgroundTasks):
     user_ref = db.collection(const.USERS).document(request.user_id)
 
     print(request)
@@ -35,6 +31,19 @@ def update_question_answers(request: QuestionAnswersRequest):
             'QuestionAnswers': request.question_answers
         })
         DRIVERscoring.update_user_scores_for_one(request.user_id, db, const.USERS)
+        
+        try: 
+            bucketId = user_ref.get().to_dict()['NearestBucket']
+            assign_single_user_to_partition(
+                user_id=request.user_id,
+                user_collection=const.USERS,
+                bucket_id=bucketId,
+                k_ocean=3,
+                k_llm=3
+            )
+        except Exception as e:
+            return {"status": "Did not update partition"}
+
         return {"status": "QuestionAnswers updated", "user_id": request.user_id}
     except Exception as e:
         return {"error": str(e)}
@@ -386,7 +395,7 @@ def create_new_user(request: CreateNewUserRequest):
         return {"error": str(e)}
     
 @app.post("/update-user-field")
-def update_user_field(request: UpdateUserFieldRequest):
+def update_user_field(request: UpdateUserFieldRequest, background_tasks: BackgroundTasks):
 
     if request.user_id is None or request.field is None or request.value is None or request.user_id == '':
         return {"error": "Invalid request parameters"}
@@ -394,6 +403,32 @@ def update_user_field(request: UpdateUserFieldRequest):
     user_ref = db.collection(const.USERS).document(request.user_id)
     if not user_ref.get().exists:
         return {"error": "User not found"}
+
+    user = user_ref.get().to_dict()
+    # Kick off the matching work in the background
+    if request.field == "Discoverable":
+        def _run_match(user_id: str):
+            try:
+                res = try_match_for_user(user_id=user_id)
+                if res is not None:
+                    createMatch(user_id, res, db)
+  
+            except Exception as e:
+                # log this somewhere
+                print(f"[match bg] {user_id}: {e}")
+        
+        print('Setting discoverable to: ', request.value, flush=True)
+        if request.value == True:
+            partition_ref = db.collection(const.BUCKET_REF).document(user.get('NearestBucket')).collection(user.get('Partition')).document(request.user_id)
+            partition_ref.set({
+                'Discoverable': True
+            }, merge=True)
+            background_tasks.add_task(_run_match, request.user_id)
+        else:
+            partition_ref = db.collection(const.BUCKET_REF).document(user.get('NearestBucket')).collection(user.get('Partition')).document(request.user_id)
+            partition_ref.set({
+                'Discoverable': False
+            }, merge=True)
 
     try:
         user_ref.update({request.field: request.value})
@@ -444,8 +479,11 @@ def get_users_near_me(user_id: str):
     user = User.from_json(user_ref.get().to_dict())
 
     # Get all users in the nearest bucket
-    partition_ref = db.collection(const.BUCKET_REF).document(user.nearestBucket).collection(user.partition)
-    docs = list(partition_ref.stream())
+    try: 
+        partition_ref = db.collection(const.BUCKET_REF).document(user.nearestBucket).collection(user.partition)
+        docs = list(partition_ref.stream())
+    except Exception as e:
+        return
 
     # Randomly picks 3 users from the partition
     sampled_docs = random.sample(docs, min(10, len(docs)))

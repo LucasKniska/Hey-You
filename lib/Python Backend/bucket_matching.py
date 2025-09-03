@@ -5,10 +5,11 @@ from math import radians, sin, cos, sqrt, atan2
 from models.partition_model import PartitionModel
 from models.models import *
 from helpers import *
-import constants as const
+from constants import constants as const
 from models.partition_model import PartitionModel
 import firebase_admin
 from firebase_admin import credentials, firestore
+from k_means.UsersInBuckets import assign_single_user_to_partition
 
 
 
@@ -26,21 +27,30 @@ def get_nearest_bucket_name(user_lat, user_long):
 def change_user_bucket(db, user, request, nearest_bucket, user_ref):
     print('User has changed buckets', flush=True)
 
-    # TODO send request to backend api for which partition to set user into
-    # async request to backend api to get name of which partition to set user into
-
-    partition_name = assign_user_partition(db, user, nearest_bucket)
+    partition_updates = assign_single_user_to_partition(
+        user_id=user.id,
+        user_collection=const.USERS,
+        bucket_id=nearest_bucket,
+        k_ocean=3,
+        k_llm=3
+    )
+    partition_name = partition_updates['partition']
 
     # set user into partition
     user_partition = PartitionModel(
         id=user.id,
         location=request.geolocation,
-        username=f"{user.firstName} {user.lastName[0]}"
+        username=f"{user.firstName} {user.lastName[0]}",
     )
 
     # Buckets/<Bucket-Name>/<Partition-Name> => Field: <User-ID>
-    bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(partition_name).document(user.id)
+    bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(partition_name['partition']).document(user.id)
     bucket_ref.set(user_partition.to_json(), merge=True)
+    bucket_ref.set({
+        'distance_sq_total': partition_updates['distance_sq_total'],
+        'distance_sq_ocean': partition_updates['distance_sq_ocean'],
+        'distance_sq_llm': partition_updates['distance_sq_llm']
+    }, merge=True)
 
     bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket)
 
@@ -72,10 +82,6 @@ def change_user_bucket(db, user, request, nearest_bucket, user_ref):
         'Partition': partition_name
     })     
     return nearest_bucket, partition_name
-
-
-def assign_user_partition(db, user, nearest_bucket):
-    return "partition11"
 
 def update_new_bucket_rankings(user, bucket_ref):
 

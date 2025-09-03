@@ -15,10 +15,10 @@ PARENT_DIR = os.path.abspath(os.path.join(THIS_DIR, os.pardir))
 if PARENT_DIR not in sys.path:
     sys.path.insert(0, PARENT_DIR)
 
-from main import db
+from auth import db
 
 # Defaults (override via driver args)
-DEFAULT_USER_COLLECTION = "TestingUsers"
+DEFAULT_USER_COLLECTION = "Users"
 DEFAULT_K_OCEAN = 4
 DEFAULT_K_LLM   = 5
 DEFAULT_LLM_DIM = 1536
@@ -137,7 +137,7 @@ def assign_single_user_to_partition(
       {
         "user_id": ...,
         "bucket_id": ...,
-        "partition": "partitionij",
+        "partition": "partition",
         "distance_sq_ocean": float,
         "distance_sq_llm": float,
         "distance_sq_total": float
@@ -195,7 +195,6 @@ def assign_single_user_to_partition(
     db.collection(user_collection).document(user_id).set({
         "bucket_id": bucket_id,
         "partition": part,
-        "bucket_partition_ref": f"Buckets/{bucket_id}/{part}/{user_id}",
         "last_partition_assigned_at": datetime.now(timezone.utc),
     }, merge=True)
 

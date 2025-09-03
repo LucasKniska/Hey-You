@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Tuple, Optional, List, Any
 import re
 import numpy as np
-from main import db
+from auth import db
 
 OCEAN_DIM = 5
 TARGET_LLM_DIM = 1536

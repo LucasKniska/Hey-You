@@ -23,7 +23,7 @@ PARENT_DIR = os.path.abspath(os.path.join(THIS_DIR, os.pardir))
 if PARENT_DIR not in sys.path:
     sys.path.insert(0, PARENT_DIR)
 
-from main import db
+from auth import db
 from k_means.buckInAbuck import run_clustering_and_write_partitions
 
 def run_group_driver(

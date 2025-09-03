@@ -10,7 +10,7 @@ PARENT_DIR = os.path.abspath(os.path.join(THIS_DIR, os.pardir))
 if PARENT_DIR not in sys.path:
     sys.path.insert(0, PARENT_DIR)
 
-from k_means.DRIVERassigner import (
+from UsersInBuckets import (
     assign_single_user_to_partition,
     DEFAULT_USER_COLLECTION,
     DEFAULT_K_OCEAN,
@@ -29,13 +29,12 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 if __name__ == "__main__":
-    args = parse_args()
+    # args = parse_args()
     res = assign_single_user_to_partition(
-        user_id=args.user_id,
-        user_collection=args.user_coll,
-        bucket_id=args.bucket,
-        k_ocean=max(1, args.k_ocean),
-        k_llm=max(1, args.k_llm),
-        llm_dim=max(1, args.llm_dim),
+        user_id='jiBsMOEwoNgAMYgE7Y6OfwhKgdJ3',
+        user_collection='Users',
+        bucket_id='Columbia_University',
+        k_ocean=max(1, 3),
+        k_llm=max(1, 3),
     )
     print(json.dumps(res, indent=2, default=str))
