@@ -26,7 +26,7 @@ def testGetPreviousConnections():
 
 def testCreateAcceptMatch():
     user1 = 'gmwlBqTibHhob4nD5LwYuHJKq8p2'
-    user2 = 'E1BkpJHUUldUVwON21ucPr4hFJ13'
+    user2 = 'WehHpXBeMXZbgN3X5iJReweY1k92'
 
     user12 = get_user_by_id(user1, db)
     user22 = get_user_by_id(user2, db)

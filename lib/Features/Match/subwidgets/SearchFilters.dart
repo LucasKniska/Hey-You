@@ -20,14 +20,15 @@ Widget searchFilters(var context) {
 
     /// Active Search Modifications
     Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Search Filters', style: Theme.of(context).textTheme.headlineSmall),
+        const SizedBox(width: 6),
+        Text('Search Filters', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Spacer(),
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
             backgroundColor: TColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           ),
           icon: const Icon(Iconsax.add_circle, color: Colors.white),
           label: const Text('Edit Filters', style: TextStyle(color: Colors.white)),
@@ -40,9 +41,16 @@ Widget searchFilters(var context) {
             );
             UserRepository.instance.updateUserSearchFilters();
           },
-        )
+        ),
+        const SizedBox(width: 6),
+
 
       ],
+    ),
+
+    Divider(
+      thickness: 2,
+      color: Color(0xFFBFBFBF), // light gray
     ),
 
     Obx(() => Column(

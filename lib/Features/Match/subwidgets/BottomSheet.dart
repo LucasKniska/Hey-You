@@ -5,6 +5,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import '../../../Data/TemporaryModifications.dart';
 import '../../../Data/repositories/user/user_repository.dart';
+import '../../../utils/constants/colors.dart';
 import '../../../utils/theme/snackbars.dart';
 
 
@@ -23,7 +24,7 @@ class _ModificationFullSheetState extends State<ModificationFullSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primary = Theme.of(context).colorScheme.primary;
+    final Color primary = TColors.primary;
     final textTheme = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 

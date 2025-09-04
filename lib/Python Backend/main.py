@@ -22,14 +22,10 @@ app = FastAPI()
 def update_question_answers(request: QuestionAnswersRequest, background_tasks: BackgroundTasks):
     user_ref = db.collection(const.USERS).document(request.user_id)
 
-    print(request)
-
     if not user_ref.get().exists:
         return {"error": "User not found"}
-    try:
-        user_ref.update({
-            'QuestionAnswers': request.question_answers
-        })
+    
+    def update_matching_values():
         DRIVERscoring.update_user_scores_for_one(request.user_id, db, const.USERS)
         
         try: 
@@ -43,6 +39,12 @@ def update_question_answers(request: QuestionAnswersRequest, background_tasks: B
             )
         except Exception as e:
             return {"status": "Did not update partition"}
+
+    try:
+        user_ref.update({
+            'QuestionAnswers': request.question_answers
+        })
+        background_tasks.add_task(update_matching_values)
 
         return {"status": "QuestionAnswers updated", "user_id": request.user_id}
     except Exception as e:
@@ -229,7 +231,7 @@ def complete_match(match: UserMatchRequest):
     return {"status": "Match closed", "match_id": match}
 
 @app.post("/cancel-complete-match")
-def cancel_complete_match(match_id: UserMatchRequest):
+def cancel_complete_match(match_id: CancelMatchRequest):
 
     user_id_ref = db.collection(const.USERS).document(match_id.user_id)
     if user_id_ref.get().exists:
@@ -477,7 +479,6 @@ def get_users_near_me(user_id: str):
         return {"error": "User not found"}
 
     user = User.from_json(user_ref.get().to_dict())
-
     # Get all users in the nearest bucket
     try: 
         partition_ref = db.collection(const.BUCKET_REF).document(user.nearestBucket).collection(user.partition)

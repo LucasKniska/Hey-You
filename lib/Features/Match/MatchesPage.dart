@@ -424,8 +424,6 @@ class _MapPageState extends State<MapPage>
 
                   SizedBox(height: TSizes.spaceBtwSections),
 
-                  // sectionTitle(Iconsax.personalcard, 'Search Filters'),
-                  SizedBox(height: TSizes.spaceBtwItems),
                   searchFilters(context),
 
                   /// Previous Connections Sections

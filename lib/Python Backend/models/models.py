@@ -60,6 +60,10 @@ class UserMatchRequest(BaseModel):
     user_id: str
     address: str
 
+class CancelMatchRequest(BaseModel):
+    id: str
+    user_id: str
+
 class LocationUpdateRequest(BaseModel):
     user_id: str
     geolocation: 'Geolocation'
