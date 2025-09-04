@@ -498,6 +498,6 @@ def get_users_near_me(user_id: str):
         if username and location:
             user_data.append(username)
             distance = haversine(user.location.lat, user.location.long, location['lat'], location['long'])
-            distances.append(str(distance))
+            distances.append(distance)
 
     return {"users": user_data[0:3], "distances": distances[0:3]}

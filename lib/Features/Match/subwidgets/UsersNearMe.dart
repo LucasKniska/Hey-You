@@ -23,7 +23,7 @@ class UsersNearMe extends StatelessWidget {
         ),
       );
     }
-
+    users.sort((a, b) => a.distance.compareTo(b.distance));
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -73,15 +73,12 @@ class UsersNearMe extends StatelessWidget {
   }
 }
 
-String formatDistanceString(String distanceStr) {
-  double? distanceKm = double.tryParse(distanceStr);
-  if (distanceKm == null) return ''; // or 'Unknown distance'
-
+String formatDistanceString(double distanceKm) {
   if (distanceKm < 1) {
     final meters = (distanceKm * 1000).round();
-    return "$meters m away";
+    return "${meters}m away";
   } else {
-    return "${distanceKm.toStringAsFixed(1)} km away";
+    return "${distanceKm.toStringAsFixed(1)}km away";
   }
 }
 

@@ -18,7 +18,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
   int _segment = 0; // 0: Total, 1: Current, 2: Longest
 
   Future<LBRankings> _fetchRankings() async {
-    return await UserRepository.instance.fetchRankings();
+    return UserRepository.instance.fetchRankings();
   }
 
   String prettyBucketName(String raw) => raw

@@ -222,7 +222,7 @@ class UserRepository extends GetxController {
     final data = json.decode(res.body);
 
     final List<String> users = List<String>.from(data['users']);
-    final List<String> distances = List<String>.from(data['distances']);
+    final List<double> distances = List<double>.from(data['distances']);
 
     final List<NearbyUser> userList = [];
 
