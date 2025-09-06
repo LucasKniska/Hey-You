@@ -43,6 +43,8 @@ class LocationController extends GetxController {
         }
       },
     );
+
+    singleUpdate();
   }
 
   Future<void> _maybeUpdateBackend(Position pos) async {

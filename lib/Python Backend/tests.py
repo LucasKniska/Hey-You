@@ -11,7 +11,7 @@ from main import *
 
 def testCreateMatch():
     user1 = 'gmwlBqTibHhob4nD5LwYuHJKq8p2'
-    user2 = 'gRuNKIYfoOfwQfnl8N6Okq0o6b13'
+    user2 = 'ZLjbdnsVFUPX7SbW2vXr2Sl9MMk2'
 
     user1 = get_user_by_id(user1, db)
     user2 = get_user_by_id(user2, db)
@@ -26,7 +26,7 @@ def testGetPreviousConnections():
 
 def testCreateAcceptMatch():
     user1 = 'gmwlBqTibHhob4nD5LwYuHJKq8p2'
-    user2 = 'WehHpXBeMXZbgN3X5iJReweY1k92'
+    user2 = 'H2nbX5UhPTgAyPFKz0Azkqy6R812'
 
     user12 = get_user_by_id(user1, db)
     user22 = get_user_by_id(user2, db)

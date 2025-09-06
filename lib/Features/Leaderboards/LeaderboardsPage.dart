@@ -63,7 +63,7 @@ class _LeaderboardPageState extends State<LeaderboardPage>
               if (snap.hasError) {
                 return _ErrorCard(
                   message: 'Could not load leaderboard.\n${snap.error}',
-                  onRetry: () async {
+                  onRetry: () {
                     final f =  _fetchRankings();
                     setState(() => _future = f);
                   },

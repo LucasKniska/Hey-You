@@ -15,7 +15,6 @@ Widget searchFilters(var context) {
   final controller = ProfileController.instance;
   final textTheme = Theme.of(context).textTheme;
 
-
   return Column(children: [
 
     /// Active Search Modifications

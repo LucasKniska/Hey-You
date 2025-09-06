@@ -270,6 +270,9 @@ def cancel_complete_match(match_id: CancelMatchRequest):
 @app.post("/update-location")
 def update_location(request: LocationUpdateRequest):
     
+    if request.user_id is None or request.user_id == '':
+        return {"error": "Invalid user_id"}
+
     # Keeps a reference of the user document
     user_ref = db.collection(const.USERS).document(request.user_id)
     if user_ref.get().exists:
@@ -291,7 +294,7 @@ def update_location(request: LocationUpdateRequest):
     # Updates either the match object or partition object
     if not user.currentMatch:
         # update the partition location
-        bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(user.partition).document(user.id)
+        bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(user.partition).document(request.user_id)
         bucket_ref.update({
             'location': request.geolocation.to_json()
         })
@@ -496,7 +499,7 @@ def get_users_near_me(user_id: str):
         username = data.get('username', None)
         location = data.get('location', None)
 
-        if username and location:
+        if username and location and doc.id != user_id:
             user_data.append(username)
             distance = haversine(user.location.lat, user.location.long, location['lat'], location['long'])
             distances.append(distance)

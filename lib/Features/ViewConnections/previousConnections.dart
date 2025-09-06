@@ -1,125 +1,90 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_rx/src/rx_workers/rx_workers.dart';
 import 'package:hey_you/Common/widgets/emptyFieldWidget.dart';
 import 'package:hey_you/Features/ViewConnections/allPreviousConnections.dart';
 import 'package:hey_you/Features/ViewConnections/controllers/previousConnections_controller.dart';
-
-import '../../Data/models/PreviousMatch.dart';
 import '../../Data/models/UserModel.dart';
 import '../../Data/repositories/user/user_repository.dart';
-import '../../utils/constants/sizes.dart';
 
 class PreviousConnection extends StatefulWidget {
   const PreviousConnection({super.key});
 
   @override
   State<PreviousConnection> createState() => _PreviousConnection();
+
 }
 
 class _PreviousConnection extends State<PreviousConnection> {
 
-  final PreviousConnectionController controller = PreviousConnectionController();
-  List<PreviousMatch> previousMatches = [];
-  bool loading = true;
-  bool error = false;
+  final controller = Get.put(PreviousConnectionController());
   final userRepo = UserRepository.instance;
-  int totalConnections = UserRepository.instance.currentUser.totalConnections;
 
   @override
   void initState() {
     super.initState();
-    fetchPreviousMatches(); // Call async function
+    controller.fetchPreviousMatches(userRepo.currentUser); // Call async function
     controller.checkCurrentStreak(userRepo.currentUser);
 
     // Shows the popup if necessary
     ever<UserModel?>(userRepo.currentUserRx, (user) async {
+      print('Update ran');
       if (user == null) return;
       controller.checkCurrentStreak(userRepo.currentUser);
-      if (totalConnections != user.totalConnections || previousMatches.length != totalConnections){
-        totalConnections = user.totalConnections;
-        fetchPreviousMatches();
-      }
+      controller.fetchPreviousMatches(user);
     });
-  }
-
-  Future<void> fetchPreviousMatches() async {
-    try {
-      error = false;
-      loading = true;
-
-      final matches = await controller.getPreviousMatches();
-
-      if(!mounted) return;
-
-      matches.sort(
-          (a, b) => b.createdOn.compareTo(a.createdOn)
-      );
-
-      setState(() {
-        previousMatches = matches;
-        loading = false;
-      });
-
-      print('Previous matches: $previousMatches');
-    } catch (e) {
-      print('Error fetching previous matches: $e');
-
-      setState(() {
-        loading = false;
-        error = true;
-      });
-
-      if(!mounted) return;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (loading)
-          const Center(
-            child: CircularProgressIndicator(
-              color: Colors.grey,
+    return Obx(() {
+      return Column(
+        children: [
+          if (controller.loading.value)
+            const Center(
+              child: CircularProgressIndicator(
+                color: Colors.grey,
+              ),
+            )
+           else if (controller.previousMatches.isNotEmpty)
+             ListView.builder(
+               shrinkWrap: true,
+               physics: const NeverScrollableScrollPhysics(), // Prevents scrolling inside a Column
+               itemCount: min(3, controller.previousMatches.length),
+               itemBuilder: (context, index) {
+                 return Padding(padding: EdgeInsets.only(bottom: 5), child: PreviousMatchCard(match: controller.previousMatches[index]));
+               },
+             )
+          else if (!controller.error.value)
+            EmptyStateWidget(
+              title: 'You currently have no matches',
+              description: 'Match with someone to fill out your list of contacts!',
+            )
+          else
+            EmptyStateWidget(
+              title: 'We can not find your previous connection right now',
+              description: 'Reload the app and try again later!',
             ),
-          )
-         else if (previousMatches.isNotEmpty)
-           ListView.builder(
-             shrinkWrap: true,
-             physics: const NeverScrollableScrollPhysics(), // Prevents scrolling inside a Column
-             itemCount: 3,
-             itemBuilder: (context, index) {
-               return Padding(padding: EdgeInsets.only(bottom: 5), child: PreviousMatchCard(match: previousMatches[index]));
-             },
-           )
-        else if (!error)
-          EmptyStateWidget(
-            title: 'You currently have no matches',
-            description: 'Match with someone to fill out your list of contacts!',
-          )
-        else
-          EmptyStateWidget(
-            title: 'We can not find your previous connection right now',
-            description: 'Reload the app and try again later!',
-          ),
 
-        if (previousMatches.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: ViewAllPreviousConnectionsButton(
-              totalCount: previousMatches.length, // or omit to hide badge
-              onPressed: () {
-                Get.to(() => AllPreviousConnectionsPage(matches: previousMatches));
-              },
+          if (controller.previousMatches.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: ViewAllPreviousConnectionsButton(
+                totalCount: controller.previousMatches.length, // or omit to hide badge
+                onPressed: () {
+                  Get.to(() => AllPreviousConnectionsPage(matches: controller.previousMatches));
+                },
+              ),
             ),
-          ),
 
 
-      ],
-    );
+        ],
+      );
+    });
+
   }
+
 }
 
 class ViewAllPreviousConnectionsButton extends StatelessWidget {

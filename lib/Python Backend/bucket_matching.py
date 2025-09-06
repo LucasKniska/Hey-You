@@ -44,7 +44,7 @@ def change_user_bucket(db, user, request, nearest_bucket, user_ref):
     )
 
     # Buckets/<Bucket-Name>/<Partition-Name> => Field: <User-ID>
-    bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(partition_name['partition']).document(user.id)
+    bucket_ref = db.collection(const.BUCKET_REF).document(nearest_bucket).collection(partition_name).document(user.id)
     bucket_ref.set(user_partition.to_json(), merge=True)
     bucket_ref.set({
         'distance_sq_total': partition_updates['distance_sq_total'],

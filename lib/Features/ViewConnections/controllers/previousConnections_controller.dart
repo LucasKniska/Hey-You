@@ -2,6 +2,8 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:hey_you/Data/repositories/user/user_repository.dart';
 import 'package:http/http.dart' as http;
 
@@ -9,7 +11,41 @@ import '../../../Data/models/PreviousMatch.dart';
 import '../../../Data/models/UserModel.dart';
 import '../../../utils/constants/api_constants.dart';
 
-class PreviousConnectionController {
+class PreviousConnectionController extends GetxController {
+  static PreviousConnectionController get instance => Get.find();
+
+  List<PreviousMatch> previousMatches = [];
+  final loading = true.obs;
+  final error = false.obs;
+  final totalConnections = 0.obs;
+
+  Future<void> fetchPreviousMatches(UserModel user) async {
+
+
+    if (totalConnections != user.totalConnections || previousMatches.length != totalConnections){
+      totalConnections.value = user.totalConnections;
+    }
+
+    try {
+      error.value = false;
+      loading.value = true;
+
+      final matches = await getPreviousMatches();
+
+      matches.sort(
+              (a, b) => b.createdOn.compareTo(a.createdOn)
+      );
+
+      previousMatches = matches;
+      loading.value = false;
+      print('Previous matches: $previousMatches');
+    } catch (e) {
+      print('Error fetching previous matches: $e');
+
+      loading.value = false;
+      error.value = true;
+    }
+  }
 
   Future<List<PreviousMatch>> getPreviousMatches() async {
 

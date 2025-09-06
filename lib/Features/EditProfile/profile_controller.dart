@@ -9,8 +9,8 @@ class ProfileController extends GetxController {
   final biography = TextEditingController();
   final editBiography = false.obs;
 
-  final permanentMods = <String>[].obs;
-  final temporaryMods = <String>[].obs;
+  var permanentMods = <String>[].obs;
+  var temporaryMods = <String>[].obs;
 
   @override
   void onInit() {
@@ -21,6 +21,8 @@ class ProfileController extends GetxController {
     biography.text = currentUser.biography;
     permanentMods.assignAll(currentUser.permanentModifications);
     temporaryMods.assignAll(currentUser.temporaryModifications.map((e) => e.modification));
+
+    ever(UserRepository.instance.currentUserRx, (_) => updateMods());
   }
 
   void updateMods() {

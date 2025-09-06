@@ -4,11 +4,13 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:hey_you/Features/ViewConnections/previousConnections.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../Common/navigation_menu.dart';
 import '../../../Data/repositories/user/user_repository.dart';
 import '../../../utils/constants/api_constants.dart';
+import '../../ViewConnections/controllers/previousConnections_controller.dart';
 
 class MeetNowController {
 
@@ -35,8 +37,8 @@ class MeetNowController {
         })
     );
 
-    final controller = Get.find<NavigationController>();
-    controller.triggerContactsRefresh();
+    print('Meet Now Controller: 38 updating contacts');
+    PreviousConnectionController.instance.fetchPreviousMatches(UserRepository.instance.currentUser);
   }
 
   Future<void> cancelConfirmMeeting() async {

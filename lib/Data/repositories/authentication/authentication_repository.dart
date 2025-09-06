@@ -17,7 +17,6 @@ import '../../../Features/Authentication/screens/usernameAndBio.dart';
 import '../../../Features/EditProfile/profile_controller.dart';
 import '../../../Features/Onboarding/TermsOfService.dart';
 import '../../../Features/PersonalityQuiz/PersonalityQuiz.dart';
-import '../../../Features/ViewConnections/previousConnections.dart';
 import '../../models/UserModel.dart';
 import '../matching/match_repository.dart';
 import '../user/user_repository.dart';
@@ -62,9 +61,8 @@ class AuthenticationRepository extends GetxController{
               }
             }
 
-
             Get.put(MatchRepository(), permanent: true);
-            Get.put(UserRepository());
+            Get.put(UserRepository(), permanent: true);
             Get.put(ProfileController(), permanent: true);
             Get.put(LocationController(), permanent: true);
             UserRepository.instance.startListeningToUser();
@@ -73,10 +71,11 @@ class AuthenticationRepository extends GetxController{
               await Get.to(() => UserNameAndBio());
               print('Putting personality quiz page');
               await Get.to(() => const PersonalityQuizPage());
-              LocationController.instance.singleUpdate();
               Get.offAll(() => const NavigationMenu());
+              LocationController.instance.singleUpdate();
             } else {
               Get.offAll(() => const NavigationMenu());
+              LocationController.instance.singleUpdate();
             }
 
 
