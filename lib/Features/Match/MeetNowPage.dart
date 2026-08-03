@@ -244,7 +244,7 @@ class _MeetNowPageState extends State<MeetNowPage> {
     final response = await http.post(
       Uri.parse('https://api.openrouteservice.org/v2/directions/foot-walking/geojson'),
       headers: {
-        'Authorization': '5b3ce3597851110001cf62485e57c931c3c44434884dd6f55fcf479a',
+        'Authorization': '--rotated--',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
